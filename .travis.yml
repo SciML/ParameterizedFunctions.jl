@@ -14,6 +14,6 @@ notifications:
 #  - julia -e 'Pkg.clone(pwd()); Pkg.build("ParameterizedFunctions.jl"); Pkg.test("ParameterizedFunctions.jl"; coverage=true)'
 after_success:
   # push coverage results to Coveralls
-  - julia -e 'cd(Pkg.dir("ParameterizedFunctions.jl")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
+  - julia -e 'cd(Pkg.dir("ParameterizedFunctions")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
   # push coverage results to Codecov
-  - julia -e 'cd(Pkg.dir("ParameterizedFunctions.jl")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
+  - julia -e 'cd(Pkg.dir("ParameterizedFunctions")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
