@@ -6,6 +6,14 @@ os:
 julia:
   - release
   - nightly
+git:
+    depth: 99999
+env:
+    global:
+    - PYTHON=conda
+    matrix:
+    - MPMATH=true
+    - MPMATH=false  
 notifications:
   email: false
 # uncomment the following lines to override the default test script
