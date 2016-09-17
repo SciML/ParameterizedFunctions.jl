@@ -47,7 +47,6 @@ macro ode_def(name,ex,params...)
 
   # Now do the Jacobian. Get the component functions
   funcs = Vector{Expr}(0) # Get all of the functions for symbolic computation
-  println(symex.args)
   for (i,arg) in enumerate(symex.args)
     if i%2 == 0
       ex = arg.args[2]
@@ -78,15 +77,12 @@ macro ode_def(name,ex,params...)
   Jex = :()
   for i in 1:numsyms
     for j in 1:numsyms
-      println("$i $j")
       ex = parse(string(symjac[i,j]))
-      println(ex)
       if typeof(ex) <: Expr
         ode_findreplace(ex,ex,dict,pdict,idict)
       else
         ex = ode_symbol_findreplace(ex,dict,pdict,idict)
       end
-      println(ex)
       push!(Jex.args,:(J[$i,$j] = $ex))
     end
   end
