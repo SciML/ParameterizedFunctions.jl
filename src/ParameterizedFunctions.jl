@@ -89,7 +89,6 @@ macro ode_def(name,ex,params...)
   Jex.head = :block
   push!(Jex.args,nothing)
   Jex = :(jac = (t,u,J)->$Jex)
-
   @eval Base.ctranspose(p::$name) = $Jex
   return f
 end

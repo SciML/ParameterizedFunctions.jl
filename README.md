@@ -26,7 +26,7 @@ so is preferred in any case where you know that the parameter will always be con
 This will silently create the `LotkaVoltera` type and thus `g=LotkaVoltera(1.0,2.0)`
 will create a different function where `a=1.0` and `b=2.0`. However, at any time
 the parameters of `f` can be changed by using `f.a =` or `f.b = `, or by using
-symbols: `f[:a]=` etc. 
+symbols: `f[:a]=` etc.
 
 The macro also defines the Jacobian `f'`. This is defined as an in-place Jacobian `f'(t,u,J)`.
 This is calculated using SymPy.jl automatically, so it's no effort on your part.
@@ -99,7 +99,7 @@ Note that the Jacobian overload is achieved by overloading
 `Base.ctranspose`, and in the example corresponds to
 
 ```julia
-function Base.ctranspose(p::LotkaVoltera)(t,u,J)
+function Base.ctranspose(p::LotkaVoltera) = (t,u,J) -> begin
   J[1,1] = p.a-p.b
   J[1,2] = -p.b
   J[2,1] = u[2]
