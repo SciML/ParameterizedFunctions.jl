@@ -1,5 +1,10 @@
 # ParameterizedFunctions.jl
 
+`ParameterizedFunction` is a type which can be used in various JuliaDiffEq solvers where
+the parameters must be accessible by the solver function. These use call overloading
+generate a type which acts like a function `f(t,u,du)` but has access to the model
+parameters.
+
 ## Basic Usage
 
 ### ODEs
@@ -19,7 +24,8 @@ put these inside the parameter type, while `=` will inline the number (i.e. repl
 each instance of `c` with `3`). Inlining slightly decreases the function cost and
 so is preferred in any case where you know that the parameter will always be constant.
 This will silently create the `LotkaVoltera` type and thus `g=LotkaVoltera(1.0,2.0)`
-will create a different function where `a=1.0` and `b=2.0`.
+will create a different function where `a=1.0` and `b=2.0`. However, at any time
+the parameters of `f` can be changed by using `f.a =` or `f.b = `.
 
 The macro also defines the Jacobian `f'`. This is defined as an in-place Jacobian `f'(t,u,J)`.
 This is calculated using SymPy.jl automatically, so it's no effort on your part.
@@ -50,10 +56,7 @@ which is in the form for the FEM solver.
 
 ## Manually Defining `ParameterizedFunction`s
 
-`ParameterizedFunction` is a type which can be used in various JuliaDiffEq solvers where
-the parameters must be accessible by the solver function. These use call overloading
-generate a type which acts like a function `f(t,u,du)` but has access to the model
-parameters. An example of explicitly defining a parameterized function is as follows:
+An example of explicitly defining a parameterized function is as follows:
 
 ```julia
 type  LotkaVoltera <: ParameterizedFunction
