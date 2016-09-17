@@ -14,15 +14,15 @@ f = @ode_def LotkaVoltera begin
 end a=>1.5 b=>1 c=3 d=1
 ```
 
-This will silently create the `LotkaVoltera` type and thus `g=LotkaVoltera(1.0,2.0)`
-will work as before. Note that the syntax for parameters here is that `=>` will
+Note that the syntax  for parameters here is that `=>` will
 put these inside the parameter type, while `=` will inline the number (i.e. replace
 each instance of `c` with `3`). Inlining slightly decreases the function cost and
 so is preferred in any case where you know that the parameter will always be constant.
+This will silently create the `LotkaVoltera` type and thus `g=LotkaVoltera(1.0,2.0)`
+will create a different function where `a=1.0` and `b=2.0`.
 
-Note that the macro no only defines the function `f`, but also its Jacobian `f'`.
-This is defined as an in-place Jacobian `f'(t,u,J)`. This is calculated using SymPy.jl automatically,
-so it's no effort on your part.
+The macro also defines the Jacobian `f'`. This is defined as an in-place Jacobian `f'(t,u,J)`.
+This is calculated using SymPy.jl automatically, so it's no effort on your part.
 
 ### Finite Element PDEs
 
@@ -34,7 +34,7 @@ is required in order to tell the solver linearity. Other than that, the macro
 usage is similar to before. For example,
 
 ```julia
-l = @fem_define (t,x,u) BirthDeath begin
+l = @fem_def (t,x,u) BirthDeath begin
   du = 1-x*α*u
   dv = 1-y*v
 end α=0.5
