@@ -25,7 +25,8 @@ each instance of `c` with `3`). Inlining slightly decreases the function cost an
 so is preferred in any case where you know that the parameter will always be constant.
 This will silently create the `LotkaVoltera` type and thus `g=LotkaVoltera(1.0,2.0)`
 will create a different function where `a=1.0` and `b=2.0`. However, at any time
-the parameters of `f` can be changed by using `f.a =` or `f.b = `.
+the parameters of `f` can be changed by using `f.a =` or `f.b = `, or by using
+symbols: `f[:a]=` etc. 
 
 The macro also defines the Jacobian `f'`. This is defined as an in-place Jacobian `f'(t,u,J)`.
 This is calculated using SymPy.jl automatically, so it's no effort on your part.
