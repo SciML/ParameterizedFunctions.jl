@@ -212,7 +212,7 @@ function symarr_to_sympy(symarr::Vector{Symbol})
   str[1:end-1]
 end
 
-FEM_SYMBOL_DICT = Dict{Symbol,Expr}(:x=>:(x[:,1]),:y=>:(x[:,2]),:z=>:(x[:,3]))
+const FEM_SYMBOL_DICT = Dict{Symbol,Expr}(:x=>:(x[:,1]),:y=>:(x[:,2]),:z=>:(x[:,3]))
 
 export ParameterizedFunction, @ode_def, @fem_def
 end # module
