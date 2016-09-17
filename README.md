@@ -43,7 +43,9 @@ end
 
 by using the command `g = LotkaVoltera(1.0,2.0)`.
 
-## Helper Macro
+## Helper Macros
+
+### ODEs
 
 A helper macro is provided to make it easier to define a `ParameterizedFunction`.
 For example, to define the previous `LotkaVoltera`, you can use the following command:
@@ -60,3 +62,27 @@ will work as before. Note that the syntax for parameters here is that `=>` will
 put these inside the parameter type, while `=` will inline the number (i.e. replace
 each instance of `c` with `3`). Inlining slightly decreases the function cost and
 so is preferred in any case where you know that the parameter will always be constant.
+
+### Finite Element Method PDEs
+
+Similar macros for finite element method definitions also exist. For the finite
+element solvers, the definitions use `x[:,1]` instead of `x` and `x[:,2]` instead of `y`.
+To more easily define systems of equations for finite element solvers, we can
+use the `@fem_def` macro. The first argument is the function signature. This
+is required in order to tell the solver linearity. Other than that, the macro
+usage is similar to before. For example,
+
+```julia
+l = @fem_define (t,x,u) BirthDeath begin
+  du = 1-x*α*u
+  dv = 1-y*v
+end α=0.5
+```
+
+defines a system of equations
+
+```julia
+l = (t,x,u)  -> [1-.5*x[:,1]*u[:,1]   1-x[:,2]*u[:,2]]
+```
+
+which is in the form for the FEM solver.
