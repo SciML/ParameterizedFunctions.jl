@@ -63,6 +63,20 @@ put these inside the parameter type, while `=` will inline the number (i.e. repl
 each instance of `c` with `3`). Inlining slightly decreases the function cost and
 so is preferred in any case where you know that the parameter will always be constant.
 
+Note that the macro no only defines the function `f`, but also its Jacobian `f'`.
+This is defined as an in-place Jacobian `f'(t,u,J)`. This is calculated using SymPy.jl automatically,
+so it's no effort on your part. This is achieved by overloading
+`Base.ctranspose`, and in the example corresponds to
+
+```julia
+function Base.ctranspose(p::LotkaVoltera)(t,u,J)
+  J[1,1] = p.a-p.b
+  J[1,2] = -p.b
+  J[2,1] = u[2]
+  J[2,2] = -3 + u[1]
+end
+```
+
 ### Finite Element Method PDEs
 
 Similar macros for finite element method definitions also exist. For the finite
