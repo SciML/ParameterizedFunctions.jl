@@ -1,5 +1,6 @@
 module ParameterizedFunctions
-import Base.getindex
+using SymPy
+import Base: getindex,ctranspose
 
 ### Basic Functionality
 
@@ -11,15 +12,16 @@ getindex{s}(p::ParameterizedFunction,::Val{s}) = getfield(p,s) ## Val for type-s
 macro ode_def(name,ex,params...)
   ## Build independent variable dictionary
   dict = Dict{Symbol,Int}()
+  syms = Vector{Symbol}(0)
   for i in 2:2:length(ex.args) #Every odd line is line number
     arg = ex.args[i].args[1] #Get the first thing, should be dsomething
     nodarg = Symbol(string(arg)[2:end]) #Take off the d
     if !haskey(dict,nodarg)
       s = string(arg)
       dict[Symbol(string(arg)[2:end])] = i/2 # and label it the next int if not seen before
+      push!(syms,Symbol(string(arg)[2:end]))
     end
   end
-  syms = keys(dict)
 
   pdict = Dict{Symbol,Any}(); idict = Dict{Symbol,Any}()
   ## Build parameter and inline dictionaries
@@ -31,7 +33,8 @@ macro ode_def(name,ex,params...)
     end
   end
   # Run find replace to make the function expression
-  ode_findreplace(ex,dict,syms,pdict,idict)
+  symex = copy(ex) # Different expression for symbolic computations
+  ode_findreplace(ex,symex,dict,pdict,idict)
   push!(ex.args,nothing) # Make the return void
   # Build the type
   f = maketype(name,pdict)
@@ -41,27 +44,88 @@ macro ode_def(name,ex,params...)
   # Export the type
   exportex = :(export $name)
   @eval $exportex
+
+  # Now do the Jacobian. Get the component functions
+  funcs = Vector{Expr}(0) # Get all of the functions for symbolic computation
+  println(symex.args)
+  for (i,arg) in enumerate(symex.args)
+    if i%2 == 0
+      ex = arg.args[2]
+      if typeof(ex) <: Symbol
+        push!(funcs,:(1*$ex))
+      else # It's an expression, just push
+        push!(funcs,arg.args[2])
+      end
+    end
+  end
+  # Declare the symbols
+  symstr = symarr_to_sympy(syms)
+  symdefineex = Expr(:(=),parse("("*symstr*")"),SymPy.symbols(symstr))
+  symtup = parse("("*symstr*")")
+  @eval $symdefineex
+  symtup = @eval $symtup # symtup is the tuple of symPy symbols
+  # Build the Jacobian Matrix of SymPy Expressions
+  numsyms = length(symtup)
+  symjac = Matrix(numsyms,numsyms)
+  for i in eachindex(funcs)
+    funcex = funcs[i]
+    symfunc = @eval $funcex
+    for j in eachindex(symtup)
+      symjac[i,j] = diff(symfunc,symtup[j])
+    end
+  end
+  # Build the Julia function
+  Jex = :()
+  for i in 1:numsyms
+    for j in 1:numsyms
+      println("$i $j")
+      ex = parse(string(symjac[i,j]))
+      println(ex)
+      if typeof(ex) <: Expr
+        ode_findreplace(ex,ex,dict,pdict,idict)
+      else
+        ex = ode_symbol_findreplace(ex,dict,pdict,idict)
+      end
+      println(ex)
+      push!(Jex.args,:(J[$i,$j] = $ex))
+    end
+  end
+  Jex.head = :block
+  push!(Jex.args,nothing)
+  Jex = :(jac = (t,u,J)->$Jex)
+
+  @eval Base.ctranspose(p::$name) = $Jex
   return f
 end
 
-function ode_findreplace(ex,dict,syms,pdict,idict)
+function ode_findreplace(ex,symex,dict,pdict,idict)
   for (i,arg) in enumerate(ex.args)
     if isa(arg,Expr)
-      ode_findreplace(arg,dict,syms,pdict,idict)
+      ode_findreplace(arg,symex.args[i],dict,pdict,idict)
     elseif isa(arg,Symbol)
       s = string(arg)
       if haskey(dict,arg)
         ex.args[i] = :(u[$(dict[arg])]) # replace with u[i]
       elseif haskey(idict,arg)
         ex.args[i] = :($(idict[arg])) # inline from idict
+        symex.args[i] = :($(idict[arg])) # also do in symbolic
       elseif haskey(pdict,arg)
         ex.args[i] = :(p.$arg) # replace with p.arg
+        symex.args[i] = :($(pdict[arg])) # also do in symbolic
       elseif length(string(arg))>1 && haskey(dict,Symbol(s[nextind(s, 1):end])) && Symbol(s[1])==:d
         tmp = Symbol(s[nextind(s, 1):end]) # Remove the first letter, the d
         ex.args[i] = :(du[$(dict[tmp])])
+        symex.args[i] = :(du[$(dict[tmp])]) #also do in symbolic
       end
     end
   end
+end
+
+function ode_symbol_findreplace(ex,dict,pdict,idict)
+  if haskey(dict,ex)
+    ex = :(u[$(dict[ex])]) # replace with u[i]
+  end
+  :(1*$ex) # Add the 1 to make it an expression not a Symbol
 end
 
 function maketype(name, pdict)
@@ -132,6 +196,24 @@ function fem_findreplace(ex,dict,syms,pdict,idict)
       end
     end
   end
+end
+
+
+### Utility Functions
+
+"""
+symarr_to_sympy(symarr::Vector{Symbol})
+
+Converts a Vector{Symbol} into a string for sympy parsing
+
+Symbol[:x,:y] --> "x,y"
+"""
+function symarr_to_sympy(symarr::Vector{Symbol})
+  str = ""
+  for sym in symarr
+    str = str*string(sym)*","
+  end
+  str[1:end-1]
 end
 
 FEM_SYMBOL_DICT = Dict{Symbol,Expr}(:x=>:(x[:,1]),:y=>:(x[:,2]),:z=>:(x[:,3]))

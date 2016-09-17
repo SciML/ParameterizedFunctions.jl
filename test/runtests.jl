@@ -3,7 +3,12 @@ using Base.Test
 
 ### ODE Macros
 
-f = @ode_def LotkaVoltera begin
+f = @ode_def SymCheck begin # Checks for error due to symbol on 1
+  dx = x
+  dy = -c*y + d*x*y
+end a=>1.5 b=>1 c=3 d=1
+
+f = @ode_def LotkaVoltera begin # Checks for error due to symbol on 1
   dx = a*x - b*x*y
   dy = -c*y + d*x*y
 end a=>1.5 b=>1 c=3 d=1
@@ -21,8 +26,12 @@ end
 t = 1.0
 u = [2.0,3.0]
 du = zeros(2)
+J = zeros(2,2)
 f(t,u,du)
+f'(t,u,J)
 @test du == [-3.0,-3.0]
+@test J  == [-1.5 -2.0
+             3.0 -1.0]
 g = LotkaVoltera(1.0,2.0)
 g(t,u,du)
 @test du == [-10.0,-3.0]
