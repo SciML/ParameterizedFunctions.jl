@@ -1,5 +1,5 @@
 module ParameterizedFunctions
-using SymPy
+using SymEngine
 import Base: getindex,ctranspose
 
 ### Basic Functionality
@@ -58,21 +58,25 @@ macro ode_def(name,ex,params...)
     end
   end
   # Declare the symbols
+
   symstr = symarr_to_sympy(syms)
-  symdefineex = Expr(:(=),parse("("*symstr*")"),SymPy.symbols(symstr))
+  symdefineex = Expr(:(=),parse("("*symstr*")"),SymEngine.symbols(symstr))
   symtup = parse("("*symstr*")")
   @eval $symdefineex
   symtup = @eval $symtup # symtup is the tuple of symPy symbols
-  # Build the Jacobian Matrix of SymPy Expressions
+    # Build the Jacobian Matrix of SymPy Expressions
   numsyms = length(symtup)
   symjac = Matrix(numsyms,numsyms)
+  println("here")
   for i in eachindex(funcs)
     funcex = funcs[i]
+    println(funcs[i])
     symfunc = @eval $funcex
     for j in eachindex(symtup)
       symjac[i,j] = diff(symfunc,symtup[j])
     end
   end
+  println("here2")
   # Build the Julia function
   Jex = :()
   for i in 1:numsyms
@@ -162,7 +166,6 @@ macro fem_def(sig,name,ex,params...)
   else
     ex = Expr(:hcat,funcs...)
   end
-
   # Build the type
   f = maketype(name,pdict)
   # Overload the Call
