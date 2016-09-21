@@ -29,7 +29,7 @@ the parameters of `f` can be changed by using `f.a =` or `f.b = `, or by using
 symbols: `f[:a]=` etc.
 
 The macro also defines the Jacobian `f'`. This is defined as an in-place Jacobian `f'(t,u,J)`.
-This is calculated using SymPy.jl automatically, so it's no effort on your part.
+This is calculated using SymEngine.jl automatically, so it's no effort on your part.
 
 ### Finite Element PDEs
 
