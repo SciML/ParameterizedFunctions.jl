@@ -6,23 +6,12 @@ os:
 julia:
   - release
   - nightly
-git:
-    depth: 99999
-env:
-    global:
-    - PYTHON=conda
-    matrix:
-    - MPMATH=true
-    - MPMATH=false  
 notifications:
   email: false
 # uncomment the following lines to override the default test script
 #script:
 #  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
 #  - julia -e 'Pkg.clone(pwd()); Pkg.build("ParameterizedFunctions.jl"); Pkg.test("ParameterizedFunctions.jl"; coverage=true)'
-before_install:
-    #install mpmath to test functionallity
-  - if [ $MPMATH = "true" ]; then julia -e 'Pkg.add("Conda"); using Conda; Conda.add("mpmath")';fi
 after_success:
   # push coverage results to Coveralls
   - julia -e 'cd(Pkg.dir("ParameterizedFunctions")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
