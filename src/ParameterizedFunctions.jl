@@ -1,5 +1,5 @@
 module ParameterizedFunctions
-using SymPy
+using SymEngine
 import Base: getindex,ctranspose
 
 ### Basic Functionality
@@ -58,12 +58,13 @@ macro ode_def(name,ex,params...)
     end
   end
   # Declare the symbols
-  symstr = symarr_to_sympy(syms)
-  symdefineex = Expr(:(=),parse("("*symstr*")"),SymPy.symbols(symstr))
+
+  symstr = symarr_to_symengine(syms)
+  symdefineex = Expr(:(=),parse("("*symstr*")"),SymEngine.symbols(symstr))
   symtup = parse("("*symstr*")")
   @eval $symdefineex
-  symtup = @eval $symtup # symtup is the tuple of symPy symbols
-  # Build the Jacobian Matrix of SymPy Expressions
+  symtup = @eval $symtup # symtup is the tuple of SymEngine symbols
+    # Build the Jacobian Matrix of SymEngine Expressions
   numsyms = length(symtup)
   symjac = Matrix(numsyms,numsyms)
   for i in eachindex(funcs)
@@ -162,7 +163,6 @@ macro fem_def(sig,name,ex,params...)
   else
     ex = Expr(:hcat,funcs...)
   end
-
   # Build the type
   f = maketype(name,pdict)
   # Overload the Call
@@ -197,13 +197,13 @@ end
 ### Utility Functions
 
 """
-symarr_to_sympy(symarr::Vector{Symbol})
+symarr_to_symengine(symarr::Vector{Symbol})
 
-Converts a Vector{Symbol} into a string for sympy parsing
+Converts a Vector{Symbol} into a string for SymEngine parsing
 
 Symbol[:x,:y] --> "x,y"
 """
-function symarr_to_sympy(symarr::Vector{Symbol})
+function symarr_to_symengine(symarr::Vector{Symbol})
   str = ""
   for sym in symarr
     str = str*string(sym)*","
