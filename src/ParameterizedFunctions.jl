@@ -59,24 +59,21 @@ macro ode_def(name,ex,params...)
   end
   # Declare the symbols
 
-  symstr = symarr_to_sympy(syms)
+  symstr = symarr_to_symengine(syms)
   symdefineex = Expr(:(=),parse("("*symstr*")"),SymEngine.symbols(symstr))
   symtup = parse("("*symstr*")")
   @eval $symdefineex
-  symtup = @eval $symtup # symtup is the tuple of symPy symbols
-    # Build the Jacobian Matrix of SymPy Expressions
+  symtup = @eval $symtup # symtup is the tuple of SymEngine symbols
+    # Build the Jacobian Matrix of SymEngine Expressions
   numsyms = length(symtup)
   symjac = Matrix(numsyms,numsyms)
-  println("here")
   for i in eachindex(funcs)
     funcex = funcs[i]
-    println(funcs[i])
     symfunc = @eval $funcex
     for j in eachindex(symtup)
       symjac[i,j] = diff(symfunc,symtup[j])
     end
   end
-  println("here2")
   # Build the Julia function
   Jex = :()
   for i in 1:numsyms
@@ -200,13 +197,13 @@ end
 ### Utility Functions
 
 """
-symarr_to_sympy(symarr::Vector{Symbol})
+symarr_to_symengine(symarr::Vector{Symbol})
 
-Converts a Vector{Symbol} into a string for sympy parsing
+Converts a Vector{Symbol} into a string for SymEngine parsing
 
 Symbol[:x,:y] --> "x,y"
 """
-function symarr_to_sympy(symarr::Vector{Symbol})
+function symarr_to_symengine(symarr::Vector{Symbol})
   str = ""
   for sym in symarr
     str = str*string(sym)*","

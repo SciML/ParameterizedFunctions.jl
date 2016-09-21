@@ -13,8 +13,6 @@ f = @ode_def LotkaVoltera begin # Checks for error due to symbol on 1
   dy = -c*y + d*x*y
 end a=>1.5 b=>1 c=3 d=1
 
-println("here3")
-
 type  LotkaVoltera2 <: ParameterizedFunction
          a::Float64
          b::Int64
@@ -23,7 +21,6 @@ end
          du[1] = p.a * u[1] - p.b * u[1]*u[2]
          du[2] = -3 * u[2] + u[1]*u[2]
 end
-println("here4")
 
 t = 1.0
 u = [2.0,3.0]
