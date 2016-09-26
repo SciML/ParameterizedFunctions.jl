@@ -34,6 +34,7 @@ f'(t,u,J)
              3.0 -1.0]
 g = LotkaVoltera(1.0,2.0)
 g(t,u,du)
+println(du)
 @test du == [-10.0,-3.0]
 h = LotkaVoltera2(1.0,2.0)
 h(t,u,du)
