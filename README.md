@@ -1,5 +1,7 @@
 # ParameterizedFunctions.jl
 
+[![Travis](https://travis-ci.org/JuliaDiffEq/ParameterizedFunctions.jl.svg?branch=master)](https://travis-ci.org/JuliaDiffEq/ParameterizedFunctions.jl) [![AppVeyor](https://ci.appveyor.com/api/projects/status/k6b7d86ddbas1ajk?svg=true)](https://ci.appveyor.com/project/ChrisRackauckas/parameterizedfunctions-jl)
+
 `ParameterizedFunction` is a type which can be used in various JuliaDiffEq solvers where
 the parameters must be accessible by the solver function. These use call overloading
 generate a type which acts like a function `f(t,u,du)` but has access to the model
