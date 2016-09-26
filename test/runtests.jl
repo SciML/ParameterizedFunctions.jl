@@ -33,8 +33,8 @@ f'(t,u,J)
 @test J  == [-1.5 -2.0
              3.0 -1.0]
 g = LotkaVoltera(1.0,2.0)
-@test g.a == 1.0
 @test g.b == 2.0
+@test g.a == 1.0
 @test g.a * u[1] - g.b * u[1]*u[2] == -10.0
 g(t,u,du)
 @test du == [-10.0,-3.0]
