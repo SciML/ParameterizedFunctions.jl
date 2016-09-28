@@ -8,7 +8,7 @@ f = @ode_def SymCheck begin # Checks for error due to symbol on 1
   dy = -c*y + d*x*y
 end a=>1.5 b=>1 c=3 d=1
 
-f = @ode_def LotkaVoltera begin # Checks for error due to symbol on 1
+f = @ode_def LotkaVoltera begin
   dx = a*x - b*x*y
   dy = -c*y + d*x*y
 end a=>1.5 b=>1 c=3 d=1
@@ -32,7 +32,7 @@ f'(t,u,J)
 @test du == [-3.0,-3.0]
 @test J  == [-1.5 -2.0
              3.0 -1.0]
-g = LotkaVoltera(1.0,2.0)
+g = LotkaVoltera(a=1.0,b=2.0)
 @test g.b == 2.0
 @test g.a == 1.0
 @test g.a * u[1] - g.b * u[1]*u[2] == -10.0
