@@ -55,13 +55,10 @@ macro ode_def(name,ex,params...)
 
   # Build the type
   f = maketype(name,param_dict,origex,funcs,syms)
-  # Export the type
-  exportex = :(export $name)
-  @eval $exportex
   # Overload the Call
   overloadex = :(((p::$name))(t,u,du) = $fex)
   @eval $overloadex
-
+  # Add the Jacobian to '
   @eval Base.ctranspose(p::$name) = $Jex
   return f
 end
@@ -145,6 +142,10 @@ function maketype(name,param_dict,origex,funcs,syms)
         $((:($x::$(typeof(t))) for (x, t) in param_dict)...)
     end
 
+    # Export the type
+    exportex = :(export $name)
+    @eval $exportex
+
     # Make the default constructor
     new_ex = Meta.quot(origex)
     constructorex = :($(name)(;$(Expr(:kw,:origex,new_ex)),
@@ -210,9 +211,6 @@ macro fem_def(sig,name,ex,params...)
   newsig = :($(sig.args...))
   overloadex = :(((p::$name))($(sig.args...)) = $ex)
   @eval $overloadex
-  # Export the type
-  exportex = :(export $name)
-  @eval $exportex
   return f
 end
 
