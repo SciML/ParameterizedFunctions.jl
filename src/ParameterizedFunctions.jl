@@ -48,10 +48,24 @@ macro ode_def(name,ex,params...)
     Jex = build_jac_func(symjac,indvar_dict,param_dict,inline_dict)
     jac_exists = true
   catch
+    warn("Failed to build the Jacoboian.")
     jac_exists = false
     Jex = (t,u,J) -> nothing
     symjac = Matrix{SymEngine.Basic}(0,0)
   end
+
+  local fsymjac_L
+  local fsymjac_U
+  try
+    # Factorize the Jacobian
+    fsymjac = lufact(symjac)
+    fsymjac_L = fsymjac[:L]
+    fsymjac_U = fsymjac[:U]
+  catch
+    fsymjac_L = Matrix{SymEngine.Basic}(0,0)
+    fsymjac_U = Matrix{SymEngine.Basic}(0,0)
+  end
+
 
   # Build the type
   f = maketype(name,param_dict,origex,funcs,syms)
@@ -60,6 +74,7 @@ macro ode_def(name,ex,params...)
   @eval $overloadex
   # Add the Jacobian to '
   @eval Base.ctranspose(p::$name) = $Jex
+
   return f
 end
 
