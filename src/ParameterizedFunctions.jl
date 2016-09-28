@@ -9,13 +9,6 @@ getindex{s}(p::ParameterizedFunction,::Val{s}) = getfield(p,s) ## Val for type-s
 
 ### Macros
 
-#=
-function build_indep_var_dict(ex)
-
-  indvar_dict,syms
-end
-=#
-
 macro ode_def(name,ex,params...)
   origex = ex # Save the original expression
 
@@ -31,26 +24,15 @@ macro ode_def(name,ex,params...)
   fex = ex # Save this expression as the expression for the call
 
   # Get the component functions
-  funcs = Vector{Expr}(0) # Get all of the functions for symbolic computation
-  for (i,arg) in enumerate(symex.args)
-    if i%2 == 0
-      ex = arg.args[2]
-      if typeof(ex) <: Symbol
-        push!(funcs,:(1*$ex))
-      else # It's an expression, just push
-        push!(funcs,arg.args[2])
-      end
-    end
-  end
+  funcs = build_component_funcs(symex)
 
-  # Declare the symbols
-  symstr = symarr_to_symengine(syms)
-  symdefineex = Expr(:(=),parse("("*symstr*")"),SymEngine.symbols(symstr))
-  symtup = parse("("*symstr*")")
-  @eval $symdefineex
-  symtup = @eval $symtup # symtup is the tuple of SymEngine symbols
+  # Declare the SymEngine symbols
+  symtup = symbolize(syms)
 
-  #try
+  local Jex
+  local jac_exists
+  local symjac
+  try
     # Build the Jacobian Matrix of SymEngine Expressions
     numsyms = length(symtup)
     symjac = Matrix{SymEngine.Basic}(numsyms,numsyms)
@@ -65,11 +47,12 @@ macro ode_def(name,ex,params...)
     # Build the Julia function
     Jex = build_jac_func(symjac,indvar_dict,param_dict,inline_dict)
     jac_exists = true
-  #catch
-  #  jac_exists = false
-  #  Jex = (t,u,J) -> nothing
-  #end
-  
+  catch
+    jac_exists = false
+    Jex = (t,u,J) -> nothing
+    symjac = Matrix{SymEngine.Basic}(0,0)
+  end
+
   # Build the type
   f = maketype(name,param_dict,origex,funcs,syms)
   # Export the type
@@ -81,6 +64,29 @@ macro ode_def(name,ex,params...)
 
   @eval Base.ctranspose(p::$name) = $Jex
   return f
+end
+
+function build_component_funcs(symex)
+  funcs = Vector{Expr}(0) # Get all of the functions for symbolic computation
+  for (i,arg) in enumerate(symex.args)
+    if i%2 == 0
+      ex = arg.args[2]
+      if typeof(ex) <: Symbol
+        push!(funcs,:(1*$ex))
+      else # It's an expression, just push
+        push!(funcs,arg.args[2])
+      end
+    end
+  end
+  funcs
+end
+
+function symbolize(syms)
+  symstr = symarr_to_symengine(syms)
+  symdefineex = Expr(:(=),parse("("*symstr*")"),SymEngine.symbols(symstr))
+  symtup = parse("("*symstr*")")
+  @eval $symdefineex
+  symtup = @eval $symtup # symtup is the tuple of SymEngine symbols
 end
 
 function ode_findreplace(ex,symex,indvar_dict,param_dict,inline_dict)
