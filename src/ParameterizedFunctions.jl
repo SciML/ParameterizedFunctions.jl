@@ -20,28 +20,9 @@ macro ode_def(name,ex,params...)
   origex = ex # Save the original expression
 
   ## Build independent variable dictionary
-  #indvar_dict,syms = build_indep_var_dict(ex)
-  indvar_dict = OrderedDict{Symbol,Int}()
-  syms = Vector{Symbol}(0)
-  for i in 2:2:length(ex.args) #Every odd line is line number
-    arg = ex.args[i].args[1] #Get the first thing, should be dsomething
-    nodarg = Symbol(string(arg)[2:end]) #Take off the d
-    if !haskey(indvar_dict,nodarg)
-      s = string(arg)
-      indvar_dict[Symbol(string(arg)[2:end])] = i/2 # and label it the next int if not seen before
-      push!(syms,Symbol(string(arg)[2:end]))
-    end
-  end
-
-  param_dict = OrderedDict{Symbol,Any}(); inline_dict = OrderedDict{Symbol,Any}()
+  indvar_dict,syms = build_indvar_dict(ex)
   ## Build parameter and inline dictionaries
-  for i in 1:length(params)
-    if params[i].head == :(=>)
-      param_dict[params[i].args[1]] = params[i].args[2] # works for k=3, or k=>3
-    elseif params[i].head == :(=)
-      inline_dict[params[i].args[1]] = params[i].args[2] # works for k=3, or k=>3
-    end
-  end
+  param_dict, inline_dict = build_paramdicts(params)
 
   # Run find replace to make the function expression
   symex = copy(ex) # Different expression for symbolic computations
@@ -49,7 +30,7 @@ macro ode_def(name,ex,params...)
   push!(ex.args,nothing) # Make the return void
   fex = ex # Save this expression as the expression for the call
 
-  # Now do the Jacobian. Get the component functions
+  # Get the component functions
   funcs = Vector{Expr}(0) # Get all of the functions for symbolic computation
   for (i,arg) in enumerate(symex.args)
     if i%2 == 0
@@ -63,44 +44,34 @@ macro ode_def(name,ex,params...)
   end
 
   # Declare the symbols
-
   symstr = symarr_to_symengine(syms)
   symdefineex = Expr(:(=),parse("("*symstr*")"),SymEngine.symbols(symstr))
   symtup = parse("("*symstr*")")
   @eval $symdefineex
   symtup = @eval $symtup # symtup is the tuple of SymEngine symbols
+
+  #try
     # Build the Jacobian Matrix of SymEngine Expressions
-  numsyms = length(symtup)
-  symjac = Matrix{SymEngine.Basic}(numsyms,numsyms)
-  for i in eachindex(funcs)
-    funcex = funcs[i]
-    symfunc = @eval $funcex
-    for j in eachindex(symtup)
-      symjac[i,j] = diff(symfunc,symtup[j])
-    end
-  end
-  # Build the Julia function
-  Jex = :()
-  for i in 1:numsyms
-    for j in 1:numsyms
-      ex = parse(string(symjac[i,j]))
-      if typeof(ex) <: Expr
-        ode_findreplace(ex,ex,indvar_dict,param_dict,inline_dict)
-      else
-        ex = ode_symbol_findreplace(ex,indvar_dict,param_dict,inline_dict)
+    numsyms = length(symtup)
+    symjac = Matrix{SymEngine.Basic}(numsyms,numsyms)
+    for i in eachindex(funcs)
+      funcex = funcs[i]
+      symfunc = @eval $funcex
+      for j in eachindex(symtup)
+        symjac[i,j] = diff(symfunc,symtup[j])
       end
-      push!(Jex.args,:(J[$i,$j] = $ex))
     end
-  end
-  Jex.head = :block
-  push!(Jex.args,nothing)
-  Jex = :(jac = (t,u,J)->$Jex)
 
-
+    # Build the Julia function
+    Jex = build_jac_func(symjac,indvar_dict,param_dict,inline_dict)
+    jac_exists = true
+  #catch
+  #  jac_exists = false
+  #  Jex = (t,u,J) -> nothing
+  #end
+  
   # Build the type
-  f = maketype(name,param_dict,origex)
-  # Make Default constructor
-  make_default_constructor(name,param_dict,origex)
+  f = maketype(name,param_dict,origex,funcs,syms)
   # Export the type
   exportex = :(export $name)
   @eval $exportex
@@ -135,6 +106,24 @@ function ode_findreplace(ex,symex,indvar_dict,param_dict,inline_dict)
   end
 end
 
+function build_jac_func(symjac,indvar_dict,param_dict,inline_dict)
+  Jex = :()
+  for i in 1:size(symjac,1)
+    for j in 1:size(symjac,2)
+      ex = parse(string(symjac[i,j]))
+      if typeof(ex) <: Expr
+        ode_findreplace(ex,ex,indvar_dict,param_dict,inline_dict)
+      else
+        ex = ode_symbol_findreplace(ex,indvar_dict,param_dict,inline_dict)
+      end
+      push!(Jex.args,:(J[$i,$j] = $ex))
+    end
+  end
+  Jex.head = :block
+  push!(Jex.args,nothing)
+  Jex = :(jac = (t,u,J)->$Jex)
+end
+
 function ode_symbol_findreplace(ex,indvar_dict,param_dict,inline_dict)
   if haskey(indvar_dict,ex)
     ex = :(u[$(indvar_dict[ex])]) # replace with u[i]
@@ -142,34 +131,43 @@ function ode_symbol_findreplace(ex,indvar_dict,param_dict,inline_dict)
   :(1*$ex) # Add the 1 to make it an expression not a Symbol
 end
 
-function maketype(name,param_dict,origex)
+function maketype(name,param_dict,origex,funcs,syms)
     @eval type $name <: ParameterizedFunction
         origex#::Expr
+        funcs::Vector{Expr}
+        syms::Vector{Symbol}
         $((:($x::$(typeof(t))) for (x, t) in param_dict)...)
     end
-    eval(name)(origex,values(param_dict)...)
+
+    # Make the default constructor
+    new_ex = Meta.quot(origex)
+    constructorex = :($(name)(;$(Expr(:kw,:origex,new_ex)),
+                  $(Expr(:kw,:funcs,funcs)),
+                  $(Expr(:kw,:syms,syms)),
+                  $((Expr(:kw,x,t) for (x, t) in param_dict)...)) =
+                  $(name)(origex,funcs,syms,$(((x for x in keys(param_dict))...))))
+    eval(constructorex)
+
+    # Make the type instance using the default constructor
+    eval(name)()
 end
 
-function make_default_constructor(name,param_dict,origex)
-  constructorex = :($(name)(;$(Expr(:kw,:origex,:())),
-                $((Expr(:kw,x,t) for (x, t) in param_dict)...)) =
-                $(name)(origex,$(((x for x in keys(param_dict))...))))
-  eval(constructorex)
-end
-
-macro fem_def(sig,name,ex,params...)
-  origex = ex
-  ## Build Symbol dictionary
-  indvar_dict = Dict{Symbol,Int}()
-  for (i,arg) in enumerate(ex.args)
-    if i%2 == 0
-      indvar_dict[Symbol(string(arg.args[1])[2:end])] = i/2 # Change du->u, Fix i counting
+function build_indvar_dict(ex)
+  indvar_dict = OrderedDict{Symbol,Int}()
+  for i in 2:2:length(ex.args) #Every odd line is line number
+    arg = ex.args[i].args[1] #Get the first thing, should be dsomething
+    nodarg = Symbol(string(arg)[2:end]) #Take off the d
+    if !haskey(indvar_dict,nodarg)
+      s = string(arg)
+      indvar_dict[Symbol(string(arg)[2:end])] = i/2 # and label it the next int if not seen before
     end
   end
-  syms = keys(indvar_dict)
+  syms = indvar_dict.keys
+  indvar_dict,syms
+end
 
-  param_dict = Dict{Symbol,Any}(); inline_dict = Dict{Symbol,Any}()
-  ## Build parameter and inline dictionaries
+function build_paramdicts(params)
+  param_dict = OrderedDict{Symbol,Any}(); inline_dict = OrderedDict{Symbol,Any}()
   for i in 1:length(params)
     if params[i].head == :(=>)
       param_dict[params[i].args[1]] = params[i].args[2] # works for k=3, or k=>3
@@ -177,6 +175,16 @@ macro fem_def(sig,name,ex,params...)
       inline_dict[params[i].args[1]] = params[i].args[2] # works for k=3, or k=>3
     end
   end
+  param_dict,inline_dict
+end
+
+macro fem_def(sig,name,ex,params...)
+  origex = ex
+  ## Build Symbol dictionary
+  indvar_dict,syms = build_indvar_dict(ex)
+
+  param_dict, inline_dict = build_paramdicts(params)
+
   # Run find replace
   fem_findreplace(ex,indvar_dict,syms,param_dict,inline_dict)
   funcs = Vector{Expr}(0) # Get all of the functions
@@ -191,7 +199,7 @@ macro fem_def(sig,name,ex,params...)
     ex = Expr(:hcat,funcs...)
   end
   # Build the type
-  f = maketype(name,param_dict,origex)
+  f = maketype(name,param_dict,origex,funcs,syms)
   # Overload the Call
   newsig = :($(sig.args...))
   overloadex = :(((p::$name))($(sig.args...)) = $ex)

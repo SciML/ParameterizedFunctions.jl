@@ -25,7 +25,7 @@ Note that the syntax  for parameters here is that `=>` will
 put these inside the parameter type, while `=` will inline the number (i.e. replace
 each instance of `c` with `3`). Inlining slightly decreases the function cost and
 so is preferred in any case where you know that the parameter will always be constant.
-This will silently create the `LotkaVoltera` type and thus `g=LotkaVoltera(1.0,2.0)`
+This will silently create the `LotkaVoltera` type and thus `g=LotkaVoltera(a=1.0,b=2.0)`
 will create a different function where `a=1.0` and `b=2.0`. However, at any time
 the parameters of `f` can be changed by using `f.a =` or `f.b = `, or by using
 symbols: `f[:a]=` etc.
