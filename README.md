@@ -30,8 +30,10 @@ will create a different function where `a=1.0` and `b=2.0`. However, at any time
 the parameters of `f` can be changed by using `f.a =` or `f.b = `, or by using
 symbols: `f[:a]=` etc.
 
-The macro also defines the Jacobian `f'`. This is defined as an in-place Jacobian `f'(t,u,J)`.
+The macro also defines the Jacobian `f'`. This is defined as an in-place Jacobian `f(t,u,J,:Jac)`.
 This is calculated using SymEngine.jl automatically, so it's no effort on your part.
+The symbolic inverse of the Jacobian is also computed, and an in-place function
+for this is available as well as `f(t,u,iJ,:InvJac)`.
 
 ### Finite Element PDEs
 
