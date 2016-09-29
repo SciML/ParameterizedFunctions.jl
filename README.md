@@ -33,7 +33,10 @@ symbols: `f[:a]=` etc.
 The macro also defines the Jacobian `f'`. This is defined as an in-place Jacobian `f(t,u,J,:Jac)`.
 This is calculated using SymEngine.jl automatically, so it's no effort on your part.
 The symbolic inverse of the Jacobian is also computed, and an in-place function
-for this is available as well as `f(t,u,iJ,:InvJac)`.
+for this is available as well as `f(t,u,iJ,:InvJac)`. If the Jacobians cannot be
+computed, a warning is thrown and only the function itself is usable. The booleans
+`f.jac_exists` and `f.invjac_exists` can be used to see whether the Jacobian
+and the function for its inverse exist.
 
 ### Finite Element PDEs
 
