@@ -43,7 +43,7 @@ macro ode_def(name,ex,params...)
       funcex = funcs[i]
       symfunc = @eval $funcex
       for j in eachindex(symtup)
-        symjac[i,j] = diff(symfunc,symtup[j])
+        symjac[i,j] = diff(SymEngine.Basic(symfunc),symtup[j])
       end
     end
 
@@ -71,12 +71,12 @@ macro ode_def(name,ex,params...)
       invjac = inv(symjac)
       invJex = build_jac_func(invjac,indvar_dict,param_dict,inline_dict)
       invjac_exists = true
-    catch
+    catch err
       invjac = Matrix{SymEngine.Basic}(0,0)
       invJex = :()
       invjac_exists = false
     end
-  catch
+  catch err
     warn("Failed to build the Jacoboian.")
     jac_exists = false
     Jex = :((t,u,J) -> nothing)
