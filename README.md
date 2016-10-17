@@ -12,10 +12,10 @@ parameters.
 ### ODEs
 
 A helper macro is provided to make it easier to define a `ParameterizedFunction`.
-For example, to define the previous `LotkaVoltera`, you can use the following command:
+For example, to define the previous `LotkaVolterra`, you can use the following command:
 
 ```julia
-f = @ode_def LotkaVoltera begin
+f = @ode_def LotkaVolterra begin
   dx = a*x - b*x*y
   dy = -c*y + d*x*y
 end a=>1.5 b=>1 c=3 d=1
@@ -25,7 +25,7 @@ Note that the syntax  for parameters here is that `=>` will
 put these inside the parameter type, while `=` will inline the number (i.e. replace
 each instance of `c` with `3`). Inlining slightly decreases the function cost and
 so is preferred in any case where you know that the parameter will always be constant.
-This will silently create the `LotkaVoltera` type and thus `g=LotkaVoltera(a=1.0,b=2.0)`
+This will silently create the `LotkaVolterra` type and thus `g=LotkaVolterra(a=1.0,b=2.0)`
 will create a different function where `a=1.0` and `b=2.0`. However, at any time
 the parameters of `f` can be changed by using `f.a =` or `f.b = `, or by using
 symbols: `f[:a]=` etc.
@@ -67,12 +67,12 @@ which is in the form for the FEM solver.
 An example of explicitly defining a parameterized function is as follows:
 
 ```julia
-type  LotkaVoltera <: ParameterizedFunction
+type  LotkaVolterra <: ParameterizedFunction
          a::Float64
          b::Float64
 end
-f = LotkaVoltera(0.0,0.0)
-(p::LotkaVoltera)(t,u,du) = begin
+f = LotkaVolterra(0.0,0.0)
+(p::LotkaVolterra)(t,u,du) = begin
          du[1] = p.a * u[1] - p.b * u[1]*u[2]
          du[2] = -3 * u[2] + u[1]*u[2]
 end
@@ -100,13 +100,13 @@ function g(t,u,du)
 end
 ```
 
-by using the command `g = LotkaVoltera(1.0,2.0)`.
+by using the command `g = LotkaVolterra(1.0,2.0)`.
 
 Note that the Jacobian overload is achieved by overloading
 `Base.ctranspose`, and in the example corresponds to
 
 ```julia
-function Base.ctranspose(p::LotkaVoltera) = (t,u,J) -> begin
+function Base.ctranspose(p::LotkaVolterra) = (t,u,J) -> begin
   J[1,1] = p.a-p.b
   J[1,2] = -p.b
   J[2,1] = u[2]

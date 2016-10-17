@@ -9,16 +9,16 @@ f = @ode_def SymCheck begin # Checks for error due to symbol on 1
   dy = -c*y + d*x*y
 end a=>1.5 b=>1 c=3 d=1
 
-f = @ode_def LotkaVoltera begin
+f = @ode_def LotkaVolterra begin
   dx = a*x - b*x*y
   dy = -c*y + d*x*y
 end a=>1.5 b=>1 c=3 d=1
 
-type  LotkaVoltera2 <: ParameterizedFunction
+type  LotkaVolterra2 <: ParameterizedFunction
          a::Float64
          b::Int64
 end
-(p::LotkaVoltera2)(t,u,du) = begin
+(p::LotkaVolterra2)(t,u,du) = begin
          du[1] = p.a * u[1] - p.b * u[1]*u[2]
          du[2] = -3 * u[2] + u[1]*u[2]
 end
@@ -40,13 +40,13 @@ f(t,u,iJ,:InvJac)
 @test minimum(iJ - inv(J) .< 1e-10)
 
 println("Test using new parameters")
-g = LotkaVoltera(a=1.0,b=2.0)
+g = LotkaVolterra(a=1.0,b=2.0)
 @test g.b == 2.0
 @test g.a == 1.0
 @test g.a * u[1] - g.b * u[1]*u[2] == -10.0
 g(t,u,du)
 @test du == [-10.0,-3.0]
-h = LotkaVoltera2(1.0,2.0)
+h = LotkaVolterra2(1.0,2.0)
 h(t,u,du)
 @test du == [-10.0,-3.0]
 
