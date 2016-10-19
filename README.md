@@ -213,6 +213,7 @@ end
 
 The Inverse Jacobian overload is provided by overloading in the following manner:
 
+```julia
 function (p::LotkaVolterra)(t,u,du,J,::Type{Val{:Jac}})
   J[1,1] = (1 - (p.b * u[1] * u[2]) / ((p.a - p.b * u[2]) * (-3 + u[1] + (p.b * u[1] * u[2]) / (p.a - p.b * u[2])))) / (p.a - p.b * u[2])
   J[1,2] = (p.b * u[1]) / ((p.a - p.b * u[2]) * (-3 + u[1] + (p.b * u[1] * u[2]) / (p.a - p.b * u[2])))
@@ -220,6 +221,11 @@ function (p::LotkaVolterra)(t,u,du,J,::Type{Val{:Jac}})
   J[2,2] = (-3 + u[1] + (p.b * u[1] * u[2]) / (p.a - p.b * u[2])) ^ -1
   nothing
 end
+```
+
+#### Hessian and Inverse Hessian
+
+These are the same as the Jacobians, except with value types `:Hes` and `:InvHes`.
 
 #### Explicit Parameter Functions
 
