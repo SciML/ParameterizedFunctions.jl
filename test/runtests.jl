@@ -45,6 +45,14 @@ f(t,u,iJ,:InvJac)
              3.0 -1.0]
 @test minimum(iJ - inv(J) .< 1e-10)
 
+println("Test Hessians")
+H = J
+iH = iJ
+f(t,u,H,:Hes)
+@test_throws ErrorException f(t,u,iH,:InvHes)
+@test J  == [0.0 0.0
+             0.0 0.0]
+
 println("Test using new parameters")
 g = LotkaVolterra(a=1.0,b=2.0)
 @test g.b == 2.0
@@ -59,7 +67,10 @@ h(t,u,du)
 println("Test booleans")
 @test f.jac_exists == true
 @test f.invjac_exists == true
+@test f.hes_exists == true
+@test f.invhes_exists == false
 @test f.pderiv_exists == true
+@test f.pfuncs_exists == true
 
 println("Test non-differentiable")
 NJ = @ode_def NoJacTest begin

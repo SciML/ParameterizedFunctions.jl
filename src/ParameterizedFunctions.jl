@@ -30,13 +30,19 @@ macro ode_def(name,ex,params...)
   symtup,paramtup = symbolize(syms,param_dict.keys)
 
   # Jacobian Calculation
-  local Jex
-  local jac_exists
-  local symjac
-  local invjac
-  local invJex
-  local invjac_exists
-  try #Jacobians
+  symjac = Matrix{SymEngine.Basic}(0,0)
+  invjac = Matrix{SymEngine.Basic}(0,0)
+  symhes = Matrix{SymEngine.Basic}(0,0)
+  invhes = Matrix{SymEngine.Basic}(0,0)
+  Jex = :(error("Jacobian Does Not Exist"))
+  jac_exists = false
+  invJex = :(error("Inverse Jacobian Does Not Exist"))
+  invjac_exists = false
+  Hex = :(error("Hessian Does Not Exist"))
+  hes_exists = false
+  invHex = :(error("Inverse Hessian Does Not Exist"))
+  invhes_exists = false
+  try #Jacobians and Hessian
     # Build the Jacobian Matrix of SymEngine Expressions
     numsyms = length(symtup)
     symjac = Matrix{SymEngine.Basic}(numsyms,numsyms)
@@ -57,18 +63,29 @@ macro ode_def(name,ex,params...)
       invJex = build_jac_func(invjac,indvar_dict,param_dict,inline_dict)
       invjac_exists = true
     catch err
-      invjac = Matrix{SymEngine.Basic}(0,0)
-      invJex = :()
-      invjac_exists = false
+      warn("Jacobian could not invert")
     end
+
+    try # Hessian
+      symhes = Matrix{SymEngine.Basic}(numsyms,numsyms)
+      for i in eachindex(funcs), j in eachindex(symtup)
+        symhes[i,j] = diff(symjac[i,j],symtup[j])
+      end
+      # Build the Julia function
+      Hex = build_jac_func(symhes,indvar_dict,param_dict,inline_dict)
+      hes_exists = true
+
+      try # Hessian Inverse
+        invhes = inv(symhes)
+        invHex = build_jac_func(invhes,indvar_dict,param_dict,inline_dict)
+        invhes_exists = true
+      catch err
+        warn("Hessian could not invert")
+      end
+    end
+
   catch err
-    warn("Failed to build the Jacoboian.")
-    jac_exists = false
-    Jex = :((t,u,J) -> nothing)
-    symjac = Matrix{SymEngine.Basic}(0,0)
-    invjac = Matrix{SymEngine.Basic}(0,0)
-    invJex = :()
-    invjac_exists = false
+    warn("Failed to build the Jacoboian. This means the Hessian is not built as well.")
   end
 
   # Parameter function calculations
@@ -115,7 +132,10 @@ macro ode_def(name,ex,params...)
   # Build the type
   f = maketype(name,param_dict,origex,funcs,syms,fex,jac_exists=jac_exists,
                invjac_exists=invjac_exists,symjac=symjac,Jex=Jex,invjac=invjac,
-               invJex=invJex,pfuncs=pfuncs,d_pfuncs=d_pfuncs,pderiv_exists=pderiv_exists)
+               invJex=invJex,symhes=symhes,invhes=invhes,Hex=Hex,hes_exists=hes_exists,
+               invHex=invHex,invhes_exists=invhes_exists,
+               pfuncs=pfuncs,d_pfuncs=d_pfuncs,
+               pderiv_exists=pderiv_exists)
   # Overload the Call
   overloadex = :(((p::$name))(t,u,du) = $fex)
   @eval $overloadex
@@ -145,12 +165,17 @@ macro ode_def(name,ex,params...)
   # Add the Inverse Jacobian
   overloadex = :(((p::$name))(t,u,J,::Type{Val{:InvJac}}) = $invJex)
   @eval $overloadex
+  # Add the Hessian
+  overloadex = :(((p::$name))(t,u,J,::Type{Val{:Hes}}) = $Hex)
+  @eval $overloadex
+  # Add the Inverse Hessian
+  overloadex = :(((p::$name))(t,u,J,::Type{Val{:InvHes}}) = $invHex)
+  @eval $overloadex
   # Add the Symbol Dispatches
   overloadex = :(((p::$name))(t,u,du,sym::Symbol) = p(t,u,du,Val{sym}))
   @eval $overloadex
   overloadex = :(((p::$name))(t,u,param,du,sym::Symbol) = p(t,u,param,du,Val{sym}))
   @eval $overloadex
-
   overloadex = :(((p::$name))(t,u,param,du,sym::Symbol,sym2::Symbol) = p(t,u,param,du,Val{sym},Val{sym2}))
   @eval $overloadex
 
@@ -264,9 +289,15 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
                   symjac=Matrix{SymEngine.Basic}(0,0),
                   Jex=:(),invjac=Matrix{SymEngine.Basic}(0,0),
                   invJex=:(),
+                  symhes = Matrix{SymEngine.Basic}(0,0),
+                  invhes = Matrix{SymEngine.Basic}(0,0),
+                  Hex = :(),
+                  hes_exists = false,
+                  invHex = :(),
+                  invhes_exists = false,
                   pfuncs=Vector{Expr}(0),
                   d_pfuncs = Vector{Expr}(0),
-                  pderiv_exists=false)
+                  pderiv_exists=false,pfuncs_exists=true)
     @eval type $name <: ParameterizedFunction
         origex::Expr
         funcs::Vector{Expr}
@@ -275,11 +306,18 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
         syms::Vector{Symbol}
         symjac::Matrix{SymEngine.Basic}
         invjac::Matrix{SymEngine.Basic}
+        symhes::Matrix{SymEngine.Basic}
+        invhes::Matrix{SymEngine.Basic}
         Jex::Expr
         invJex::Expr
+        Hex::Expr
+        invHex::Expr
         fex::Expr
         jac_exists::Bool
         invjac_exists::Bool
+        hes_exists::Bool
+        invhes_exists::Bool
+        pfuncs_exists::Bool
         pderiv_exists::Bool
         $((:($x::$(typeof(t))) for (x, t) in param_dict)...)
     end
@@ -292,6 +330,8 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
     new_ex = Meta.quot(origex)
     Jex_ex = Meta.quot(Jex)
     invJex_ex = Meta.quot(invJex)
+    Hex_ex = Meta.quot(Hex)
+    invHex_ex = Meta.quot(invHex)
     fex_ex = Meta.quot(fex)
     constructorex = :($(name)(;$(Expr(:kw,:origex,new_ex)),
                   $(Expr(:kw,:funcs,funcs)),
@@ -300,14 +340,27 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
                   $(Expr(:kw,:syms,syms)),
                   $(Expr(:kw,:symjac,symjac)),
                   $(Expr(:kw,:invjac,invjac)),
+                  $(Expr(:kw,:symhes,symhes)),
+                  $(Expr(:kw,:invhes,invhes)),
                   $(Expr(:kw,:Jex,Jex_ex)),
                   $(Expr(:kw,:invJex,invJex_ex)),
+                  $(Expr(:kw,:Hex,Hex_ex)),
+                  $(Expr(:kw,:invHex,invHex_ex)),
                   $(Expr(:kw,:fex,fex_ex)),
                   $(Expr(:kw,:jac_exists,jac_exists)),
                   $(Expr(:kw,:invjac_exists,invjac_exists)),
+                  $(Expr(:kw,:hes_exists,hes_exists)),
+                  $(Expr(:kw,:invhes_exists,invhes_exists)),
+                  $(Expr(:kw,:pfuncs_exists,pfuncs_exists)),
                   $(Expr(:kw,:pderiv_exists,pderiv_exists)),
                   $((Expr(:kw,x,t) for (x, t) in param_dict)...)) =
-                  $(name)(origex,funcs,pfuncs,d_pfuncs,syms,symjac,invjac,Jex,invJex,fex,jac_exists,invjac_exists,pderiv_exists,$(((x for x in keys(param_dict))...))))
+                  $(name)(origex,funcs,pfuncs,d_pfuncs,syms,
+                  symjac,invjac,symhes,invhes,
+                  Jex,invJex,Hex,invHex,fex,
+                  jac_exists,invjac_exists,
+                  hes_exists,invhes_exists,
+                  pfuncs_exists,pderiv_exists,
+                  $(((x for x in keys(param_dict))...))))
     eval(constructorex)
 
     # Make the type instance using the default constructor
