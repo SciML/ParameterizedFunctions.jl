@@ -59,6 +59,7 @@ h(t,u,du)
 println("Test booleans")
 @test f.jac_exists == true
 @test f.invjac_exists == true
+@test f.pderiv_exists == true
 
 println("Test non-differentiable")
 NJ = @ode_def NoJacTest begin

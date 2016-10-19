@@ -115,7 +115,7 @@ macro ode_def(name,ex,params...)
   # Build the type
   f = maketype(name,param_dict,origex,funcs,syms,fex,jac_exists=jac_exists,
                invjac_exists=invjac_exists,symjac=symjac,Jex=Jex,invjac=invjac,
-               invJex=invJex,pfuncs=pfuncs,d_pfuncs=d_pfuncs)
+               invJex=invJex,pfuncs=pfuncs,d_pfuncs=d_pfuncs,pderiv_exists=pderiv_exists)
   # Overload the Call
   overloadex = :(((p::$name))(t,u,du) = $fex)
   @eval $overloadex
@@ -265,7 +265,8 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
                   Jex=:(),invjac=Matrix{SymEngine.Basic}(0,0),
                   invJex=:(),
                   pfuncs=Vector{Expr}(0),
-                  d_pfuncs = Vector{Expr}(0))
+                  d_pfuncs = Vector{Expr}(0),
+                  pderiv_exists=false)
     @eval type $name <: ParameterizedFunction
         origex::Expr
         funcs::Vector{Expr}
@@ -279,6 +280,7 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
         fex::Expr
         jac_exists::Bool
         invjac_exists::Bool
+        pderiv_exists::Bool
         $((:($x::$(typeof(t))) for (x, t) in param_dict)...)
     end
 
@@ -303,8 +305,9 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
                   $(Expr(:kw,:fex,fex_ex)),
                   $(Expr(:kw,:jac_exists,jac_exists)),
                   $(Expr(:kw,:invjac_exists,invjac_exists)),
+                  $(Expr(:kw,:pderiv_exists,pderiv_exists)),
                   $((Expr(:kw,x,t) for (x, t) in param_dict)...)) =
-                  $(name)(origex,funcs,pfuncs,d_pfuncs,syms,symjac,invjac,Jex,invJex,fex,jac_exists,invjac_exists,$(((x for x in keys(param_dict))...))))
+                  $(name)(origex,funcs,pfuncs,d_pfuncs,syms,symjac,invjac,Jex,invJex,fex,jac_exists,invjac_exists,pderiv_exists,$(((x for x in keys(param_dict))...))))
     eval(constructorex)
 
     # Make the type instance using the default constructor
