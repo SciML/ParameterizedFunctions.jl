@@ -32,6 +32,12 @@ iJ= zeros(2,2)
 f(t,u,du)
 @test du == [-3.0,-3.0]
 
+println("Test Explicit Parameter Functions")
+f(t,u,2.0,du,:a)
+@test du == [-2.0,-3.0]
+f(t,u,2.0,du,:a,:Deriv)
+@test du == [2.0,0.0]
+
 println("Test Jacobians")
 f(t,u,J,:Jac)
 f(t,u,iJ,:InvJac)

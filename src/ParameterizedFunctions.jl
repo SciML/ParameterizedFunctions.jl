@@ -27,15 +27,16 @@ macro ode_def(name,ex,params...)
   funcs = build_component_funcs(symex)
 
   # Declare the SymEngine symbols
-  symtup = symbolize(syms,param_dict.keys)
+  symtup,paramtup = symbolize(syms,param_dict.keys)
 
+  # Jacobian Calculation
   local Jex
   local jac_exists
   local symjac
   local invjac
   local invJex
   local invjac_exists
-  try
+  try #Jacobians
     # Build the Jacobian Matrix of SymEngine Expressions
     numsyms = length(symtup)
     symjac = Matrix{SymEngine.Basic}(numsyms,numsyms)
@@ -51,23 +52,7 @@ macro ode_def(name,ex,params...)
     Jex = build_jac_func(symjac,indvar_dict,param_dict,inline_dict)
     jac_exists = true
 
-    #=
-    local fsymjac_L
-    local fsymjac_U
-    local Jex_L
-    local Jex_U
-    try
-      # Factorize the Jacobian
-      fsymjac = lufact(symjac)
-      fsymjac_L = fsymjac[:L]
-      fsymjac_U = fsymjac[:U]
-      Jex_L,Jex_U = build_fjac_func(fsymjac_L,fsymjac_U,indvar_dict,param_dict,inline_dict)
-    catch
-      fsymjac_L = Matrix{SymEngine.Basic}(0,0)
-      fsymjac_U = Matrix{SymEngine.Basic}(0,0)
-    end
-    =#
-    try
+    try # Jacobian Inverse
       invjac = inv(symjac)
       invJex = build_jac_func(invjac,indvar_dict,param_dict,inline_dict)
       invjac_exists = true
@@ -86,20 +71,87 @@ macro ode_def(name,ex,params...)
     invjac_exists = false
   end
 
+  # Parameter function calculations
+  numparams = length(paramtup)
+  # Parameter Functions
+  paramfuncs = Vector{Vector{Expr}}(numparams)
+  for i in eachindex(paramtup)
+    tmp_pfunc = Vector{Expr}(length(funcs))
+    for j in eachindex(funcs)
+      tmp_pfunc[j] = copy(funcs[j])
+    end
+    paramfuncs[i] = tmp_pfunc
+  end
+  pfuncs = build_p_funcs(paramfuncs,paramtup,indvar_dict,param_dict,inline_dict)
+
+  local d_pfuncs
+  local pderiv_exists
+  try # Parameter Gradients
+    d_paramfuncs  = Vector{Vector{Expr}}(numparams)
+    for i in eachindex(paramtup)
+      tmp_dpfunc = Vector{Expr}(length(funcs))
+      for j in eachindex(funcs)
+        funcex = funcs[j]
+        symfunc = @eval $funcex
+        symfunc_str = parse(string(diff(SymEngine.Basic(symfunc),paramtup[i])))
+        if typeof(symfunc_str) <: Number
+          tmp_dpfunc[j] = :(1*$symfunc_str)
+        elseif typeof(symfunc_str) <: Symbol
+          tmp_dpfunc[j] = :(1*$symfunc_str)
+        else
+          tmp_dpfunc[j] = symfunc_str
+        end
+      end
+      d_paramfuncs[i] = tmp_dpfunc
+    end
+    d_pfuncs = build_p_funcs(d_paramfuncs,paramtup,indvar_dict,param_dict,inline_dict)
+    pderiv_exists = true
+  catch err
+    warn("Failed to build the parameter derivatives.")
+    d_pfuncs = Vector{Expr}(0)
+    pderiv_exists = false
+  end
+
   # Build the type
   f = maketype(name,param_dict,origex,funcs,syms,fex,jac_exists=jac_exists,
-               invjac_exists=invjac_exists,symjac=symjac,Jex=Jex,invjac=invjac,invJex=invJex)
+               invjac_exists=invjac_exists,symjac=symjac,Jex=Jex,invjac=invjac,
+               invJex=invJex,pfuncs=pfuncs,d_pfuncs=d_pfuncs)
   # Overload the Call
   overloadex = :(((p::$name))(t,u,du) = $fex)
   @eval $overloadex
+  # Value Dispatches for the Parameters
+  for i in 1:length(paramtup)
+    param = Symbol(paramtup[i])
+    param_func = pfuncs[i]
+    param_valtype = Val{param}
+    overloadex = :(((p::$name))(t,u,$param,du,::Type{$param_valtype}) = $param_func)
+    @eval $overloadex
+  end
+
+  # Value Dispatches for the Parameter Derivatives
+  if pderiv_exists
+    for i in 1:length(paramtup)
+      param = Symbol(paramtup[i])
+      param_func = d_pfuncs[i]
+      param_valtype = Val{param}
+      overloadex = :(((p::$name))(t,u,$param,du,::Type{$param_valtype},::Type{Val{:Deriv}}) = $param_func)
+      @eval $overloadex
+    end
+  end
+
   # Add the Jacobian
   overloadex = :(((p::$name))(t,u,J,::Type{Val{:Jac}}) = $Jex)
   @eval $overloadex
   # Add the Inverse Jacobian
   overloadex = :(((p::$name))(t,u,J,::Type{Val{:InvJac}}) = $invJex)
   @eval $overloadex
-  # Add the Symbol Dispatch
+  # Add the Symbol Dispatches
   overloadex = :(((p::$name))(t,u,du,sym::Symbol) = p(t,u,du,Val{sym}))
+  @eval $overloadex
+  overloadex = :(((p::$name))(t,u,param,du,sym::Symbol) = p(t,u,param,du,Val{sym}))
+  @eval $overloadex
+
+  overloadex = :(((p::$name))(t,u,param,du,sym::Symbol,sym2::Symbol) = p(t,u,param,du,Val{sym},Val{sym2}))
   @eval $overloadex
 
   return f
@@ -122,11 +174,15 @@ end
 
 function symbolize(syms,param_dict_keys)
   symstr = symarr_to_symengine(syms)
+  paramstr = symarr_to_symengine(param_dict_keys)
   full_symstr = symarr_to_symengine([syms;param_dict_keys])
   symdefineex = Expr(:(=),parse("("*full_symstr*")"),SymEngine.symbols(full_symstr))
   symtup = parse("("*symstr*")")
   @eval $symdefineex
   symtup = @eval $symtup # symtup is the tuple of SymEngine symbols for independent variables
+  paramtup = parse("("*paramstr*")")
+  paramtup = @eval $paramtup
+  symtup,paramtup
 end
 
 function ode_findreplace(ex,symex,indvar_dict,param_dict,inline_dict)
@@ -170,45 +226,28 @@ function build_jac_func(symjac,indvar_dict,param_dict,inline_dict)
   Jex
 end
 
-"""
-Builds the LU-factorized Jacobian functions
-"""
-function build_fjac_func(symjac_L,symjac_U,indvar_dict,param_dict,inline_dict)
-  # Lower Triangle
-  Jex = :()
-  for i in 1:size(symjac_L,1)
-    for j in 1:i
-      ex = parse(string(symjac_L[i,j]))
+function build_p_funcs(paramfuncs,paramtup,indvar_dict,param_dict,inline_dict)
+  pfuncs = Vector{Expr}(length(paramtup))
+  param_dict_type = typeof(param_dict)
+  for i in 1:length(paramtup)
+    pfunc = :()
+    param = Symbol(paramtup[i])
+    param_dict_drop_cur = deepcopy(param_dict)
+    delete!(param_dict_drop_cur,param)
+    for j in 1:length(paramfuncs)
+      ex = paramfuncs[i][j]
       if typeof(ex) <: Expr
-        ode_findreplace(ex,ex,indvar_dict,param_dict,inline_dict)
+        ode_findreplace(ex,copy(ex),indvar_dict,param_dict_drop_cur,inline_dict)
       else
-        ex = ode_symbol_findreplace(ex,indvar_dict,param_dict,inline_dict)
+        ex = ode_symbol_findreplace(ex,indvar_dict,param_dict_drop_cur,inline_dict)
       end
-      push!(Jex.args,:(J[$i,$j] = $ex))
+      push!(pfunc.args,:(du[$j] = $ex))
     end
+    pfunc.head = :block
+    push!(pfunc.args,nothing)
+    pfuncs[i] = pfunc
   end
-  Jex.head = :block
-  push!(Jex.args,nothing)
-  Jex_L = :(jac = (t,u,J)->$Jex)
-
-  # Upper Triangle
-  Jex = :()
-  for j in 1:size(symjac_U,2)
-    for i in 1:j
-      ex = parse(string(symjac_U[i,j]))
-      if typeof(ex) <: Expr
-        ode_findreplace(ex,ex,indvar_dict,param_dict,inline_dict)
-      else
-        ex = ode_symbol_findreplace(ex,indvar_dict,param_dict,inline_dict)
-      end
-      push!(Jex.args,:(J[$i,$j] = $ex))
-    end
-  end
-  Jex.head = :block
-  push!(Jex.args,nothing)
-  Jex_U = :(jac = (t,u,J)->$Jex)
-
-  Jex_L,Jex_U
+  pfuncs
 end
 
 function ode_symbol_findreplace(ex,indvar_dict,param_dict,inline_dict)
@@ -222,10 +261,16 @@ end
 
 function maketype(name,param_dict,origex,funcs,syms,fex;
                   jac_exists=false,invjac_exists=false,
-                  symjac=Matrix{SymEngine.Basic}(0,0),Jex=:(),invjac=Matrix{SymEngine.Basic}(0,0),invJex=:())
+                  symjac=Matrix{SymEngine.Basic}(0,0),
+                  Jex=:(),invjac=Matrix{SymEngine.Basic}(0,0),
+                  invJex=:(),
+                  pfuncs=Vector{Expr}(0),
+                  d_pfuncs = Vector{Expr}(0))
     @eval type $name <: ParameterizedFunction
         origex::Expr
         funcs::Vector{Expr}
+        pfuncs::Vector{Expr}
+        d_pfuncs::Vector{Expr}
         syms::Vector{Symbol}
         symjac::Matrix{SymEngine.Basic}
         invjac::Matrix{SymEngine.Basic}
@@ -248,6 +293,8 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
     fex_ex = Meta.quot(fex)
     constructorex = :($(name)(;$(Expr(:kw,:origex,new_ex)),
                   $(Expr(:kw,:funcs,funcs)),
+                  $(Expr(:kw,:pfuncs,pfuncs)),
+                  $(Expr(:kw,:d_pfuncs,d_pfuncs)),
                   $(Expr(:kw,:syms,syms)),
                   $(Expr(:kw,:symjac,symjac)),
                   $(Expr(:kw,:invjac,invjac)),
@@ -257,7 +304,7 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
                   $(Expr(:kw,:jac_exists,jac_exists)),
                   $(Expr(:kw,:invjac_exists,invjac_exists)),
                   $((Expr(:kw,x,t) for (x, t) in param_dict)...)) =
-                  $(name)(origex,funcs,syms,symjac,invjac,Jex,invJex,fex,jac_exists,invjac_exists,$(((x for x in keys(param_dict))...))))
+                  $(name)(origex,funcs,pfuncs,d_pfuncs,syms,symjac,invjac,Jex,invJex,fex,jac_exists,invjac_exists,$(((x for x in keys(param_dict))...))))
     eval(constructorex)
 
     # Make the type instance using the default constructor
@@ -360,3 +407,69 @@ const FEM_SYMBOL_DICT = Dict{Symbol,Expr}(:x=>:(x[:,1]),:y=>:(x[:,2]),:z=>:(x[:,
 
 export ParameterizedFunction, @ode_def, @fem_def
 end # module
+
+
+
+
+##### Extra
+
+# Jacobian Factorization
+
+#=
+local fsymjac_L
+local fsymjac_U
+local Jex_L
+local Jex_U
+try
+  # Factorize the Jacobian
+  fsymjac = lufact(symjac)
+  fsymjac_L = fsymjac[:L]
+  fsymjac_U = fsymjac[:U]
+  Jex_L,Jex_U = build_fjac_func(fsymjac_L,fsymjac_U,indvar_dict,param_dict,inline_dict)
+catch
+  fsymjac_L = Matrix{SymEngine.Basic}(0,0)
+  fsymjac_U = Matrix{SymEngine.Basic}(0,0)
+end
+
+"""
+Builds the LU-factorized Jacobian functions
+"""
+function build_fjac_func(symjac_L,symjac_U,indvar_dict,param_dict,inline_dict)
+  # Lower Triangle
+  Jex = :()
+  for i in 1:size(symjac_L,1)
+    for j in 1:i
+      ex = parse(string(symjac_L[i,j]))
+      if typeof(ex) <: Expr
+        ode_findreplace(ex,ex,indvar_dict,param_dict,inline_dict)
+      else
+        ex = ode_symbol_findreplace(ex,indvar_dict,param_dict,inline_dict)
+      end
+      push!(Jex.args,:(J[$i,$j] = $ex))
+    end
+  end
+  Jex.head = :block
+  push!(Jex.args,nothing)
+  Jex_L = :(jac = (t,u,J)->$Jex)
+
+  # Upper Triangle
+  Jex = :()
+  for j in 1:size(symjac_U,2)
+    for i in 1:j
+      ex = parse(string(symjac_U[i,j]))
+      if typeof(ex) <: Expr
+        ode_findreplace(ex,ex,indvar_dict,param_dict,inline_dict)
+      else
+        ex = ode_symbol_findreplace(ex,indvar_dict,param_dict,inline_dict)
+      end
+      push!(Jex.args,:(J[$i,$j] = $ex))
+    end
+  end
+  Jex.head = :block
+  push!(Jex.args,nothing)
+  Jex_U = :(jac = (t,u,J)->$Jex)
+
+  Jex_L,Jex_U
+end
+
+=#
