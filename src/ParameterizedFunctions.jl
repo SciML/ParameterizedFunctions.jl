@@ -467,13 +467,18 @@ end
 const FEM_SYMBOL_DICT = Dict{Symbol,Expr}(:x=>:(x[:,1]),:y=>:(x[:,2]),:z=>:(x[:,3]))
 
 macro ode_def(name,ex,params...)
-  opts = Dict{Symbol,Bool}(
-  :build_Jac => true,
-  :build_InvJac => true,
-  :build_Hes => true,
-  :build_InvHes => true,
-  :build_dpfuncs => true)
-  ode_def_opts(name,opts,ex,params...)
+  name_ex = Meta.quot(name)
+  ex_ex = Meta.quot(ex)
+  params = Meta.quot(params)
+  quote
+    opts = Dict{Symbol,Bool}(
+    :build_Jac => true,
+    :build_InvJac => true,
+    :build_Hes => true,
+    :build_InvHes => true,
+    :build_dpfuncs => true)
+    ode_def_opts($(esc(name_ex)),opts,$(esc(ex_ex)),$(esc(params))...)
+  end
 end
 
 export ParameterizedFunction, @ode_def, @fem_def, ode_def_opts
