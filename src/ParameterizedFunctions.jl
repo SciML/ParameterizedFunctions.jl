@@ -9,7 +9,7 @@ getindex{s}(p::ParameterizedFunction,::Val{s}) = getfield(p,s) ## Val for type-s
 
 ### Macros
 
-macro ode_def(name,ex,params...)
+function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...)
   origex = ex # Save the original expression
 
   ## Build independent variable dictionary
@@ -42,50 +42,55 @@ macro ode_def(name,ex,params...)
   hes_exists = false
   invHex = :(error("Inverse Hessian Does Not Exist"))
   invhes_exists = false
-  try #Jacobians and Hessian
-    # Build the Jacobian Matrix of SymEngine Expressions
-    numsyms = length(symtup)
-    symjac = Matrix{SymEngine.Basic}(numsyms,numsyms)
-    for i in eachindex(funcs)
-      funcex = funcs[i]
-      symfunc = @eval $funcex
-      for j in eachindex(symtup)
-        symjac[i,j] = diff(SymEngine.Basic(symfunc),symtup[j])
+  if opts[:build_Jac]
+    try #Jacobians and Hessian
+      # Build the Jacobian Matrix of SymEngine Expressions
+      numsyms = length(symtup)
+      symjac = Matrix{SymEngine.Basic}(numsyms,numsyms)
+      for i in eachindex(funcs)
+        funcex = funcs[i]
+        symfunc = @eval $funcex
+        for j in eachindex(symtup)
+          symjac[i,j] = diff(SymEngine.Basic(symfunc),symtup[j])
+        end
       end
-    end
 
-    # Build the Julia function
-    Jex = build_jac_func(symjac,indvar_dict,param_dict,inline_dict)
-    jac_exists = true
-
-    try # Jacobian Inverse
-      invjac = inv(symjac)
-      invJex = build_jac_func(invjac,indvar_dict,param_dict,inline_dict)
-      invjac_exists = true
-    catch err
-      warn("Jacobian could not invert")
-    end
-
-    try # Hessian
-      symhes = Matrix{SymEngine.Basic}(numsyms,numsyms)
-      for i in eachindex(funcs), j in eachindex(symtup)
-        symhes[i,j] = diff(symjac[i,j],symtup[j])
-      end
       # Build the Julia function
-      Hex = build_jac_func(symhes,indvar_dict,param_dict,inline_dict)
-      hes_exists = true
+      Jex = build_jac_func(symjac,indvar_dict,param_dict,inline_dict)
+      jac_exists = true
 
-      try # Hessian Inverse
-        invhes = inv(symhes)
-        invHex = build_jac_func(invhes,indvar_dict,param_dict,inline_dict)
-        invhes_exists = true
-      catch err
-        warn("Hessian could not invert")
+      if opts[:build_InvJac]
+        try # Jacobian Inverse
+          invjac = inv(symjac)
+          invJex = build_jac_func(invjac,indvar_dict,param_dict,inline_dict)
+          invjac_exists = true
+        catch err
+          warn("Jacobian could not invert")
+        end
       end
+      if opts[:build_Hes]
+        try # Hessian
+          symhes = Matrix{SymEngine.Basic}(numsyms,numsyms)
+          for i in eachindex(funcs), j in eachindex(symtup)
+            symhes[i,j] = diff(symjac[i,j],symtup[j])
+          end
+          # Build the Julia function
+          Hex = build_jac_func(symhes,indvar_dict,param_dict,inline_dict)
+          hes_exists = true
+          if opts[:build_InvHes]
+            try # Hessian Inverse
+              invhes = inv(symhes)
+              invHex = build_jac_func(invhes,indvar_dict,param_dict,inline_dict)
+              invhes_exists = true
+            catch err
+              warn("Hessian could not invert")
+            end
+          end
+        end
+      end
+    catch err
+      warn("Failed to build the Jacoboian. This means the Hessian is not built as well.")
     end
-
-  catch err
-    warn("Failed to build the Jacoboian. This means the Hessian is not built as well.")
   end
 
   # Parameter function calculations
@@ -101,32 +106,32 @@ macro ode_def(name,ex,params...)
   end
   pfuncs = build_p_funcs(paramfuncs,paramtup,indvar_dict,param_dict,inline_dict)
 
-  local d_pfuncs
-  local pderiv_exists
-  try # Parameter Gradients
-    d_paramfuncs  = Vector{Vector{Expr}}(numparams)
-    for i in eachindex(paramtup)
-      tmp_dpfunc = Vector{Expr}(length(funcs))
-      for j in eachindex(funcs)
-        funcex = funcs[j]
-        symfunc = @eval $funcex
-        symfunc_str = parse(string(diff(SymEngine.Basic(symfunc),paramtup[i])))
-        if typeof(symfunc_str) <: Number
-          tmp_dpfunc[j] = :(1*$symfunc_str)
-        elseif typeof(symfunc_str) <: Symbol
-          tmp_dpfunc[j] = :(1*$symfunc_str)
-        else
-          tmp_dpfunc[j] = symfunc_str
+  d_pfuncs = Vector{Expr}(0)
+  pderiv_exists = false
+  if opts[:build_dpfuncs]
+    try # Parameter Gradients
+      d_paramfuncs  = Vector{Vector{Expr}}(numparams)
+      for i in eachindex(paramtup)
+        tmp_dpfunc = Vector{Expr}(length(funcs))
+        for j in eachindex(funcs)
+          funcex = funcs[j]
+          symfunc = @eval $funcex
+          symfunc_str = parse(string(diff(SymEngine.Basic(symfunc),paramtup[i])))
+          if typeof(symfunc_str) <: Number
+            tmp_dpfunc[j] = :(1*$symfunc_str)
+          elseif typeof(symfunc_str) <: Symbol
+            tmp_dpfunc[j] = :(1*$symfunc_str)
+          else
+            tmp_dpfunc[j] = symfunc_str
+          end
         end
+        d_paramfuncs[i] = tmp_dpfunc
       end
-      d_paramfuncs[i] = tmp_dpfunc
+      d_pfuncs = build_p_funcs(d_paramfuncs,paramtup,indvar_dict,param_dict,inline_dict)
+      pderiv_exists = true
+    catch err
+      warn("Failed to build the parameter derivatives.")
     end
-    d_pfuncs = build_p_funcs(d_paramfuncs,paramtup,indvar_dict,param_dict,inline_dict)
-    pderiv_exists = true
-  catch err
-    warn("Failed to build the parameter derivatives.")
-    d_pfuncs = Vector{Expr}(0)
-    pderiv_exists = false
   end
 
   # Build the type
@@ -461,7 +466,17 @@ end
 
 const FEM_SYMBOL_DICT = Dict{Symbol,Expr}(:x=>:(x[:,1]),:y=>:(x[:,2]),:z=>:(x[:,3]))
 
-export ParameterizedFunction, @ode_def, @fem_def
+macro ode_def(name,ex,params...)
+  opts = Dict{Symbol,Bool}(
+  :build_Jac => true,
+  :build_InvJac => true,
+  :build_Hes => true,
+  :build_InvHes => true,
+  :build_dpfuncs => true)
+  ode_def_opts(name,opts,ex,params...)
+end
+
+export ParameterizedFunction, @ode_def, @fem_def, ode_def_opts
 end # module
 
 

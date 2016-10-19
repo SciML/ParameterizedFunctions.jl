@@ -42,6 +42,26 @@ computed, a warning is thrown and only the function itself is usable. The boolea
 `f.jac_exists` and `f.invjac_exists` can be used to see whether the Jacobian
 and the function for its inverse exist.
 
+#### Extra Options
+
+In most cases the `@ode_def` macro should be sufficient. This is because by default
+the macro will simply calculate each function symbolically, and if it can't it
+will simply throw a warning and move on. However, in extreme cases the symbolic
+calculations may take a long time, in which case it is necessary to turn them
+off. To do this, use the `ode_def_opts` function. The `@ode_def` macro simply defines the specifiable options:
+
+```julia
+opts = Dict{Symbol,Bool}(
+:build_Jac => true,
+:build_InvJac => true,
+:build_Hes => true,
+:build_InvHes => true,
+:build_dpfuncs => true)
+```
+
+and calls the function `ode_def_opts(name::Symbol,opts,ex::Expr,params)`. Note that
+params is an iterator holding expressions for the parameters.
+
 ### Finite Element PDEs
 
 Similar macros for finite element method definitions also exist. For the finite
@@ -76,7 +96,7 @@ The ParameterizedFunction Interface is as follows:
   Hessians, Inverse Jacobians, Inverse Hessians, explicit parameter functions,
   and parameter derivatives.
 - The standard call `(p::TypeName)(t,u,du)` must be overloaded for the function
-  calculation.
+  calculation. All other functions are optional.
 
 Solvers can interface with ParameterizedFunctions as follows:
 
@@ -95,6 +115,11 @@ f(t,u,iH,:InvHes) # Call the explicit Inverse Hessian function
 It is requested that solvers should only use the explicit functions when they exist.
 
 ## Manually Defining `ParameterizedFunction`s
+
+It's recommended that for simple uses you use the macros. However, in many cases
+the macros will not suffice, but you may still wish to provide Jacobians to the
+solvers. This shows how to manually build a ParameterizedFunction to give to
+a solver.
 
 ### Template
 
