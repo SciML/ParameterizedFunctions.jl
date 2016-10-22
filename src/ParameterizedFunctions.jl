@@ -210,7 +210,11 @@ function symbolize(syms,param_dict_keys)
   symtup = parse("("*symstr*")")
   @eval $symdefineex
   symtup = @eval $symtup # symtup is the tuple of SymEngine symbols for independent variables
-  paramtup = parse("("*paramstr*")")
+  if length(param_dict_keys) == 1
+    paramtup = parse("("*paramstr*",)")
+  else
+    paramtup = parse("("*paramstr*")")
+  end
   paramtup = @eval $paramtup
   symtup,paramtup
 end
