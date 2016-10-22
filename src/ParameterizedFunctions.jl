@@ -485,7 +485,7 @@ macro ode_def(name,ex,params...)
   end
 end
 
-export ParameterizedFunction, @ode_def, @fem_def, ode_def_opts
+export ParameterizedFunction, @ode_def, @fem_def, ode_def_opts, getindex
 end # module
 
 
