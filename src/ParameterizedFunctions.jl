@@ -17,11 +17,13 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...)
   ## Build parameter and inline dictionaries
   param_dict, inline_dict = build_paramdicts(params)
 
+
   # Run find replace to make the function expression
   symex = copy(ex) # Different expression for symbolic computations
   ode_findreplace(ex,symex,indvar_dict,param_dict,inline_dict)
   push!(ex.args,nothing) # Make the return void
   fex = ex # Save this expression as the expression for the call
+
 
   # Get the component functions
   funcs = build_component_funcs(symex)
@@ -138,7 +140,7 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...)
   f = maketype(name,param_dict,origex,funcs,syms,fex,jac_exists=jac_exists,
                invjac_exists=invjac_exists,symjac=symjac,Jex=Jex,invjac=invjac,
                invJex=invJex,symhes=symhes,invhes=invhes,Hex=Hex,hes_exists=hes_exists,
-               invHex=invHex,invhes_exists=invhes_exists,
+               invHex=invHex,invhes_exists=invhes_exists,params=param_dict.keys,
                pfuncs=pfuncs,d_pfuncs=d_pfuncs,
                pderiv_exists=pderiv_exists)
   # Overload the Call
@@ -268,7 +270,7 @@ function build_p_funcs(paramfuncs,paramtup,indvar_dict,param_dict,inline_dict)
     param = Symbol(paramtup[i])
     param_dict_drop_cur = deepcopy(param_dict)
     delete!(param_dict_drop_cur,param)
-    for j in 1:length(paramfuncs)
+    for j in 1:length(paramfuncs[1])
       ex = paramfuncs[i][j]
       if typeof(ex) <: Expr
         ode_findreplace(ex,copy(ex),indvar_dict,param_dict_drop_cur,inline_dict)
@@ -304,9 +306,11 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
                   hes_exists = false,
                   invHex = :(),
                   invhes_exists = false,
+                  params = Symbol[],
                   pfuncs=Vector{Expr}(0),
                   d_pfuncs = Vector{Expr}(0),
                   pderiv_exists=false,pfuncs_exists=true)
+
     @eval type $name <: ParameterizedFunction
         origex::Expr
         funcs::Vector{Expr}
@@ -328,6 +332,7 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
         invhes_exists::Bool
         pfuncs_exists::Bool
         pderiv_exists::Bool
+        params::Vector{Symbol}
         $((:($x::$(typeof(t))) for (x, t) in param_dict)...)
     end
 
@@ -362,13 +367,14 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
                   $(Expr(:kw,:invhes_exists,invhes_exists)),
                   $(Expr(:kw,:pfuncs_exists,pfuncs_exists)),
                   $(Expr(:kw,:pderiv_exists,pderiv_exists)),
+                  $(Expr(:kw,:params,params)),
                   $((Expr(:kw,x,t) for (x, t) in param_dict)...)) =
                   $(name)(origex,funcs,pfuncs,d_pfuncs,syms,
                   symjac,invjac,symhes,invhes,
                   Jex,invJex,Hex,invHex,fex,
                   jac_exists,invjac_exists,
                   hes_exists,invhes_exists,
-                  pfuncs_exists,pderiv_exists,
+                  pfuncs_exists,pderiv_exists,params,
                   $(((x for x in keys(param_dict))...))))
     eval(constructorex)
 
@@ -485,7 +491,69 @@ macro ode_def(name,ex,params...)
   end
 end
 
-export ParameterizedFunction, @ode_def, @fem_def, ode_def_opts, getindex
+macro ode_def_bare(name,ex,params...)
+  name_ex = Meta.quot(name)
+  ex_ex = Meta.quot(ex)
+  params = Meta.quot(params)
+  quote
+    opts = Dict{Symbol,Bool}(
+    :build_Jac => false,
+    :build_InvJac => false,
+    :build_Hes => false,
+    :build_InvHes => false,
+    :build_dpfuncs => false)
+    ode_def_opts($(esc(name_ex)),opts,$(esc(ex_ex)),$(esc(params))...)
+  end
+end
+
+macro ode_def_nohes(name,ex,params...)
+  name_ex = Meta.quot(name)
+  ex_ex = Meta.quot(ex)
+  params = Meta.quot(params)
+  quote
+    opts = Dict{Symbol,Bool}(
+    :build_Jac => true,
+    :build_InvJac => true,
+    :build_Hes => false,
+    :build_InvHes => false,
+    :build_dpfuncs => true)
+    ode_def_opts($(esc(name_ex)),opts,$(esc(ex_ex)),$(esc(params))...)
+  end
+end
+
+macro ode_def_noinvhes(name,ex,params...)
+  name_ex = Meta.quot(name)
+  ex_ex = Meta.quot(ex)
+  params = Meta.quot(params)
+  quote
+    opts = Dict{Symbol,Bool}(
+    :build_Jac => true,
+    :build_InvJac => true,
+    :build_Hes => true,
+    :build_InvHes => false,
+    :build_dpfuncs => true)
+    ode_def_opts($(esc(name_ex)),opts,$(esc(ex_ex)),$(esc(params))...)
+  end
+end
+
+macro ode_def_noinvjac(name,ex,params...)
+  name_ex = Meta.quot(name)
+  ex_ex = Meta.quot(ex)
+  params = Meta.quot(params)
+  quote
+    opts = Dict{Symbol,Bool}(
+    :build_Jac => true,
+    :build_InvJac => false,
+    :build_Hes => false,
+    :build_InvHes => false,
+    :build_dpfuncs => true)
+    ode_def_opts($(esc(name_ex)),opts,$(esc(ex_ex)),$(esc(params))...)
+  end
+end
+
+export ParameterizedFunction, @ode_def, @fem_def, ode_def_opts, getindex,
+       @ode_def_bare, @ode_def_nohes, @ode_def_noinvjac, @ode_def_noinvhes
+
 end # module
 
 

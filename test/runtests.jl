@@ -12,7 +12,7 @@ end a=>1.5 b=>1 c=3 d=1
 f = @ode_def LotkaVolterra begin
   dx = a*x - b*x*y
   dy = -c*y + d*x*y
-end a=>1.5 b=>1 c=3 d=1
+end a=>1.5 b=>1 c=>3 d=1
 
 type  LotkaVolterra2 <: ParameterizedFunction
          a::Float64
