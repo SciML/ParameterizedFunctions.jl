@@ -1,11 +1,6 @@
 module ParameterizedFunctions
-using SymEngine, DataStructures
-import Base: getindex,ctranspose
-
-### Basic Functionality
-
-abstract ParameterizedFunction <: Function
-getindex{s}(p::ParameterizedFunction,::Val{s}) = getfield(p,s) ## Val for type-stability
+using SymEngine, DataStructures, DiffEqBase
+import Base: getindex
 
 ### Macros
 
@@ -551,7 +546,7 @@ macro ode_def_noinvjac(name,ex,params...)
   end
 end
 
-export ParameterizedFunction, @ode_def, @fem_def, ode_def_opts, getindex,
+export ParameterizedFunction, @ode_def, @fem_def, ode_def_opts,
        @ode_def_bare, @ode_def_nohes, @ode_def_noinvjac, @ode_def_noinvhes
 
 end # module
