@@ -4,13 +4,18 @@ using Base.Test
 ### ODE Macros
 
 println("Build some examples")
-f = @ode_def SymCheck begin # Checks for error due to symbol on 1
+f = @ode_def_nohes SymCheck begin # Checks for error due to symbol on 1
   dx = x
   dy = -c*y + d*x*y
 end a=>1.5 b=>1 c=3 d=1
 
 f = @ode_def LotkaVolterra begin
   dx = a*x - b*x*y
+  dy = -c*y + d*x*y
+end a=>1.5 b=>1 c=>3 d=1
+
+f_2 = @ode_def_nohes LotkaVolterra3 begin
+  dx = a*x - b^2*x*y
   dy = -c*y + d*x*y
 end a=>1.5 b=>1 c=>3 d=1
 
@@ -37,6 +42,8 @@ f(t,u,2.0,du,:a)
 @test du == [-2.0,-3.0]
 f(t,u,2.0,du,:a,:Deriv)
 @test du == [2.0,0.0]
+f(t,u,du,[2.0;2.5;3.0])
+@test du == [-11.0;-3.0]
 
 println("Test Jacobians")
 f(t,u,J,:Jac)
@@ -44,6 +51,10 @@ f(t,u,iJ,:InvJac)
 @test J  == [-1.5 -2.0
              3.0 -1.0]
 @test minimum(iJ - inv(J) .< 1e-10)
+pJ = Matrix{Float64}(2,3)
+f(t,u,pJ,[2.0;2.5;3.0],:param_Jac)
+@test pJ == [2.0 -6.0 0
+             0 0 -3.0]
 
 println("Test Hessians")
 H = J

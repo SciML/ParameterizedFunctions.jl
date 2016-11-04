@@ -5,13 +5,15 @@ import Base: getindex
 ### Macros
 
 function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...)
-  origex = ex # Save the original expression
+  origex = copy(ex) # Save the original expression
 
   ## Build independent variable dictionary
   indvar_dict,syms = build_indvar_dict(ex)
   ## Build parameter and inline dictionaries
   param_dict, inline_dict = build_paramdicts(params)
 
+  ####
+  # Build the Expressions
 
   # Run find replace to make the function expression
   symex = copy(ex) # Different expression for symbolic computations
@@ -19,18 +21,27 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...)
   push!(ex.args,nothing) # Make the return void
   fex = ex # Save this expression as the expression for the call
 
+  # Parameter-Explicit Functions
+  pex = copy(origex) # Build it from the original expression
+  # Parameter find/replace
+  ode_findreplace(pex,copy(ex),indvar_dict,param_dict,inline_dict;params_from_function=false)
+
+  ######
+  # Build the Functions
 
   # Get the component functions
   funcs = build_component_funcs(symex)
 
   # Declare the SymEngine symbols
   symtup,paramtup = symbolize(syms,param_dict.keys)
-
+  numsyms = length(indvar_dict)
+  numparams = length(param_dict)
   # Jacobian Calculation
   symjac = Matrix{SymEngine.Basic}(0,0)
   invjac = Matrix{SymEngine.Basic}(0,0)
   symhes = Matrix{SymEngine.Basic}(0,0)
   invhes = Matrix{SymEngine.Basic}(0,0)
+  param_symjac = Matrix{SymEngine.Basic}(0,0)
   Jex = :(error("Jacobian Does Not Exist"))
   jac_exists = false
   invJex = :(error("Inverse Jacobian Does Not Exist"))
@@ -39,10 +50,12 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...)
   hes_exists = false
   invHex = :(error("Inverse Hessian Does Not Exist"))
   invhes_exists = false
+  param_Jex = :(error("Parameter Jacobian Does Not Exist"))
+  param_jac_exists = false
+
   if opts[:build_Jac]
     try #Jacobians and Hessian
       # Build the Jacobian Matrix of SymEngine Expressions
-      numsyms = length(symtup)
       symjac = Matrix{SymEngine.Basic}(numsyms,numsyms)
       for i in eachindex(funcs)
         funcex = funcs[i]
@@ -90,8 +103,6 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...)
     end
   end
 
-  # Parameter function calculations
-  numparams = length(paramtup)
   # Parameter Functions
   paramfuncs = Vector{Vector{Expr}}(numparams)
   for i in eachindex(paramtup)
@@ -104,16 +115,20 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...)
   pfuncs = build_p_funcs(paramfuncs,paramtup,indvar_dict,param_dict,inline_dict)
 
   d_pfuncs = Vector{Expr}(0)
+  param_symjac = Matrix{SymEngine.Basic}(numsyms,numparams)
   pderiv_exists = false
   if opts[:build_dpfuncs]
     try # Parameter Gradients
+
       d_paramfuncs  = Vector{Vector{Expr}}(numparams)
       for i in eachindex(paramtup)
         tmp_dpfunc = Vector{Expr}(length(funcs))
         for j in eachindex(funcs)
           funcex = funcs[j]
           symfunc = @eval $funcex
-          symfunc_str = parse(string(diff(SymEngine.Basic(symfunc),paramtup[i])))
+          d_curr = diff(SymEngine.Basic(symfunc),paramtup[i])
+          param_symjac[j,i] = d_curr
+          symfunc_str = parse(string(d_curr))
           if typeof(symfunc_str) <: Number
             tmp_dpfunc[j] = :(1*$symfunc_str)
           elseif typeof(symfunc_str) <: Symbol
@@ -126,18 +141,26 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...)
       end
       d_pfuncs = build_p_funcs(d_paramfuncs,paramtup,indvar_dict,param_dict,inline_dict)
       pderiv_exists = true
+
+      # Now build the parameter Jacobian
+      param_symjac_ex = Matrix{Expr}(numsyms,numparams)
+      for i in 1:numparams
+        param_symjac_ex[:,i] = d_paramfuncs[i]
+      end
+
+      param_Jex = build_jac_func(param_symjac_ex,indvar_dict,param_dict,inline_dict,params_from_function=false)
+      param_jac_exists = true
     catch err
       warn("Failed to build the parameter derivatives.")
     end
   end
-
   # Build the type
-  f = maketype(name,param_dict,origex,funcs,syms,fex,jac_exists=jac_exists,
+  f = maketype(name,param_dict,origex,funcs,syms,fex,pex=pex,jac_exists=jac_exists,
                invjac_exists=invjac_exists,symjac=symjac,Jex=Jex,invjac=invjac,
                invJex=invJex,symhes=symhes,invhes=invhes,Hex=Hex,hes_exists=hes_exists,
                invHex=invHex,invhes_exists=invhes_exists,params=param_dict.keys,
-               pfuncs=pfuncs,d_pfuncs=d_pfuncs,
-               pderiv_exists=pderiv_exists)
+               pfuncs=pfuncs,d_pfuncs=d_pfuncs,param_jac_exists=param_jac_exists,
+               param_symjac=param_symjac,param_Jex=param_Jex,pderiv_exists=pderiv_exists)
   # Overload the Call
   overloadex = :(((p::$name))(t,u,du) = $fex)
   @eval $overloadex
@@ -149,6 +172,10 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...)
     overloadex = :(((p::$name))(t,u,$param,du,::Type{$param_valtype}) = $param_func)
     @eval $overloadex
   end
+
+  # Build the Function
+  overloadex = :(((p::$name))(t,u,du,params) = $pex)
+  @eval $overloadex
 
   # Value Dispatches for the Parameter Derivatives
   if pderiv_exists
@@ -173,6 +200,10 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...)
   # Add the Inverse Hessian
   overloadex = :(((p::$name))(t,u,J,::Type{Val{:InvHes}}) = $invHex)
   @eval $overloadex
+  # Add Parameter Jacobian
+  overloadex = :(((p::$name))(t,u,J,params,::Type{Val{:param_Jac}}) = $param_Jex)
+  @eval $overloadex
+
   # Add the Symbol Dispatches
   overloadex = :(((p::$name))(t,u,du,sym::Symbol) = p(t,u,du,Val{sym}))
   @eval $overloadex
@@ -216,10 +247,10 @@ function symbolize(syms,param_dict_keys)
   symtup,paramtup
 end
 
-function ode_findreplace(ex,symex,indvar_dict,param_dict,inline_dict)
+function ode_findreplace(ex,symex,indvar_dict,param_dict,inline_dict;params_from_function=true)
   for (i,arg) in enumerate(ex.args)
     if isa(arg,Expr)
-      ode_findreplace(arg,symex.args[i],indvar_dict,param_dict,inline_dict)
+      ode_findreplace(arg,symex.args[i],indvar_dict,param_dict,inline_dict;params_from_function=params_from_function)
     elseif isa(arg,Symbol)
       s = string(arg)
       if haskey(indvar_dict,arg)
@@ -228,7 +259,12 @@ function ode_findreplace(ex,symex,indvar_dict,param_dict,inline_dict)
         ex.args[i] = :($(inline_dict[arg])) # inline from inline_dict
         symex.args[i] = :($(inline_dict[arg])) # also do in symbolic
       elseif haskey(param_dict,arg)
-        ex.args[i] = :(p.$arg) # replace with p.arg
+        if params_from_function
+          ex.args[i] = :(p.$arg) # replace with p.arg
+        else
+          idx = findfirst(param_dict.keys .== arg)
+          ex.args[i] = :(params[$idx]) # replace with params[arg]
+        end
         symex.args[i] = arg # keep arg
       elseif length(string(arg))>1 && haskey(indvar_dict,Symbol(s[nextind(s, 1):end])) && Symbol(s[1])==:d
         tmp = Symbol(s[nextind(s, 1):end]) # Remove the first letter, the d
@@ -239,15 +275,15 @@ function ode_findreplace(ex,symex,indvar_dict,param_dict,inline_dict)
   end
 end
 
-function build_jac_func(symjac,indvar_dict,param_dict,inline_dict)
+function build_jac_func(symjac,indvar_dict,param_dict,inline_dict;params_from_function=true)
   Jex = :()
   for i in 1:size(symjac,1)
     for j in 1:size(symjac,2)
       ex = parse(string(symjac[i,j]))
       if typeof(ex) <: Expr
-        ode_findreplace(ex,copy(ex),indvar_dict,param_dict,inline_dict)
+        ode_findreplace(ex,copy(ex),indvar_dict,param_dict,inline_dict,params_from_function=params_from_function)
       else
-        ex = ode_symbol_findreplace(ex,indvar_dict,param_dict,inline_dict)
+        ex = ode_symbol_findreplace(ex,indvar_dict,param_dict,inline_dict,params_from_function=params_from_function)
       end
       push!(Jex.args,:(J[$i,$j] = $ex))
     end
@@ -281,16 +317,22 @@ function build_p_funcs(paramfuncs,paramtup,indvar_dict,param_dict,inline_dict)
   pfuncs
 end
 
-function ode_symbol_findreplace(ex,indvar_dict,param_dict,inline_dict)
+function ode_symbol_findreplace(ex,indvar_dict,param_dict,inline_dict;params_from_function=true)
   if haskey(indvar_dict,ex)
     ex = :(u[$(indvar_dict[ex])]) # replace with u[i]
   elseif haskey(param_dict,ex)
-    ex = :(p.$ex) # replace with u[i]
+    if params_from_function
+      ex = :(p.$ex) # replace with u[i]
+    else
+      idx = findfirst(param_dict.keys .== ex)
+      ex = :(params[$idx])
+    end
   end
   :(1*$ex) # Add the 1 to make it an expression not a Symbol
 end
 
 function maketype(name,param_dict,origex,funcs,syms,fex;
+                  pex=:(),
                   jac_exists=false,invjac_exists=false,
                   symjac=Matrix{SymEngine.Basic}(0,0),
                   Jex=:(),invjac=Matrix{SymEngine.Basic}(0,0),
@@ -304,6 +346,9 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
                   params = Symbol[],
                   pfuncs=Vector{Expr}(0),
                   d_pfuncs = Vector{Expr}(0),
+                  param_jac_exists=false,
+                  param_symjac=Matrix{SymEngine.Basic}(0,0),
+                  param_Jex=:(),
                   pderiv_exists=false,pfuncs_exists=true)
 
     @eval type $name <: ParameterizedFunction
@@ -316,17 +361,21 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
         invjac::Matrix{SymEngine.Basic}
         symhes::Matrix{SymEngine.Basic}
         invhes::Matrix{SymEngine.Basic}
+        param_symjac::Matrix{SymEngine.Basic}
         Jex::Expr
+        param_Jex::Expr
         invJex::Expr
         Hex::Expr
         invHex::Expr
         fex::Expr
+        pex::Expr
         jac_exists::Bool
         invjac_exists::Bool
         hes_exists::Bool
         invhes_exists::Bool
         pfuncs_exists::Bool
         pderiv_exists::Bool
+        param_jac_exists::Bool
         params::Vector{Symbol}
         $((:($x::$(typeof(t))) for (x, t) in param_dict)...)
     end
@@ -342,6 +391,8 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
     Hex_ex = Meta.quot(Hex)
     invHex_ex = Meta.quot(invHex)
     fex_ex = Meta.quot(fex)
+    pex_ex = Meta.quot(pex)
+    param_Jex_ex = Meta.quot(param_Jex)
     constructorex = :($(name)(;$(Expr(:kw,:origex,new_ex)),
                   $(Expr(:kw,:funcs,funcs)),
                   $(Expr(:kw,:pfuncs,pfuncs)),
@@ -351,25 +402,29 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
                   $(Expr(:kw,:invjac,invjac)),
                   $(Expr(:kw,:symhes,symhes)),
                   $(Expr(:kw,:invhes,invhes)),
+                  $(Expr(:kw,:param_symjac,param_symjac)),
                   $(Expr(:kw,:Jex,Jex_ex)),
+                  $(Expr(:kw,:param_Jex,param_Jex_ex)),
                   $(Expr(:kw,:invJex,invJex_ex)),
                   $(Expr(:kw,:Hex,Hex_ex)),
                   $(Expr(:kw,:invHex,invHex_ex)),
                   $(Expr(:kw,:fex,fex_ex)),
+                  $(Expr(:kw,:pex,pex_ex)),
                   $(Expr(:kw,:jac_exists,jac_exists)),
                   $(Expr(:kw,:invjac_exists,invjac_exists)),
                   $(Expr(:kw,:hes_exists,hes_exists)),
                   $(Expr(:kw,:invhes_exists,invhes_exists)),
                   $(Expr(:kw,:pfuncs_exists,pfuncs_exists)),
                   $(Expr(:kw,:pderiv_exists,pderiv_exists)),
+                  $(Expr(:kw,:param_jac_exists,param_jac_exists)),
                   $(Expr(:kw,:params,params)),
                   $((Expr(:kw,x,t) for (x, t) in param_dict)...)) =
                   $(name)(origex,funcs,pfuncs,d_pfuncs,syms,
-                  symjac,invjac,symhes,invhes,
-                  Jex,invJex,Hex,invHex,fex,
+                  symjac,invjac,symhes,invhes,param_symjac,
+                  Jex,param_Jex,invJex,Hex,invHex,fex,pex,
                   jac_exists,invjac_exists,
                   hes_exists,invhes_exists,
-                  pfuncs_exists,pderiv_exists,params,
+                  pfuncs_exists,pderiv_exists,param_jac_exists,params,
                   $(((x for x in keys(param_dict))...))))
     eval(constructorex)
 
