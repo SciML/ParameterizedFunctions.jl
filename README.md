@@ -106,8 +106,10 @@ Solvers can interface with ParameterizedFunctions as follows:
 f.a # or f[:a], accesses the parameter a
 f.jac_exists # Checks for the existence of the explicit Jacobian function
 f(t,u,du) # Call the function
+f(t,u,du,params) # Call the function to calculate with parameters params (vector)
 f(t,u,2.0,du,:a) # Call the explicit parameter function with a=2.0
 f(t,u,2.0,df,:a,:Deriv) # Call the explicit parameter derivative function with a=2.0
+f(t,u,J,params,:param_Jac) # Call the explicit parameter Jacobian function
 f(t,u,J,:Jac) # Call the explicit Jacobian function
 f(t,u,iJ,:InvJac) # Call the explicit Inverse Jacobian function
 f(t,u,H,:Hes) # Call the explicit Hessian function
