@@ -33,15 +33,14 @@ each instance of `c` with `3`). Inlining slightly decreases the function cost an
 so is preferred in any case where you know that the parameter will always be constant.
 This will silently create the `LotkaVolterra` type and thus `g=LotkaVolterra(a=1.0,b=2.0)`
 will create a different function where `a=1.0` and `b=2.0`. However, at any time
-the parameters of `f` can be changed by using `f.a =` or `f.b = `, or by using
-symbols: `f[:a]=` etc.
+the parameters of `f` can be changed by using `f.a =` or `f.b = `.
 
-The macro also defines the Jacobian `f'`. This is defined as an in-place Jacobian `f(t,u,J,:Jac)`.
+The macro also defines the Jacobian `f'`. This is defined as an in-place Jacobian `f(Val{:Jac},t,u,J)`.
 This is calculated using SymEngine.jl automatically, so it's no effort on your part.
 The symbolic inverse of the Jacobian is also computed, and an in-place function
-for this is available as well as `f(t,u,iJ,:InvJac)`. If the Jacobians cannot be
-computed, a warning is thrown and only the function itself is usable. The booleans
-`f.jac_exists` and `f.invjac_exists` can be used to see whether the Jacobian
+for this is available as well as `f(Val{:InvJac},t,u,iJ)`. If the Jacobians cannot be
+computed, a warning is thrown and only the function itself is usable. The functions
+`jac_exists(f)` and `invjac_exists(f)` can be used to see whether the Jacobian
 and the function for its inverse exist.
 
 #### Extra Options
@@ -54,15 +53,27 @@ off. To do this, use the `ode_def_opts` function. The `@ode_def` macro simply de
 
 ```julia
 opts = Dict{Symbol,Bool}(
-:build_Jac => true,
-:build_InvJac => true,
-:build_Hes => true,
-:build_InvHes => true,
-:build_dpfuncs => true)
+                    :build_Jac => true,
+                    :build_InvJac => true,
+                    :build_Hes => true,
+                    :build_InvHes => true,
+                    :build_dpfuncs => true)
 ```
 
 and calls the function `ode_def_opts(name::Symbol,opts,ex::Expr,params)`. Note that
 params is an iterator holding expressions for the parameters.
+
+#### Extra Macros
+
+Instead of using `ode_def_opts` directly, one can use one of the following macros
+to be more specific about what to not calculate. In increasing order of calculations:
+
+```julia
+@ode_def_bare
+@ode_def_noinvjac
+@ode_def_noinvhes
+@ode_def_nohes
+```
 
 ### Finite Element PDEs
 
@@ -90,33 +101,44 @@ which is in the form for the FEM solver.
 
 ## The ParameterizedFunction Interface
 
-The ParameterizedFunction Interface is as follows:
+The ParameterizedFunction interface is as follows:
 
 - ParameterizedFunction is a type which is a subtype of Function
 - The type must hold the parameters.
-- The type must also define 6 booleans to declare the existence of explicit Jacobians,
-  Hessians, Inverse Jacobians, Inverse Hessians, explicit parameter functions,
-  and parameter derivatives.
+- Hessians, Inverse Jacobians, Inverse Hessians, explicit parameter functions,
+  parameter derivatives, and parameter Jacobians.
 - The standard call `(p::TypeName)(t,u,du)` must be overloaded for the function
   calculation. All other functions are optional.
 
 Solvers can interface with ParameterizedFunctions as follows:
 
 ```julia
-f.a # or f[:a], accesses the parameter a
-f.jac_exists # Checks for the existence of the explicit Jacobian function
+f.a # accesses the parameter a
 f(t,u,du) # Call the function
 f(t,u,du,params) # Call the function to calculate with parameters params (vector)
-f(t,u,2.0,du,:a) # Call the explicit parameter function with a=2.0
-f(t,u,2.0,df,:a,:Deriv) # Call the explicit parameter derivative function with a=2.0
-f(t,u,J,params,:param_Jac) # Call the explicit parameter Jacobian function
-f(t,u,J,:Jac) # Call the explicit Jacobian function
-f(t,u,iJ,:InvJac) # Call the explicit Inverse Jacobian function
-f(t,u,H,:Hes) # Call the explicit Hessian function
-f(t,u,iH,:InvHes) # Call the explicit Inverse Hessian function
+f(Val{:a},t,u,2.0,du) # Call the explicit parameter function with a=2.0
+f(Val{:a},Val{:Deriv},t,u,2.0,df) # Call the explicit parameter derivative function with a=2.0
+f(Val{:param_Jac},t,u,J,params) # Call the explicit parameter Jacobian function
+f(Val{:Jac},t,u,J) # Call the explicit Jacobian function
+f(Val{:InvJac},t,u,iJ) # Call the explicit Inverse Jacobian function
+f(Val{:Hes},t,u,H) # Call the explicit Hessian function
+f(Val{:InvHes},t,u,iH) # Call the explicit Inverse Hessian function
 ```
 
-It is requested that solvers should only use the explicit functions when they exist.
+To test for whether certain overloads exist, the following functions are provided:
+
+```julia
+jac_exists(f)
+invjac_exists(f)
+hes_exists(f)
+invhes_exists(f)
+paramjac_exists(f)
+pfunc_exists(f)
+pderiv_exists(f)
+```
+
+It is requested that solvers should only use the explicit functions when they exist
+to help with performance.
 
 ## Manually Defining `ParameterizedFunction`s
 
@@ -134,22 +156,12 @@ as a general template for doing so:
 type  LotkaVolterra <: ParameterizedFunction
          a::Float64
          b::Float64
-         jac_exists::Bool
-         invjac_exists::Bool
-         hes_exists::Bool
-         invhes_exists::Bool
-         pfuncs_exists::Bool
-         pderiv_exists::Bool
 end
 f = LotkaVolterra(0.0,0.0,true,true,true)
 (p::LotkaVolterra)(t,u,du) = begin
          du[1] = p.a * u[1] - p.b * u[1]*u[2]
          du[2] = -3 * u[2] + u[1]*u[2]
 end
-(p::LotkaVolterra)(t,u,du,sym::Symbol) = p(t,u,du,Val{sym})
-(p::LotkaVolterra)(t,u,param,du,sym::Symbol) = p(t,u,param,du,Val{sym})
-(p::LotkaVolterra)(t,u,param,du,sym::Symbol,sym2::Symbol) = p(t,u,param,du,Val{sym},Val{sym2})
-# Add Functions
 ```
 
 ### Explanation
@@ -161,28 +173,13 @@ type:
 type  LotkaVolterra <: ParameterizedFunction
          a::Float64
          b::Float64
-         jac_exists::Bool
-         invjac_exists::Bool
-         hes_exists::Bool
-         invhes_exists::Bool
-         pfuncs_exists::Bool
-         pderiv_exists::Bool
 end
 ```
 
-The fields are the parameters for our function, and 6 booleans used by the solvers:
-
-- Does the explicit Jacobian function exist?
-- Does the explicit Inverse Jacobian function exist?
-- Does the explicit Hessian function exist?
-- Does the explicit Inverse Hessian function exist?
-- Do the explicit parameter functions exist?
-- Does the Parameter Derivative function exist?
-
-Then we built the type:
+The fields are the parameters for our function. Then we built the type:
 
 ```julia
-f = LotkaVolterra(0.0,0.0,true,true,true,true)
+f = LotkaVolterra(0.0,0.0)
 ```
 
 We put in values for the parameters and told it that we will be defining each of
@@ -208,28 +205,16 @@ function f(t,u,du)
 end
 ```
 
-At anytime the function parameters can be accessed by the fields (`f.a`, `f.b`) or
-through `getindex` on the field symbol (`f[:a]`) by pre-defined dispatches.
+At anytime the function parameters can be accessed by the fields (`f.a`, `f.b`).
 
 ### Extra Functions
-
-Now we have to add the dispatches for the extra functions. The code from the template:
-
-```julia
-(p::LotkaVolterra)(t,u,du,sym::Symbol) = p(t,u,du,Val{sym})
-(p::LotkaVolterra)(t,u,param,du,sym::Symbol) = p(t,u,param,du,Val{sym})
-(p::LotkaVolterra)(t,u,param,du,sym::Symbol,sym2::Symbol) = p(t,u,param,du,Val{sym},Val{sym2})
-```
-
-sets up the value dispatches by symbols, and so we only need to define the function
-Val-type dispatches.
 
 #### Jacobian Function
 
 The Jacobian overload is provided by overloading in the following manner:
 
 ```julia
-function (p::LotkaVolterra)(t,u,du,J,::Type{Val{:Jac}})
+function (p::LotkaVolterra)(::Type{Val{:Jac}},t,u,du,J)
   J[1,1] = p.a - p.b * u[2]
   J[1,2] = -(p.b) * u[1]
   J[2,1] = 1 * u[2]
@@ -243,7 +228,7 @@ end
 The Inverse Jacobian overload is provided by overloading in the following manner:
 
 ```julia
-function (p::LotkaVolterra)(t,u,du,J,::Type{Val{:Jac}})
+function (p::LotkaVolterra)(::Type{Val{:Jac}},t,u,du,J)
   J[1,1] = (1 - (p.b * u[1] * u[2]) / ((p.a - p.b * u[2]) * (-3 + u[1] + (p.b * u[1] * u[2]) / (p.a - p.b * u[2])))) / (p.a - p.b * u[2])
   J[1,2] = (p.b * u[1]) / ((p.a - p.b * u[2]) * (-3 + u[1] + (p.b * u[1] * u[2]) / (p.a - p.b * u[2])))
   J[2,1] = -(u[2]) / ((p.a - p.b * u[2]) * (-3 + u[1] + (p.b * u[1] * u[2]) / (p.a - p.b * u[2])))
@@ -258,16 +243,16 @@ These are the same as the Jacobians, except with value types `:Hes` and `:InvHes
 
 #### Explicit Parameter Functions
 
-For solvers which need to autodifferentiate parameters (local sensitivity analysis),
+For solvers which need to auto-differentiate parameters (local sensitivity analysis),
 explicit parameter functions are required. For our example, we do the following:
 
 ```julia
-function (p::LotkaVolterra)(t,u,a,du,::Type{Val{:a}})
+function (p::LotkaVolterra)(::Type{Val{:a}},t,u,a,du)
   du[1] = a * u[1] - p.b * u[1] * u[2]
   du[2] = -3 * u[2] + 1 * u[1] * u[2]
   nothing
 end
-function (p::LotkaVolterra)(t,u,b,du,::Type{Val{:b}})
+function (p::LotkaVolterra)(::Type{Val{:b}},t,u,b,du)
   du[1] = p.a * u[1] - b * u[1] * u[2]
   du[2] = -3 * u[2] + 1 * u[1] * u[2]
   nothing
@@ -281,12 +266,12 @@ performance. For our example, we allow the solvers to use the explicit derivativ
 in the parameters `a` and `b` by:
 
 ```julia
-function (p::LotkaVolterra)(t,u,a,du,::Type{Val{:a}},::Type{Val{:Deriv}})
+function (p::LotkaVolterra)(::Type{Val{:a}},::Type{Val{:Deriv}},t,u,a,du)
   du[1] = 1 * u[1]
   du[2] = 1 * 0
   nothing
 end
-function (p::LotkaVolterra)(t,u,b,du,::Type{Val{:b}},::Type{Val{:Deriv}})
+function (p::LotkaVolterra)(::Type{Val{:b}},::Type{Val{:Deriv}},t,u,b,du)
   du[1] = -(u[1]) * u[2]
   du[2] = 1 * 0
   nothing

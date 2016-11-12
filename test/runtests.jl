@@ -38,29 +38,29 @@ f(t,u,du)
 @test du == [-3.0,-3.0]
 
 println("Test Explicit Parameter Functions")
-f(t,u,2.0,du,:a)
+f(Val{:a},t,u,2.0,du)
 @test du == [-2.0,-3.0]
-f(t,u,2.0,du,:a,:Deriv)
+f(Val{:a},Val{:Deriv},t,u,2.0,du)
 @test du == [2.0,0.0]
 f(t,u,du,[2.0;2.5;3.0])
 @test du == [-11.0;-3.0]
 
 println("Test Jacobians")
-f(t,u,J,:Jac)
-f(t,u,iJ,:InvJac)
+f(Val{:Jac},t,u,J)
+f(Val{:InvJac},t,u,iJ)
 @test J  == [-1.5 -2.0
              3.0 -1.0]
 @test minimum(iJ - inv(J) .< 1e-10)
 pJ = Matrix{Float64}(2,3)
-f(t,u,pJ,[2.0;2.5;3.0],:param_Jac)
+f(Val{:param_Jac},t,u,pJ,[2.0;2.5;3.0])
 @test pJ == [2.0 -6.0 0
              0 0 -3.0]
 
 println("Test Hessians")
 H = J
 iH = iJ
-f(t,u,H,:Hes)
-@test_throws ErrorException f(t,u,iH,:InvHes)
+f(Val{:Hes},t,u,H)
+@test_throws MethodError f(Val{:InvHes},t,u,iH)
 @test J  == [0.0 0.0
              0.0 0.0]
 
@@ -76,12 +76,13 @@ h(t,u,du)
 @test du == [-10.0,-3.0]
 
 println("Test booleans")
-@test f.jac_exists == true
-@test f.invjac_exists == true
-@test f.hes_exists == true
-@test f.invhes_exists == false
-@test f.pderiv_exists == true
-@test f.pfuncs_exists == true
+@test jac_exists(f) == true
+@test invjac_exists(f) == true
+@test hes_exists(f) == true
+@test invhes_exists(f) == false
+@test pderiv_exists(f) == true
+@test pfunc_exists(f) == true
+@test paramjac_exists(f) == true
 
 println("Test non-differentiable")
 NJ = @ode_def NoJacTest begin
@@ -90,7 +91,7 @@ NJ = @ode_def NoJacTest begin
 end a=>1.5 b=>1 c=3 d=4
 NJ(t,u,du)
 @test du == [-3.0;-3*3.0 + erf(2.0*3.0/4)]
-@test NJ.jac_exists == false
+@test jac_exists(NJ) == false
 
 ### FEM Macros
 

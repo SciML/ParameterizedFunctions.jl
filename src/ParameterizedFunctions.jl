@@ -4,6 +4,17 @@ import Base: getindex
 
 ### Macros
 
+jac_exists(f::ParameterizedFunction) = !isempty(methods(f,Tuple{Type{Val{:Jac}}, Any,Any,Any}))
+invjac_exists(f::ParameterizedFunction) = !isempty(methods(f,Tuple{Type{Val{:InvJac}}, Any,Any,Any}))
+hes_exists(f::ParameterizedFunction) = !isempty(methods(f,Tuple{Type{Val{:Hes}}, Any,Any,Any}))
+invhes_exists(f::ParameterizedFunction) = !isempty(methods(f,Tuple{Type{Val{:InvHes}}, Any,Any,Any}))
+paramjac_exists(f::ParameterizedFunction) = !isempty(methods(f,Tuple{Type{Val{:param_Jac}}, Any,Any,Any,Any}))
+pfunc_exists(f::ParameterizedFunction,p::Symbol) = !isempty(methods(f,Tuple{Type{Val{p}}, Any,Any,Any}))
+pderiv_exists(f::ParameterizedFunction,p::Symbol) = !isempty(methods(f,Tuple{Type{Val{p}},Val{:Deriv},Any,Any,Any}))
+
+pfunc_exists(f::ParameterizedFunction) = !isempty(methods(f,Tuple{Type{Val{f.params[1]}}, Any,Any,Any,Any}))
+pderiv_exists(f::ParameterizedFunction) = !isempty(methods(f,Tuple{Type{Val{f.params[1]}},Val{:Deriv},Any,Any,Any}))
+
 function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...)
   origex = copy(ex) # Save the original expression
 
@@ -155,26 +166,26 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...)
     end
   end
   # Build the type
-  f = maketype(name,param_dict,origex,funcs,syms,fex,pex=pex,jac_exists=jac_exists,
-               invjac_exists=invjac_exists,symjac=symjac,Jex=Jex,invjac=invjac,
-               invJex=invJex,symhes=symhes,invhes=invhes,Hex=Hex,hes_exists=hes_exists,
-               invHex=invHex,invhes_exists=invhes_exists,params=param_dict.keys,
-               pfuncs=pfuncs,d_pfuncs=d_pfuncs,param_jac_exists=param_jac_exists,
-               param_symjac=param_symjac,param_Jex=param_Jex,pderiv_exists=pderiv_exists)
+  f = maketype(name,param_dict,origex,funcs,syms,fex,pex=pex,
+               symjac=symjac,Jex=Jex,invjac=invjac,
+               invJex=invJex,symhes=symhes,invhes=invhes,Hex=Hex,
+               invHex=invHex,params=param_dict.keys,
+               pfuncs=pfuncs,d_pfuncs=d_pfuncs,
+               param_symjac=param_symjac,param_Jex=param_Jex)
   # Overload the Call
-  overloadex = :(((p::$name))(t,u,du) = $fex)
+  overloadex = :(((p::$name))(t::Number,u,du) = $fex)
   @eval $overloadex
   # Value Dispatches for the Parameters
   for i in 1:length(paramtup)
     param = Symbol(paramtup[i])
     param_func = pfuncs[i]
     param_valtype = Val{param}
-    overloadex = :(((p::$name))(t,u,$param,du,::Type{$param_valtype}) = $param_func)
+    overloadex = :(((p::$name))(::Type{$param_valtype},t,u,$param,du) = $param_func)
     @eval $overloadex
   end
 
   # Build the Function
-  overloadex = :(((p::$name))(t,u,du,params) = $pex)
+  overloadex = :(((p::$name))(t::Number,u,du,params) = $pex)
   @eval $overloadex
 
   # Value Dispatches for the Parameter Derivatives
@@ -183,34 +194,36 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...)
       param = Symbol(paramtup[i])
       param_func = d_pfuncs[i]
       param_valtype = Val{param}
-      overloadex = :(((p::$name))(t,u,$param,du,::Type{$param_valtype},::Type{Val{:Deriv}}) = $param_func)
+      overloadex = :(((p::$name))(::Type{$param_valtype},::Type{Val{:Deriv}},t,u,$param,du) = $param_func)
       @eval $overloadex
     end
   end
 
   # Add the Jacobian
-  overloadex = :(((p::$name))(t,u,J,::Type{Val{:Jac}}) = $Jex)
-  @eval $overloadex
+  if jac_exists
+    overloadex = :(((p::$name))(::Type{Val{:Jac}},t,u,J) = $Jex)
+    @eval $overloadex
+  end
   # Add the Inverse Jacobian
-  overloadex = :(((p::$name))(t,u,J,::Type{Val{:InvJac}}) = $invJex)
-  @eval $overloadex
+  if invjac_exists
+    overloadex = :(((p::$name))(::Type{Val{:InvJac}},t,u,J) = $invJex)
+    @eval $overloadex
+  end
   # Add the Hessian
-  overloadex = :(((p::$name))(t,u,J,::Type{Val{:Hes}}) = $Hex)
-  @eval $overloadex
+  if hes_exists
+    overloadex = :(((p::$name))(::Type{Val{:Hes}},t,u,J) = $Hex)
+    @eval $overloadex
+  end
   # Add the Inverse Hessian
-  overloadex = :(((p::$name))(t,u,J,::Type{Val{:InvHes}}) = $invHex)
-  @eval $overloadex
+  if invhes_exists
+    overloadex = :(((p::$name))(::Type{Val{:InvHes}},t,u,J) = $invHex)
+    @eval $overloadex
+  end
   # Add Parameter Jacobian
-  overloadex = :(((p::$name))(t,u,J,params,::Type{Val{:param_Jac}}) = $param_Jex)
-  @eval $overloadex
-
-  # Add the Symbol Dispatches
-  overloadex = :(((p::$name))(t,u,du,sym::Symbol) = p(t,u,du,Val{sym}))
-  @eval $overloadex
-  overloadex = :(((p::$name))(t,u,param,du,sym::Symbol) = p(t,u,param,du,Val{sym}))
-  @eval $overloadex
-  overloadex = :(((p::$name))(t,u,param,du,sym::Symbol,sym2::Symbol) = p(t,u,param,du,Val{sym},Val{sym2}))
-  @eval $overloadex
+  if param_jac_exists
+    overloadex = :(((p::$name))(::Type{Val{:param_Jac}},t,u,J,params) = $param_Jex)
+    @eval $overloadex
+  end
 
   return f
 end
@@ -333,23 +346,18 @@ end
 
 function maketype(name,param_dict,origex,funcs,syms,fex;
                   pex=:(),
-                  jac_exists=false,invjac_exists=false,
                   symjac=Matrix{SymEngine.Basic}(0,0),
                   Jex=:(),invjac=Matrix{SymEngine.Basic}(0,0),
                   invJex=:(),
                   symhes = Matrix{SymEngine.Basic}(0,0),
                   invhes = Matrix{SymEngine.Basic}(0,0),
                   Hex = :(),
-                  hes_exists = false,
                   invHex = :(),
-                  invhes_exists = false,
                   params = Symbol[],
                   pfuncs=Vector{Expr}(0),
                   d_pfuncs = Vector{Expr}(0),
-                  param_jac_exists=false,
                   param_symjac=Matrix{SymEngine.Basic}(0,0),
-                  param_Jex=:(),
-                  pderiv_exists=false,pfuncs_exists=true)
+                  param_Jex=:())
 
     @eval type $name <: ParameterizedFunction
         origex::Expr
@@ -369,13 +377,6 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
         invHex::Expr
         fex::Expr
         pex::Expr
-        jac_exists::Bool
-        invjac_exists::Bool
-        hes_exists::Bool
-        invhes_exists::Bool
-        pfuncs_exists::Bool
-        pderiv_exists::Bool
-        param_jac_exists::Bool
         params::Vector{Symbol}
         $((:($x::$(typeof(t))) for (x, t) in param_dict)...)
     end
@@ -410,21 +411,12 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
                   $(Expr(:kw,:invHex,invHex_ex)),
                   $(Expr(:kw,:fex,fex_ex)),
                   $(Expr(:kw,:pex,pex_ex)),
-                  $(Expr(:kw,:jac_exists,jac_exists)),
-                  $(Expr(:kw,:invjac_exists,invjac_exists)),
-                  $(Expr(:kw,:hes_exists,hes_exists)),
-                  $(Expr(:kw,:invhes_exists,invhes_exists)),
-                  $(Expr(:kw,:pfuncs_exists,pfuncs_exists)),
-                  $(Expr(:kw,:pderiv_exists,pderiv_exists)),
-                  $(Expr(:kw,:param_jac_exists,param_jac_exists)),
                   $(Expr(:kw,:params,params)),
                   $((Expr(:kw,x,t) for (x, t) in param_dict)...)) =
                   $(name)(origex,funcs,pfuncs,d_pfuncs,syms,
                   symjac,invjac,symhes,invhes,param_symjac,
                   Jex,param_Jex,invJex,Hex,invHex,fex,pex,
-                  jac_exists,invjac_exists,
-                  hes_exists,invhes_exists,
-                  pfuncs_exists,pderiv_exists,param_jac_exists,params,
+                  params,
                   $(((x for x in keys(param_dict))...))))
     eval(constructorex)
 
@@ -603,6 +595,9 @@ end
 
 export ParameterizedFunction, @ode_def, @fem_def, ode_def_opts,
        @ode_def_bare, @ode_def_nohes, @ode_def_noinvjac, @ode_def_noinvhes
+
+export jac_exists, invjac_exists, hes_exists, invhes_exists,
+      paramjac_exists, pfunc_exists, pderiv_exists
 
 end # module
 
