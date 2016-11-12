@@ -174,7 +174,7 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...)
   end
 
   # Build the Function
-  overloadex = :(((p::$name))(t::Number,u,du,params) = $pex)
+  overloadex = :(((p::$name))(t::Number,u,params,du) = $pex)
   @eval $overloadex
 
   # Value Dispatches for the Parameter Derivatives
@@ -210,7 +210,7 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...)
   end
   # Add Parameter Jacobian
   if param_jac_exists
-    overloadex = :(((p::$name))(::Type{Val{:param_Jac}},t,u,J,params) = $param_Jex)
+    overloadex = :(((p::$name))(::Type{Val{:param_Jac}},t,u,params,J) = $param_Jex)
     @eval $overloadex
   end
 

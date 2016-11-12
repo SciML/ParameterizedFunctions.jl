@@ -1,4 +1,4 @@
-using ParameterizedFunctions
+using ParameterizedFunctions, DiffEqBase
 using Base.Test
 
 ### ODE Macros
@@ -42,7 +42,7 @@ f(Val{:a},t,u,2.0,du)
 @test du == [-2.0,-3.0]
 f(Val{:a},Val{:Deriv},t,u,2.0,du)
 @test du == [2.0,0.0]
-f(t,u,du,[2.0;2.5;3.0])
+f(t,u,[2.0;2.5;3.0],du)
 @test du == [-11.0;-3.0]
 
 println("Test Jacobians")
@@ -52,7 +52,7 @@ f(Val{:InvJac},t,u,iJ)
              3.0 -1.0]
 @test minimum(iJ - inv(J) .< 1e-10)
 pJ = Matrix{Float64}(2,3)
-f(Val{:param_Jac},t,u,pJ,[2.0;2.5;3.0])
+f(Val{:param_Jac},t,u,[2.0;2.5;3.0],pJ)
 @test pJ == [2.0 -6.0 0
              0 0 -3.0]
 

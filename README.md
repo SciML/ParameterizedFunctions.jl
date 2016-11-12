@@ -115,10 +115,10 @@ Solvers can interface with ParameterizedFunctions as follows:
 ```julia
 f.a # accesses the parameter a
 f(t,u,du) # Call the function
-f(t,u,du,params) # Call the function to calculate with parameters params (vector)
+f(t,u,params,du) # Call the function to calculate with parameters params (vector)
 f(Val{:a},t,u,2.0,du) # Call the explicit parameter function with a=2.0
 f(Val{:a},Val{:Deriv},t,u,2.0,df) # Call the explicit parameter derivative function with a=2.0
-f(Val{:param_Jac},t,u,J,params) # Call the explicit parameter Jacobian function
+f(Val{:param_Jac},t,u,params,J) # Call the explicit parameter Jacobian function
 f(Val{:Jac},t,u,J) # Call the explicit Jacobian function
 f(Val{:InvJac},t,u,iJ) # Call the explicit Inverse Jacobian function
 f(Val{:Hes},t,u,H) # Call the explicit Hessian function
@@ -157,7 +157,7 @@ type  LotkaVolterra <: ParameterizedFunction
          a::Float64
          b::Float64
 end
-f = LotkaVolterra(0.0,0.0,true,true,true)
+f = LotkaVolterra(0.0,0.0)
 (p::LotkaVolterra)(t,u,du) = begin
          du[1] = p.a * u[1] - p.b * u[1]*u[2]
          du[2] = -3 * u[2] + u[1]*u[2]
@@ -214,7 +214,7 @@ At anytime the function parameters can be accessed by the fields (`f.a`, `f.b`).
 The Jacobian overload is provided by overloading in the following manner:
 
 ```julia
-function (p::LotkaVolterra)(::Type{Val{:Jac}},t,u,du,J)
+function (p::LotkaVolterra)(::Type{Val{:Jac}},t,u,J)
   J[1,1] = p.a - p.b * u[2]
   J[1,2] = -(p.b) * u[1]
   J[2,1] = 1 * u[2]
@@ -228,7 +228,7 @@ end
 The Inverse Jacobian overload is provided by overloading in the following manner:
 
 ```julia
-function (p::LotkaVolterra)(::Type{Val{:Jac}},t,u,du,J)
+function (p::LotkaVolterra)(::Type{Val{:Jac}},t,u,J)
   J[1,1] = (1 - (p.b * u[1] * u[2]) / ((p.a - p.b * u[2]) * (-3 + u[1] + (p.b * u[1] * u[2]) / (p.a - p.b * u[2])))) / (p.a - p.b * u[2])
   J[1,2] = (p.b * u[1]) / ((p.a - p.b * u[2]) * (-3 + u[1] + (p.b * u[1] * u[2]) / (p.a - p.b * u[2])))
   J[2,1] = -(u[2]) / ((p.a - p.b * u[2]) * (-3 + u[1] + (p.b * u[1] * u[2]) / (p.a - p.b * u[2])))
