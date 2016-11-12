@@ -4,17 +4,6 @@ import Base: getindex
 
 ### Macros
 
-jac_exists(f) = !isempty(methods(f,Tuple{Type{Val{:Jac}}, Any,Any,Any}))
-invjac_exists(f) = !isempty(methods(f,Tuple{Type{Val{:InvJac}}, Any,Any,Any}))
-hes_exists(f) = !isempty(methods(f,Tuple{Type{Val{:Hes}}, Any,Any,Any}))
-invhes_exists(f) = !isempty(methods(f,Tuple{Type{Val{:InvHes}}, Any,Any,Any}))
-paramjac_exists(f) = !isempty(methods(f,Tuple{Type{Val{:param_Jac}}, Any,Any,Any,Any}))
-pfunc_exists(f,p::Symbol) = !isempty(methods(f,Tuple{Type{Val{p}}, Any,Any,Any}))
-pderiv_exists(f,p::Symbol) = !isempty(methods(f,Tuple{Type{Val{p}},Val{:Deriv},Any,Any,Any}))
-
-pfunc_exists(f) = !isempty(methods(f,Tuple{Type{Val{f.params[1]}}, Any,Any,Any,Any}))
-pderiv_exists(f) = !isempty(methods(f,Tuple{Type{Val{f.params[1]}},Val{:Deriv},Any,Any,Any}))
-
 function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...)
   origex = copy(ex) # Save the original expression
 
@@ -595,9 +584,6 @@ end
 
 export ParameterizedFunction, @ode_def, @fem_def, ode_def_opts,
        @ode_def_bare, @ode_def_nohes, @ode_def_noinvjac, @ode_def_noinvhes
-
-export jac_exists, invjac_exists, hes_exists, invhes_exists,
-      paramjac_exists, pfunc_exists, pderiv_exists
 
 end # module
 
