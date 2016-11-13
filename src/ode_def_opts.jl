@@ -29,30 +29,22 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
   # Get the component functions
   funcs = build_component_funcs(symex)
 
-  # Declare the SymEngine symbols
-  symtup,paramtup = symbolize(syms,param_dict.keys)
-  depvar_to_sym_ex = Expr(:(=),depvar,symbols(string(depvar)))
-  @eval $depvar_to_sym_ex
-
   numsyms = length(indvar_dict)
   numparams = length(param_dict)
 
-  # Build the symbolic functions
-
-  symfuncs = Vector{SymEngine.Basic}(numsyms)
-
   # Parameter Functions
   paramfuncs = Vector{Vector{Expr}}(numparams)
-  for i in eachindex(paramtup)
+  for i in 1:numparams
     tmp_pfunc = Vector{Expr}(length(funcs))
     for j in eachindex(funcs)
       tmp_pfunc[j] = copy(funcs[j])
     end
     paramfuncs[i] = tmp_pfunc
   end
-  pfuncs = build_p_funcs(paramfuncs,paramtup,indvar_dict,param_dict,inline_dict)
+  pfuncs = build_p_funcs(paramfuncs,indvar_dict,param_dict,inline_dict)
 
   # Symbolic Setup
+  symfuncs = Vector{SymEngine.Basic}(0)
   symtgrad = Vector{SymEngine.Basic}(0)
   symjac   = Matrix{SymEngine.Basic}(0,0)
   invjac   = Matrix{SymEngine.Basic}(0,0)
@@ -83,6 +75,16 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
   pderiv_exists = false
 
   try #do symbolic calculations
+
+    # Declare the SymEngine symbols
+    symtup,paramtup = symbolize(syms,param_dict.keys)
+    depvar_to_sym_ex = Expr(:(=),depvar,symbols(string(depvar)))
+    @eval $depvar_to_sym_ex
+
+    # Build the symbolic functions
+
+    symfuncs = Vector{SymEngine.Basic}(numsyms)
+
     for i in eachindex(funcs)
       funcex = funcs[i]
       tmp = @eval $funcex
@@ -186,7 +188,7 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
           end
           d_paramfuncs[i] = tmp_dpfunc
         end
-        d_pfuncs = build_p_funcs(d_paramfuncs,paramtup,indvar_dict,param_dict,inline_dict)
+        d_pfuncs = build_p_funcs(d_paramfuncs,indvar_dict,param_dict,inline_dict)
         pderiv_exists = true
 
         # Now build the parameter Jacobian
@@ -217,8 +219,9 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
   overloadex = :(((p::$name))(t::Number,u,du) = $fex)
   @eval $overloadex
   # Value Dispatches for the Parameters
-  for i in 1:length(paramtup)
-    param = Symbol(paramtup[i])
+  params = param_dict.keys
+  for i in 1:length(params)
+    param = Symbol(params[i])
     param_func = pfuncs[i]
     param_valtype = Val{param}
     overloadex = :(((p::$name))(::Type{$param_valtype},t,u,$param,du) = $param_func)
@@ -231,8 +234,8 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
 
   # Value Dispatches for the Parameter Derivatives
   if pderiv_exists
-    for i in 1:length(paramtup)
-      param = Symbol(paramtup[i])
+    for i in 1:length(params)
+      param = Symbol(params[i])
       param_func = d_pfuncs[i]
       param_valtype = Val{param}
       overloadex = :(((p::$name))(::Type{$param_valtype},::Type{Val{:Deriv}},t,u,$param,du) = $param_func)

@@ -32,12 +32,13 @@ function build_tgrad_func(symtgrad,indvar_dict,param_dict,inline_dict;params_fro
   tgradex
 end
 
-function build_p_funcs(paramfuncs,paramtup,indvar_dict,param_dict,inline_dict)
-  pfuncs = Vector{Expr}(length(paramtup))
+function build_p_funcs(paramfuncs,indvar_dict,param_dict,inline_dict)
+  params = param_dict.keys
+  pfuncs = Vector{Expr}(length(params))
   param_dict_type = typeof(param_dict)
-  for i in 1:length(paramtup)
+  for i in 1:length(params)
     pfunc = :()
-    param = Symbol(paramtup[i])
+    param = params[i]
     param_dict_drop_cur = deepcopy(param_dict)
     delete!(param_dict_drop_cur,param)
     for j in 1:length(paramfuncs[1])
