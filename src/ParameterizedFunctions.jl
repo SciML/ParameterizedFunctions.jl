@@ -1,5 +1,7 @@
 module ParameterizedFunctions
 
+ENV["symengine_jl_safe_failure"] = "yes"
+
 using SymEngine, DataStructures, DiffEqBase
 import Base: getindex
 
