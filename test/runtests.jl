@@ -4,12 +4,12 @@ using Base.Test
 ### ODE Macros
 
 println("Build some examples")
-f = @ode_def_nohes SymCheck begin # Checks for error due to symbol on 1
+f_t = @ode_def_nohes SymCheck begin # Checks for error due to symbol on 1
   dx = x
-  dy = -c*y + d*x*y
+  dy = -c*y + d*x*y*t^2
 end a=>1.5 b=>1 c=3 d=1
 
-f = @ode_def LotkaVolterra begin
+f = @ode_def_noinvhes LotkaVolterra begin
   dx = a*x - b*x*y
   dy = -c*y + d*x*y
 end a=>1.5 b=>1 c=>3 d=1
@@ -32,10 +32,18 @@ println("Test Values")
 t = 1.0
 u = [2.0,3.0]
 du = zeros(2)
+grad = similar(du)
 J = zeros(2,2)
 iJ= zeros(2,2)
+iW= zeros(2,2)
 f(t,u,du)
 @test du == [-3.0,-3.0]
+
+println("Test t-gradient")
+f(Val{:tgrad},t,u,grad)
+@test grad == zeros(2)
+f_t(Val{:tgrad},t,u,grad)
+@test grad == [0.0;12.0]
 
 println("Test Explicit Parameter Functions")
 f(Val{:a},t,u,2.0,du)
@@ -51,6 +59,12 @@ f(Val{:InvJac},t,u,iJ)
 @test J  == [-1.5 -2.0
              3.0 -1.0]
 @test minimum(iJ - inv(J) .< 1e-10)
+
+println("Test Inv Rosenbrock-W")
+f(Val{:InvW},t,u,2.0,iW)
+@test minimum(iW - inv(I/2 - J) .< 1e-10)
+
+println("Parameter Jacobians")
 pJ = Matrix{Float64}(2,3)
 f(Val{:param_Jac},t,u,[2.0;2.5;3.0],pJ)
 @test pJ == [2.0 -6.0 0

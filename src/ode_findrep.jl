@@ -1,0 +1,43 @@
+function ode_findreplace(ex,symex,indvar_dict,param_dict,inline_dict;params_from_function=true)
+  for (i,arg) in enumerate(ex.args)
+    if isa(arg,Expr)
+      ode_findreplace(arg,symex.args[i],indvar_dict,param_dict,inline_dict;params_from_function=params_from_function)
+    elseif isa(arg,Symbol)
+      s = string(arg)
+      if haskey(indvar_dict,arg)
+        ex.args[i] = :(u[$(indvar_dict[arg])]) # replace with u[i]
+      elseif haskey(inline_dict,arg)
+        ex.args[i] = :($(inline_dict[arg])) # inline from inline_dict
+        symex.args[i] = :($(inline_dict[arg])) # also do in symbolic
+      elseif haskey(param_dict,arg)
+        if params_from_function
+          ex.args[i] = :(p.$arg) # replace with p.arg
+        else
+          idx = findfirst(param_dict.keys .== arg)
+          ex.args[i] = :(params[$idx]) # replace with params[arg]
+        end
+        symex.args[i] = arg # keep arg
+      elseif length(string(arg))>1 && haskey(indvar_dict,Symbol(s[nextind(s, 1):end])) && Symbol(s[1])==:d
+        tmp = Symbol(s[nextind(s, 1):end]) # Remove the first letter, the d
+        ex.args[i] = :(du[$(indvar_dict[tmp])])
+        symex.args[i] = :(du[$(indvar_dict[tmp])]) #also do in symbolic
+      end
+    end
+  end
+end
+
+
+
+function ode_symbol_findreplace(ex,indvar_dict,param_dict,inline_dict;params_from_function=true)
+  if haskey(indvar_dict,ex)
+    ex = :(u[$(indvar_dict[ex])]) # replace with u[i]
+  elseif haskey(param_dict,ex)
+    if params_from_function
+      ex = :(p.$ex) # replace with u[i]
+    else
+      idx = findfirst(param_dict.keys .== ex)
+      ex = :(params[$idx])
+    end
+  end
+  :(1*$ex) # Add the 1 to make it an expression not a Symbol
+end
