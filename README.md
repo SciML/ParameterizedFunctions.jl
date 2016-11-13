@@ -75,6 +75,30 @@ to be more specific about what to not calculate. In increasing order of calculat
 @ode_def_nohes
 ```
 
+Also, the Rosenbrock-W calculations assume a mass matrix `M` is `I` by default.
+They solve for the explicit `(M/γ - J)^(-1)` which in the Rosenbrock numerical
+schemes has to computed at each timestep.  To choose a different mass matrix, use
+
+```julia
+@ode_def_mm
+@ode_def_noinvjac_mm
+@ode_def_noinvhes_mm
+@ode_def_nohes_mm
+```
+
+where the argument before the expression is the mass matrix, like:
+
+```julia
+M = [2 1
+     1 2]
+f_m = @ode_def_noinvhes_mm LotkaVolterraMassMatrix M begin
+  dx = a*x - b*x*y
+  dy = -c*y + d*x*y
+end a=>1.5 b=>1 c=>3 d=1
+```
+
+Note that for this the mass matrix must be constant.
+
 ### Finite Element PDEs
 
 Similar macros for finite element method definitions also exist. For the finite
@@ -116,11 +140,13 @@ Solvers can interface with ParameterizedFunctions as follows:
 f.a # accesses the parameter a
 f(t,u,du) # Call the function
 f(t,u,params,du) # Call the function to calculate with parameters params (vector)
+f(Val{:tgrad},t,u,J) # Call the explicit t-gradient function
 f(Val{:a},t,u,2.0,du) # Call the explicit parameter function with a=2.0
 f(Val{:a},Val{:Deriv},t,u,2.0,df) # Call the explicit parameter derivative function with a=2.0
 f(Val{:param_Jac},t,u,params,J) # Call the explicit parameter Jacobian function
 f(Val{:Jac},t,u,J) # Call the explicit Jacobian function
 f(Val{:InvJac},t,u,iJ) # Call the explicit Inverse Jacobian function
+f(Val{:InvW},t,u,γ,iW) # Call the explicit inverse Rosenbrock-W function (M/γ - J)^(-1)
 f(Val{:Hes},t,u,H) # Call the explicit Hessian function
 f(Val{:InvHes},t,u,iH) # Call the explicit Inverse Hessian function
 ```

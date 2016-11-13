@@ -14,6 +14,14 @@ f = @ode_def_noinvhes LotkaVolterra begin
   dy = -c*y + d*x*y
 end a=>1.5 b=>1 c=>3 d=1
 
+# Setup a mass matrix
+M = [2 1
+     1 2]
+f_m = @ode_def_noinvhes_mm LotkaVolterraMassMatrix M begin
+  dx = a*x - b*x*y
+  dy = -c*y + d*x*y
+end a=>1.5 b=>1 c=>3 d=1
+
 f_2 = @ode_def_nohes LotkaVolterra3 begin
   dx = a*x - b^2*x*y
   dy = -c*y + d*x*y
@@ -63,6 +71,8 @@ f(Val{:InvJac},t,u,iJ)
 println("Test Inv Rosenbrock-W")
 f(Val{:InvW},t,u,2.0,iW)
 @test minimum(iW - inv(I/2 - J) .< 1e-10)
+f_m(Val{:InvW},t,u,2.0,iW)
+@test minimum(iW - inv(M/2 - J) .< 1e-10)
 
 println("Parameter Jacobians")
 pJ = Matrix{Float64}(2,3)
