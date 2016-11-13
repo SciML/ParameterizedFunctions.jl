@@ -1,4 +1,5 @@
 module ParameterizedFunctions
+
 using SymEngine, DataStructures, DiffEqBase
 import Base: getindex
 

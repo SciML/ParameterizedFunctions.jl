@@ -202,7 +202,7 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
       end
     end
   catch err
-    warn("Symbolic calculations could not initiate")
+    warn("Symbolic calculations could not initiate. Likely there's a function which is not differentiable by SymEngine.")
   end
 
   # Build the type
