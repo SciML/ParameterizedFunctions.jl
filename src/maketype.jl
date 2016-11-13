@@ -4,11 +4,12 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
                   tgradex = :(),
                   symjac=Matrix{SymEngine.Basic}(0,0),
                   Jex=:(),invjac=Matrix{SymEngine.Basic}(0,0),
-                  invJex=:(),invWex=:(),
+                  invJex=:(),invWex=:(),invWex_t=:(),
                   symfuncs = Vector{SymEngine.Basic}(0),
-                  symhes = Matrix{SymEngine.Basic}(0,0),
-                  invhes = Matrix{SymEngine.Basic}(0,0),
-                  syminvW= Matrix{SymEngine.Basic}(0,0),
+                  symhes   = Matrix{SymEngine.Basic}(0,0),
+                  invhes   = Matrix{SymEngine.Basic}(0,0),
+                  syminvW  = Matrix{SymEngine.Basic}(0,0),
+                  syminvW_t= Matrix{SymEngine.Basic}(0,0),
                   Hex = :(),
                   invHex = :(),
                   params = Symbol[],
@@ -28,6 +29,7 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
         symjac::Matrix{SymEngine.Basic}
         invjac::Matrix{SymEngine.Basic}
         syminvW::Matrix{SymEngine.Basic}
+        syminvW_t::Matrix{SymEngine.Basic}
         symhes::Matrix{SymEngine.Basic}
         invhes::Matrix{SymEngine.Basic}
         param_symjac::Matrix{SymEngine.Basic}
@@ -36,6 +38,7 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
         param_Jex::Expr
         invJex::Expr
         invWex::Expr
+        invWex_t::Expr
         Hex::Expr
         invHex::Expr
         fex::Expr
@@ -54,6 +57,7 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
     Jex_ex = Meta.quot(Jex)
     invJex_ex = Meta.quot(invJex)
     invWex_ex = Meta.quot(invWex)
+    invWex_t_ex = Meta.quot(invWex_t)
     Hex_ex = Meta.quot(Hex)
     invHex_ex = Meta.quot(invHex)
     fex_ex = Meta.quot(fex)
@@ -69,6 +73,7 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
                   $(Expr(:kw,:symjac,symjac)),
                   $(Expr(:kw,:invjac,invjac)),
                   $(Expr(:kw,:syminvW,syminvW)),
+                  $(Expr(:kw,:syminvW_t,syminvW_t)),
                   $(Expr(:kw,:symhes,symhes)),
                   $(Expr(:kw,:invhes,invhes)),
                   $(Expr(:kw,:param_symjac,param_symjac)),
@@ -77,6 +82,7 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
                   $(Expr(:kw,:param_Jex,param_Jex_ex)),
                   $(Expr(:kw,:invJex,invJex_ex)),
                   $(Expr(:kw,:invWex,invWex_ex)),
+                  $(Expr(:kw,:invWex_t,invWex_t_ex)),
                   $(Expr(:kw,:Hex,Hex_ex)),
                   $(Expr(:kw,:invHex,invHex_ex)),
                   $(Expr(:kw,:fex,fex_ex)),
@@ -84,9 +90,9 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
                   $(Expr(:kw,:params,params)),
                   $((Expr(:kw,x,t) for (x, t) in param_dict)...)) =
                   $(name)(origex,funcs,symfuncs,pfuncs,d_pfuncs,syms,
-                  symtgrad,symjac,invjac,syminvW,symhes,invhes,param_symjac,
-                  tgradex,Jex,param_Jex,invJex,invWex,Hex,invHex,fex,pex,
-                  params,
+                  symtgrad,symjac,invjac,syminvW,syminvW_t,symhes,invhes,
+                  param_symjac,tgradex,Jex,param_Jex,invJex,invWex,invWex_t,
+                  Hex,invHex,fex,pex,params,
                   $(((x for x in keys(param_dict))...))))
     eval(constructorex)
 

@@ -54,11 +54,12 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
 
   # Symbolic Setup
   symtgrad = Vector{SymEngine.Basic}(0)
-  symjac = Matrix{SymEngine.Basic}(0,0)
-  invjac = Matrix{SymEngine.Basic}(0,0)
-  symhes = Matrix{SymEngine.Basic}(0,0)
-  invhes = Matrix{SymEngine.Basic}(0,0)
-  syminvW= Matrix{SymEngine.Basic}(0,0)
+  symjac   = Matrix{SymEngine.Basic}(0,0)
+  invjac   = Matrix{SymEngine.Basic}(0,0)
+  symhes   = Matrix{SymEngine.Basic}(0,0)
+  invhes   = Matrix{SymEngine.Basic}(0,0)
+  syminvW  = Matrix{SymEngine.Basic}(0,0)
+  syminvW_t= Matrix{SymEngine.Basic}(0,0)
   param_symjac = Matrix{SymEngine.Basic}(0,0)
   tgradex = :(error("t-gradient Does Not Exist"))
   tgrad_exists = false
@@ -68,6 +69,8 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
   invjac_exists = false
   invWex = :(error("Inverse Rosenbrock-W Does Not Exist"))
   invW_exists = false
+  invWex_t = :(error("Inverse Rosenbrock-W Transformed Does Not Exist"))
+  invW__t_exists = false
   Hex = :(error("Hessian Does Not Exist"))
   hes_exists = false
   invHex = :(error("Inverse Hessian Does Not Exist"))
@@ -127,9 +130,12 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
         if opts[:build_InvW]
           try # Rosenbrock-W Inverse
             γ = symbols("γ")
-            syminvW = inv(M/γ - symjac)
+            syminvW = inv(M - γ*symjac)
+            syminvW_t = inv(M/γ - symjac)
             invWex = build_jac_func(syminvW,indvar_dict,param_dict,inline_dict)
             invW_exists = true
+            invWex_t = build_jac_func(syminvW_t,indvar_dict,param_dict,inline_dict)
+            invW_t_exists = true
           catch err
             warn("Rosenbrock-W could not invert")
           end
@@ -202,8 +208,8 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
   # Build the type
   f = maketype(name,param_dict,origex,funcs,syms,fex,pex=pex,
                symfuncs=symfuncs,symtgrad=symtgrad,tgradex=tgradex,
-               symjac=symjac,Jex=Jex,invjac=invjac,invWex=invWex,syminvW=syminvW,
-               invJex=invJex,symhes=symhes,invhes=invhes,Hex=Hex,
+               symjac=symjac,Jex=Jex,invjac=invjac,invWex=invWex,invWex_t=invWex_t,syminvW=syminvW,
+               syminvW_t=syminvW_t,invJex=invJex,symhes=symhes,invhes=invhes,Hex=Hex,
                invHex=invHex,params=param_dict.keys,
                pfuncs=pfuncs,d_pfuncs=d_pfuncs,
                param_symjac=param_symjac,param_Jex=param_Jex)
@@ -253,6 +259,11 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
   # Add the Inverse Rosenbrock-W
   if invW_exists
     overloadex = :(((p::$name))(::Type{Val{:InvW}},t,u,γ,J) = $invWex)
+    @eval $overloadex
+  end
+  # Add the Inverse Rosenbrock-W Transformed
+  if invW_exists
+    overloadex = :(((p::$name))(::Type{Val{:InvW_t}},t,u,γ,J) = $invWex_t)
     @eval $overloadex
   end
   # Add the Hessian

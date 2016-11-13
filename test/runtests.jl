@@ -70,8 +70,13 @@ f(Val{:InvJac},t,u,iJ)
 
 println("Test Inv Rosenbrock-W")
 f(Val{:InvW},t,u,2.0,iW)
-@test minimum(iW - inv(I/2 - J) .< 1e-10)
+@test minimum(iW - inv(I - 2*J) .< 1e-10)
 f_m(Val{:InvW},t,u,2.0,iW)
+@test minimum(iW - inv(M - 2*J) .< 1e-10)
+
+f(Val{:InvW_t},t,u,2.0,iW)
+@test minimum(iW - inv(I/2 - J) .< 1e-10)
+f_m(Val{:InvW_t},t,u,2.0,iW)
 @test minimum(iW - inv(M/2 - J) .< 1e-10)
 
 println("Parameter Jacobians")
