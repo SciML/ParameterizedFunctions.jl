@@ -1,24 +1,32 @@
 module ParameterizedFunctions
 
-ENV["symengine_jl_safe_failure"] = "yes"
+  pre_env_value = get(ENV, "symengine_jl_safe_failure", "")
 
-using SymEngine, DataStructures, DiffEqBase
-import Base: getindex
+  ENV["symengine_jl_safe_failure"] = "yes"
 
-const FEM_SYMBOL_DICT = Dict{Symbol,Expr}(:x=>:(x[:,1]),:y=>:(x[:,2]),:z=>:(x[:,3]))
+  using SymEngine
 
-include("ode_def_opts.jl")
-include("symengine_utils.jl")
-include("ode_findrep.jl")
-include("func_builds.jl")
-include("maketype.jl")
-include("dict_build.jl")
-include("fem.jl")
-include("macros.jl")
+  if pre_env_value != ""
+    ENV["symengine_jl_safe_failure"] = pre_env_value
+  end
 
-export ParameterizedFunction, @ode_def, @fem_def, ode_def_opts,
-       @ode_def_bare, @ode_def_nohes, @ode_def_noinvjac, @ode_def_noinvhes,
-       @ode_def_mm, @ode_def_nohes_mm, @ode_def_noinvjac, @ode_def_noinvhes_mm
+  using DataStructures, DiffEqBase
+  import Base: getindex
+
+  const FEM_SYMBOL_DICT = Dict{Symbol,Expr}(:x=>:(x[:,1]),:y=>:(x[:,2]),:z=>:(x[:,3]))
+
+  include("ode_def_opts.jl")
+  include("symengine_utils.jl")
+  include("ode_findrep.jl")
+  include("func_builds.jl")
+  include("maketype.jl")
+  include("dict_build.jl")
+  include("fem.jl")
+  include("macros.jl")
+
+  export ParameterizedFunction, @ode_def, @fem_def, ode_def_opts,
+         @ode_def_bare, @ode_def_nohes, @ode_def_noinvjac, @ode_def_noinvhes,
+         @ode_def_mm, @ode_def_nohes_mm, @ode_def_noinvjac, @ode_def_noinvhes_mm
 
 end # module
 
