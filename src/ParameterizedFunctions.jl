@@ -1,12 +1,14 @@
 module ParameterizedFunctions
 
-  pre_env_value = get(ENV, "symengine_jl_safe_failure", "")
+  if haskey(ENV, "symengine_jl_safe_failure")
+    pre_env_value = ENV["symengine_jl_safe_failure"]
+  end
 
   ENV["symengine_jl_safe_failure"] = "yes"
 
   using SymEngine
 
-  if pre_env_value != ""
+  if isdefined(:pre_env_value)
     ENV["symengine_jl_safe_failure"] = pre_env_value
   end
 
