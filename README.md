@@ -76,8 +76,9 @@ to be more specific about what to not calculate. In increasing order of calculat
 ```
 
 Also, the Rosenbrock-W calculations assume a mass matrix `M` is `I` by default.
-They solve for the explicit `(M/γ - J)^(-1)` which in the Rosenbrock numerical
-schemes has to computed at each timestep.  To choose a different mass matrix, use
+They solve for the explicit `(M - γJ)^(-1)`  and `(M/γ - J)^(-1)` which in the
+Rosenbrock numerical schemes has to computed at each timestep.  To choose a
+different mass matrix, use
 
 ```julia
 @ode_def_mm
