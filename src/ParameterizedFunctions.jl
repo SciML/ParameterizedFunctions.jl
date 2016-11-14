@@ -10,6 +10,8 @@ module ParameterizedFunctions
 
   if isdefined(:pre_env_value)
     ENV["symengine_jl_safe_failure"] = pre_env_value
+  else
+    delete!(ENV,"symengine_jl_safe_failure")
   end
 
   using DataStructures, DiffEqBase
