@@ -1,8 +1,16 @@
 module ParameterizedFunctions
 
-withenv("symengine_jl_safe_failure" => "yes") do
+  pre_env_value = get(ENV, "symengine_jl_safe_failure", "")
 
-  using SymEngine, DataStructures, DiffEqBase
+  ENV["symengine_jl_safe_failure"] = "yes"
+
+  using SymEngine
+
+  if pre_env_value != ""
+    ENV["symengine_jl_safe_failure"] = pre_env_value
+  end
+
+  using DataStructures, DiffEqBase
   import Base: getindex
 
   const FEM_SYMBOL_DICT = Dict{Symbol,Expr}(:x=>:(x[:,1]),:y=>:(x[:,2]),:z=>:(x[:,3]))
@@ -19,8 +27,6 @@ withenv("symengine_jl_safe_failure" => "yes") do
   export ParameterizedFunction, @ode_def, @fem_def, ode_def_opts,
          @ode_def_bare, @ode_def_nohes, @ode_def_noinvjac, @ode_def_noinvhes,
          @ode_def_mm, @ode_def_nohes_mm, @ode_def_noinvjac, @ode_def_noinvhes_mm
-
-end
 
 end # module
 
