@@ -104,7 +104,7 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
       end
     end
 
-    if opts[:build_Jac]
+    if opts[:build_jac]
       try #Jacobians and Hessian
         # Build the Jacobian Matrix of SymEngine Expressions
         symjac = Matrix{SymEngine.Basic}(numsyms,numsyms)
@@ -120,7 +120,7 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
         Jex = build_jac_func(symjac,indvar_dict,param_dict,inline_dict)
         jac_exists = true
 
-        if opts[:build_InvJac]
+        if opts[:build_invjac]
           try # Jacobian Inverse
             invjac = inv(symjac)
             invJex = build_jac_func(invjac,indvar_dict,param_dict,inline_dict)
@@ -129,7 +129,7 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
             warn("Jacobian could not invert")
           end
         end
-        if opts[:build_InvW]
+        if opts[:build_invW]
           try # Rosenbrock-W Inverse
             γ = symbols("γ")
             syminvW = inv(M - γ*symjac)
@@ -142,7 +142,7 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
             warn("Rosenbrock-W could not invert")
           end
         end
-        if opts[:build_Hes]
+        if opts[:build_hes]
           try # Hessian
             symhes = Matrix{SymEngine.Basic}(numsyms,numsyms)
             for i in eachindex(funcs), j in eachindex(symtup)
@@ -151,7 +151,7 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
             # Build the Julia function
             Hex = build_jac_func(symhes,indvar_dict,param_dict,inline_dict)
             hes_exists = true
-            if opts[:build_InvHes]
+            if opts[:build_invhes]
               try # Hessian Inverse
                 invhes = inv(symhes)
                 invHex = build_jac_func(invhes,indvar_dict,param_dict,inline_dict)
@@ -238,7 +238,7 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
       param = Symbol(params[i])
       param_func = d_pfuncs[i]
       param_valtype = Val{param}
-      overloadex = :(((p::$name))(::Type{$param_valtype},::Type{Val{:Deriv}},t,u,$param,du) = $param_func)
+      overloadex = :(((p::$name))(::Type{$param_valtype},::Type{Val{:deriv}},t,u,$param,du) = $param_func)
       @eval $overloadex
     end
   end
@@ -251,37 +251,37 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
 
   # Add the Jacobian
   if jac_exists
-    overloadex = :(((p::$name))(::Type{Val{:Jac}},t,u,J) = $Jex)
+    overloadex = :(((p::$name))(::Type{Val{:jac}},t,u,J) = $Jex)
     @eval $overloadex
   end
   # Add the Inverse Jacobian
   if invjac_exists
-    overloadex = :(((p::$name))(::Type{Val{:InvJac}},t,u,J) = $invJex)
+    overloadex = :(((p::$name))(::Type{Val{:invjac}},t,u,J) = $invJex)
     @eval $overloadex
   end
   # Add the Inverse Rosenbrock-W
   if invW_exists
-    overloadex = :(((p::$name))(::Type{Val{:InvW}},t,u,γ,J) = $invWex)
+    overloadex = :(((p::$name))(::Type{Val{:invW}},t,u,γ,J) = $invWex)
     @eval $overloadex
   end
   # Add the Inverse Rosenbrock-W Transformed
   if invW_exists
-    overloadex = :(((p::$name))(::Type{Val{:InvW_t}},t,u,γ,J) = $invWex_t)
+    overloadex = :(((p::$name))(::Type{Val{:invW_t}},t,u,γ,J) = $invWex_t)
     @eval $overloadex
   end
   # Add the Hessian
   if hes_exists
-    overloadex = :(((p::$name))(::Type{Val{:Hes}},t,u,J) = $Hex)
+    overloadex = :(((p::$name))(::Type{Val{:hes}},t,u,J) = $Hex)
     @eval $overloadex
   end
   # Add the Inverse Hessian
   if invhes_exists
-    overloadex = :(((p::$name))(::Type{Val{:InvHes}},t,u,J) = $invHex)
+    overloadex = :(((p::$name))(::Type{Val{:invhes}},t,u,J) = $invHex)
     @eval $overloadex
   end
   # Add Parameter Jacobian
   if param_jac_exists
-    overloadex = :(((p::$name))(::Type{Val{:param_Jac}},t,u,params,J) = $param_Jex)
+    overloadex = :(((p::$name))(::Type{Val{:paramjac}},t,u,params,J) = $param_Jex)
     @eval $overloadex
   end
 

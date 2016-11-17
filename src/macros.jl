@@ -5,11 +5,11 @@ macro ode_def(name,ex,params...)
   quote
     opts = Dict{Symbol,Bool}(
     :build_tgrad => true,
-    :build_Jac => true,
-    :build_InvJac => true,
-    :build_InvW => true,
-    :build_Hes => true,
-    :build_InvHes => true,
+    :build_jac => true,
+    :build_invjac => true,
+    :build_invW => true,
+    :build_hes => true,
+    :build_invhes => true,
     :build_dpfuncs => true)
     ode_def_opts($(esc(name_ex)),opts,$(esc(ex_ex)),$(esc(params))...)
   end
@@ -22,11 +22,11 @@ macro ode_def_mm(name,ex,M,params...)
   quote
     opts = Dict{Symbol,Bool}(
     :build_tgrad => true,
-    :build_Jac => true,
-    :build_InvJac => true,
-    :build_InvW => true,
-    :build_Hes => true,
-    :build_InvHes => true,
+    :build_jac => true,
+    :build_invjac => true,
+    :build_invW => true,
+    :build_hes => true,
+    :build_invhes => true,
     :build_dpfuncs => true)
     ode_def_opts($(esc(name_ex)),opts,$(esc(ex_ex)),$(esc(params))...;M=$(esc(M)))
   end
@@ -39,11 +39,11 @@ macro ode_def_bare(name,ex,params...)
   quote
     opts = Dict{Symbol,Bool}(
     :build_tgrad => false,
-    :build_Jac => false,
-    :build_InvJac => false,
-    :build_InvW => false,
-    :build_Hes => false,
-    :build_InvHes => false,
+    :build_jac => false,
+    :build_invjac => false,
+    :build_invW => false,
+    :build_hes => false,
+    :build_invhes => false,
     :build_dpfuncs => false)
     ode_def_opts($(esc(name_ex)),opts,$(esc(ex_ex)),$(esc(params))...)
   end
@@ -56,11 +56,11 @@ macro ode_def_nohes(name,ex,params...)
   quote
     opts = Dict{Symbol,Bool}(
     :build_tgrad => true,
-    :build_Jac => true,
-    :build_InvJac => true,
-    :build_InvW => true,
-    :build_Hes => false,
-    :build_InvHes => false,
+    :build_jac => true,
+    :build_invjac => true,
+    :build_invW => true,
+    :build_hes => false,
+    :build_invhes => false,
     :build_dpfuncs => true)
     ode_def_opts($(esc(name_ex)),opts,$(esc(ex_ex)),$(esc(params))...)
   end
@@ -73,11 +73,11 @@ macro ode_def_nohes_mm(name,ex,M,params...)
   quote
     opts = Dict{Symbol,Bool}(
     :build_tgrad => true,
-    :build_Jac => true,
-    :build_InvJac => true,
-    :build_InvW => true,
-    :build_Hes => false,
-    :build_InvHes => false,
+    :build_jac => true,
+    :build_invjac => true,
+    :build_invW => true,
+    :build_hes => false,
+    :build_invhes => false,
     :build_dpfuncs => true)
     ode_def_opts($(esc(name_ex)),opts,$(esc(ex_ex)),$(esc(params))...;M=$(esc(M)))
   end
@@ -90,11 +90,11 @@ macro ode_def_noinvhes(name,ex,params...)
   quote
     opts = Dict{Symbol,Bool}(
     :build_tgrad => true,
-    :build_Jac => true,
-    :build_InvJac => true,
-    :build_InvW => true,
-    :build_Hes => true,
-    :build_InvHes => false,
+    :build_jac => true,
+    :build_invjac => true,
+    :build_invW => true,
+    :build_hes => true,
+    :build_invhes => false,
     :build_dpfuncs => true)
     ode_def_opts($(esc(name_ex)),opts,$(esc(ex_ex)),$(esc(params))...)
   end
@@ -107,11 +107,11 @@ macro ode_def_noinvhes_mm(name,M,ex,params...)
   quote
     opts = Dict{Symbol,Bool}(
     :build_tgrad => true,
-    :build_Jac => true,
-    :build_InvJac => true,
-    :build_InvW => true,
-    :build_Hes => true,
-    :build_InvHes => false,
+    :build_jac => true,
+    :build_invjac => true,
+    :build_invW => true,
+    :build_hes => true,
+    :build_invhes => false,
     :build_dpfuncs => true)
     ode_def_opts($(esc(name_ex)),opts,$(esc(ex_ex)),$(esc(params))...;M=$(esc(M)))
   end
@@ -124,11 +124,11 @@ macro ode_def_noinvjac(name,ex,params...)
   quote
     opts = Dict{Symbol,Bool}(
     :build_tgrad => true,
-    :build_Jac => true,
-    :build_InvJac => false,
-    :build_InvW => false,
-    :build_Hes => false,
-    :build_InvHes => false,
+    :build_jac => true,
+    :build_invjac => false,
+    :build_invW => false,
+    :build_hes => false,
+    :build_invhes => false,
     :build_dpfuncs => true)
     ode_def_opts($(esc(name_ex)),opts,$(esc(ex_ex)),$(esc(params))...)
   end

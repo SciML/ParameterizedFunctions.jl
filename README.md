@@ -53,11 +53,13 @@ off. To do this, use the `ode_def_opts` function. The `@ode_def` macro simply de
 
 ```julia
 opts = Dict{Symbol,Bool}(
-                    :build_Jac => true,
-                    :build_InvJac => true,
-                    :build_Hes => true,
-                    :build_InvHes => true,
-                    :build_dpfuncs => true)
+      :build_tgrad => true,
+      :build_Jac => true,
+      :build_InvJac => true,
+      :build_InvW => true,
+      :build_Hes => true,
+      :build_InvHes => true,
+      :build_dpfuncs => true)
 ```
 
 and calls the function `ode_def_opts(name::Symbol,opts,ex::Expr,params)`. Note that
@@ -143,14 +145,14 @@ f(t,u,du) # Call the function
 f(t,u,params,du) # Call the function to calculate with parameters params (vector)
 f(Val{:tgrad},t,u,J) # Call the explicit t-gradient function
 f(Val{:a},t,u,2.0,du) # Call the explicit parameter function with a=2.0
-f(Val{:a},Val{:Deriv},t,u,2.0,df) # Call the explicit parameter derivative function with a=2.0
-f(Val{:param_Jac},t,u,params,J) # Call the explicit parameter Jacobian function
-f(Val{:Jac},t,u,J) # Call the explicit Jacobian function
-f(Val{:InvJac},t,u,iJ) # Call the explicit Inverse Jacobian function
-f(Val{:InvW},t,u,γ,iW) # Call the explicit inverse Rosenbrock-W function (M - γJ)^(-1)
-f(Val{:InvW_t},t,u,γ,iW) # Call the explicit transformed inverse Rosenbrock-W function (M/γ - J)^(-1)
-f(Val{:Hes},t,u,H) # Call the explicit Hessian function
-f(Val{:InvHes},t,u,iH) # Call the explicit Inverse Hessian function
+f(Val{:a},Val{:deriv},t,u,2.0,df) # Call the explicit parameter derivative function with a=2.0
+f(Val{:paramjac},t,u,params,J) # Call the explicit parameter Jacobian function
+f(Val{:jac},t,u,J) # Call the explicit Jacobian function
+f(Val{:invjac},t,u,iJ) # Call the explicit Inverse Jacobian function
+f(Val{:invW},t,u,γ,iW) # Call the explicit inverse Rosenbrock-W function (M - γJ)^(-1)
+f(Val{:invW_t},t,u,γ,iW) # Call the explicit transformed inverse Rosenbrock-W function (M/γ - J)^(-1)
+f(Val{:hes},t,u,H) # Call the explicit Hessian function
+f(Val{:invhes},t,u,iH) # Call the explicit Inverse Hessian function
 ```
 
 To test for whether certain overloads exist, the following functions are provided:
@@ -242,7 +244,7 @@ At anytime the function parameters can be accessed by the fields (`f.a`, `f.b`).
 The Jacobian overload is provided by overloading in the following manner:
 
 ```julia
-function (p::LotkaVolterra)(::Type{Val{:Jac}},t,u,J)
+function (p::LotkaVolterra)(::Type{Val{:jac}},t,u,J)
   J[1,1] = p.a - p.b * u[2]
   J[1,2] = -(p.b) * u[1]
   J[2,1] = 1 * u[2]
@@ -256,7 +258,7 @@ end
 The Inverse Jacobian overload is provided by overloading in the following manner:
 
 ```julia
-function (p::LotkaVolterra)(::Type{Val{:Jac}},t,u,J)
+function (p::LotkaVolterra)(::Type{Val{:invjac}},t,u,J)
   J[1,1] = (1 - (p.b * u[1] * u[2]) / ((p.a - p.b * u[2]) * (-3 + u[1] + (p.b * u[1] * u[2]) / (p.a - p.b * u[2])))) / (p.a - p.b * u[2])
   J[1,2] = (p.b * u[1]) / ((p.a - p.b * u[2]) * (-3 + u[1] + (p.b * u[1] * u[2]) / (p.a - p.b * u[2])))
   J[2,1] = -(u[2]) / ((p.a - p.b * u[2]) * (-3 + u[1] + (p.b * u[1] * u[2]) / (p.a - p.b * u[2])))
@@ -267,7 +269,7 @@ end
 
 #### Hessian and Inverse Hessian
 
-These are the same as the Jacobians, except with value types `:Hes` and `:InvHes`.
+These are the same as the Jacobians, except with value types `:hes` and `:invhes`.
 
 #### Explicit Parameter Functions
 
@@ -294,12 +296,12 @@ performance. For our example, we allow the solvers to use the explicit derivativ
 in the parameters `a` and `b` by:
 
 ```julia
-function (p::LotkaVolterra)(::Type{Val{:a}},::Type{Val{:Deriv}},t,u,a,du)
+function (p::LotkaVolterra)(::Type{Val{:a}},::Type{Val{:deriv}},t,u,a,du)
   du[1] = 1 * u[1]
   du[2] = 1 * 0
   nothing
 end
-function (p::LotkaVolterra)(::Type{Val{:b}},::Type{Val{:Deriv}},t,u,b,du)
+function (p::LotkaVolterra)(::Type{Val{:b}},::Type{Val{:deriv}},t,u,b,du)
   du[1] = -(u[1]) * u[2]
   du[2] = 1 * 0
   nothing

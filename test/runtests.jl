@@ -56,40 +56,40 @@ f_t(Val{:tgrad},t,u,grad)
 println("Test Explicit Parameter Functions")
 f(Val{:a},t,u,2.0,du)
 @test du == [-2.0,-3.0]
-f(Val{:a},Val{:Deriv},t,u,2.0,du)
+f(Val{:a},Val{:deriv},t,u,2.0,du)
 @test du == [2.0,0.0]
 f(t,u,[2.0;2.5;3.0],du)
 @test du == [-11.0;-3.0]
 
 println("Test Jacobians")
-f(Val{:Jac},t,u,J)
-f(Val{:InvJac},t,u,iJ)
+f(Val{:jac},t,u,J)
+f(Val{:invjac},t,u,iJ)
 @test J  == [-1.5 -2.0
              3.0 -1.0]
 @test minimum(iJ - inv(J) .< 1e-10)
 
 println("Test Inv Rosenbrock-W")
-f(Val{:InvW},t,u,2.0,iW)
+f(Val{:invW},t,u,2.0,iW)
 @test minimum(iW - inv(I - 2*J) .< 1e-10)
-f_m(Val{:InvW},t,u,2.0,iW)
+f_m(Val{:invW},t,u,2.0,iW)
 @test minimum(iW - inv(M - 2*J) .< 1e-10)
 
-f(Val{:InvW_t},t,u,2.0,iW)
+f(Val{:invW_t},t,u,2.0,iW)
 @test minimum(iW - inv(I/2 - J) .< 1e-10)
-f_m(Val{:InvW_t},t,u,2.0,iW)
+f_m(Val{:invW_t},t,u,2.0,iW)
 @test minimum(iW - inv(M/2 - J) .< 1e-10)
 
 println("Parameter Jacobians")
 pJ = Matrix{Float64}(2,3)
-f(Val{:param_Jac},t,u,[2.0;2.5;3.0],pJ)
+f(Val{:paramjac},t,u,[2.0;2.5;3.0],pJ)
 @test pJ == [2.0 -6.0 0
              0 0 -3.0]
 
 println("Test Hessians")
 H = J
 iH = iJ
-f(Val{:Hes},t,u,H)
-@test_throws MethodError f(Val{:InvHes},t,u,iH)
+f(Val{:hes},t,u,H)
+@test_throws MethodError f(Val{:invhes},t,u,iH)
 @test J  == [0.0 0.0
              0.0 0.0]
 
