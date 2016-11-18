@@ -1,4 +1,5 @@
 module ParameterizedFunctions
+
   abstract ParameterizedFunction <: Function
 
   if haskey(ENV, "symengine_jl_safe_failure")
@@ -15,7 +16,7 @@ module ParameterizedFunctions
     delete!(ENV,"symengine_jl_safe_failure")
   end
 
-  using DataStructures, DiffEqBase
+  using DataStructures, DiffEqBase, SimpleTraits
   import Base: getindex
 
   const FEM_SYMBOL_DICT = Dict{Symbol,Expr}(:x=>:(x[:,1]),:y=>:(x[:,2]),:z=>:(x[:,3]))

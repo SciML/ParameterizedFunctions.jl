@@ -145,7 +145,7 @@ f(t,u,du) # Call the function
 f(t,u,params,du) # Call the function to calculate with parameters params (vector)
 f(Val{:tgrad},t,u,J) # Call the explicit t-gradient function
 f(Val{:a},t,u,2.0,du) # Call the explicit parameter function with a=2.0
-f(Val{:a},Val{:deriv},t,u,2.0,df) # Call the explicit parameter derivative function with a=2.0
+f(Val{:deriv},Val{:a},t,u,2.0,df) # Call the explicit parameter derivative function with a=2.0
 f(Val{:paramjac},t,u,params,J) # Call the explicit parameter Jacobian function
 f(Val{:jac},t,u,J) # Call the explicit Jacobian function
 f(Val{:invjac},t,u,iJ) # Call the explicit Inverse Jacobian function
@@ -155,16 +155,19 @@ f(Val{:hes},t,u,H) # Call the explicit Hessian function
 f(Val{:invhes},t,u,iH) # Call the explicit Inverse Hessian function
 ```
 
-To test for whether certain overloads exist, the following functions are provided:
+To test for whether certain overloads exist, the following functions are provided
+by DiffEqBase:
 
 ```julia
-jac_exists(f)
-invjac_exists(f)
-hes_exists(f)
-invhes_exists(f)
-paramjac_exists(f)
-pfunc_exists(f)
-pderiv_exists(f)
+has_jac(f)
+has_invjac(f)
+has_tgrad(f)
+has_hes(f)
+has_invhes(f)
+has_invW(f)
+has_invW_t(f)
+has_paramjac(f)
+has_paramderiv(f)
 ```
 
 It is requested that solvers should only use the explicit functions when they exist

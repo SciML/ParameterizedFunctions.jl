@@ -238,7 +238,7 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
       param = Symbol(params[i])
       param_func = d_pfuncs[i]
       param_valtype = Val{param}
-      overloadex = :(((p::$name))(::Type{$param_valtype},::Type{Val{:deriv}},t,u,$param,du) = $param_func)
+      overloadex = :(((p::$name))(::Type{Val{:deriv}},::Type{$param_valtype},t,u,$param,du) = $param_func)
       @eval $overloadex
     end
   end

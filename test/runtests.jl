@@ -56,7 +56,7 @@ f_t(Val{:tgrad},t,u,grad)
 println("Test Explicit Parameter Functions")
 f(Val{:a},t,u,2.0,du)
 @test du == [-2.0,-3.0]
-f(Val{:a},Val{:deriv},t,u,2.0,du)
+f(Val{:deriv},Val{:a},t,u,2.0,du)
 @test du == [2.0,0.0]
 f(t,u,[2.0;2.5;3.0],du)
 @test du == [-11.0;-3.0]
@@ -104,14 +104,17 @@ h = LotkaVolterra2(1.0,2.0)
 h(t,u,du)
 @test du == [-10.0,-3.0]
 
+@code_llvm has_jac(f)
+
 println("Test booleans")
-@test jac_exists(f) == true
-@test invjac_exists(f) == true
-@test hes_exists(f) == true
-@test invhes_exists(f) == false
-@test pderiv_exists(f) == true
-@test pfunc_exists(f) == true
-@test paramjac_exists(f) == true
+@test has_jac(f) == true
+@test has_invjac(f) == true
+@test has_hes(f) == true
+@test has_invhes(f) == false
+@test has_paramderiv(f) == true
+@test has_paramjac(f) == true
+
+@code_llvm has_paramjac(f)
 
 println("Test non-differentiable")
 NJ = @ode_def NoJacTest begin
@@ -120,7 +123,7 @@ NJ = @ode_def NoJacTest begin
 end a=>1.5 b=>1 c=3 d=4
 NJ(t,u,du)
 @test du == [-3.0;-3*3.0 + erf(2.0*3.0/4)]
-@test jac_exists(NJ) == false
+@test has_jac(NJ) == false
 
 ### FEM Macros
 
