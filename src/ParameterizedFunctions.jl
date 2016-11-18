@@ -1,5 +1,5 @@
 module ParameterizedFunctions
-  abstract ParameterizedFunction
+  abstract ParameterizedFunction <: Function
 
   if haskey(ENV, "symengine_jl_safe_failure")
     pre_env_value = ENV["symengine_jl_safe_failure"]
