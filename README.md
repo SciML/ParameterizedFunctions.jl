@@ -4,6 +4,21 @@
 [![Travis](https://travis-ci.org/JuliaDiffEq/ParameterizedFunctions.jl.svg?branch=master)](https://travis-ci.org/JuliaDiffEq/ParameterizedFunctions.jl) [![AppVeyor](https://ci.appveyor.com/api/projects/status/k6b7d86ddbas1ajk?svg=true)](https://ci.appveyor.com/project/ChrisRackauckas/parameterizedfunctions-jl)
 [![codecov](https://codecov.io/gh/JuliaDiffEq/ParameterizedFunctions.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/JuliaDiffEq/ParameterizedFunctions.jl)
 
+ParameterizedFunctions.jl is a component of the JuliaDiffEq ecosystem which allows
+for parameters to be explicitly present within functions. The interface which
+ParameterizedFunctions describes allows for functionality which requires parameters,
+such as parameter sensitivity analysis and parameter estimation, to be added to
+the differential equation solvers of [DifferentialEquations.jl](https://github.com/JuliaDiffEq/DifferentialEquations.jl).
+While the interface itself is of importance to ecosystem developers,
+ParameterizedFunctions.jl provides user-facing macros which make a
+`ParameterizedFunction` easy to define, and automatically
+include optimizations like explicit Jacobian functions and explicit inverse Jacobian
+functions for the differential equation solvers to take advantage of. The result
+is an easy to use API which allows for more functionality and more performance
+optimizations than could traditionally be offered.
+
+## The Basic Idea
+
 `ParameterizedFunction` is a type which can be used in various JuliaDiffEq solvers where
 the parameters must be accessible by the solver function. These use call overloading
 generate a type which acts like a function `f(t,u,du)` but has access to many more
@@ -35,10 +50,10 @@ This will silently create the `LotkaVolterra` type and thus `g=LotkaVolterra(a=1
 will create a different function where `a=1.0` and `b=2.0`. However, at any time
 the parameters of `f` can be changed by using `f.a =` or `f.b = `.
 
-The macro also defines the Jacobian `f'`. This is defined as an in-place Jacobian `f(Val{:Jac},t,u,J)`.
+The macro also defines the Jacobian `f'`. This is defined as an in-place Jacobian `f(Val{:jac},t,u,J)`.
 This is calculated using SymEngine.jl automatically, so it's no effort on your part.
 The symbolic inverse of the Jacobian is also computed, and an in-place function
-for this is available as well as `f(Val{:InvJac},t,u,iJ)`. If the Jacobians cannot be
+for this is available as well as `f(Val{:invjac},t,u,iJ)`. If the Jacobians cannot be
 computed, a warning is thrown and only the function itself is usable. The functions
 `jac_exists(f)` and `invjac_exists(f)` can be used to see whether the Jacobian
 and the function for its inverse exist.
@@ -299,12 +314,12 @@ performance. For our example, we allow the solvers to use the explicit derivativ
 in the parameters `a` and `b` by:
 
 ```julia
-function (p::LotkaVolterra)(::Type{Val{:a}},::Type{Val{:deriv}},t,u,a,du)
+function (p::LotkaVolterra)(::Type{Val{:deriv}},::Type{Val{:a}},t,u,a,du)
   du[1] = 1 * u[1]
   du[2] = 1 * 0
   nothing
 end
-function (p::LotkaVolterra)(::Type{Val{:b}},::Type{Val{:deriv}},t,u,b,du)
+function (p::LotkaVolterra)(::Type{Val{:deriv}},::Type{Val{:b}},t,u,b,du)
   du[1] = -(u[1]) * u[2]
   du[2] = 1 * 0
   nothing
