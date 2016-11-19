@@ -47,6 +47,7 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
   symfuncs = Vector{SymEngine.Basic}(0)
   symtgrad = Vector{SymEngine.Basic}(0)
   symjac   = Matrix{SymEngine.Basic}(0,0)
+  expjac   = Matrix{SymEngine.Basic}(0,0)
   invjac   = Matrix{SymEngine.Basic}(0,0)
   symhes   = Matrix{SymEngine.Basic}(0,0)
   invhes   = Matrix{SymEngine.Basic}(0,0)
@@ -57,6 +58,8 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
   tgrad_exists = false
   Jex = :(error("Jacobian Does Not Exist"))
   jac_exists = false
+  expJex = :(error("Exponential Jacobian Does Not Exist"))
+  expjac_exists = false
   invJex = :(error("Inverse Jacobian Does Not Exist"))
   invjac_exists = false
   invWex = :(error("Inverse Rosenbrock-W Does Not Exist"))
@@ -80,6 +83,9 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
     symtup,paramtup = symbolize(syms,param_dict.keys)
     depvar_to_sym_ex = Expr(:(=),depvar,symbols(string(depvar)))
     @eval $depvar_to_sym_ex
+
+    # Set Internal γ, used as a symbol for letting users pass an extra scalar
+    γ = symbols("internal_γ")
 
     # Build the symbolic functions
 
@@ -120,6 +126,16 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
         Jex = build_jac_func(symjac,indvar_dict,param_dict,inline_dict)
         jac_exists = true
 
+        if opts[:build_expjac]
+          try
+            expjac = expm(γ*symjac) # This does not work, which is why disabled
+            expJex = build_jac_func(expjac,indvar_dict,param_dict,inline_dict)
+            expjac_exists = true
+          catch
+            warn("Jacobian could not exponentiate")
+          end
+        end
+
         if opts[:build_invjac]
           try # Jacobian Inverse
             invjac = inv(symjac)
@@ -131,7 +147,6 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
         end
         if opts[:build_invW]
           try # Rosenbrock-W Inverse
-            γ = symbols("γ")
             syminvW = inv(M - γ*symjac)
             syminvW_t = inv(M/γ - symjac)
             invWex = build_jac_func(syminvW,indvar_dict,param_dict,inline_dict)
@@ -210,7 +225,8 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
   # Build the type
   f = maketype(name,param_dict,origex,funcs,syms,fex,pex=pex,
                symfuncs=symfuncs,symtgrad=symtgrad,tgradex=tgradex,
-               symjac=symjac,Jex=Jex,invjac=invjac,invWex=invWex,invWex_t=invWex_t,syminvW=syminvW,
+               symjac=symjac,Jex=Jex,expjac=expjac,expJex=expJex,invjac=invjac,
+               invWex=invWex,invWex_t=invWex_t,syminvW=syminvW,
                syminvW_t=syminvW_t,invJex=invJex,symhes=symhes,invhes=invhes,Hex=Hex,
                invHex=invHex,params=param_dict.keys,
                pfuncs=pfuncs,d_pfuncs=d_pfuncs,
@@ -254,6 +270,11 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
     overloadex = :(((p::$name))(::Type{Val{:jac}},t,u,J) = $Jex)
     @eval $overloadex
   end
+  # Add the Exponential Jacobian
+  if expjac_exists
+    overloadex = :(((p::$name))(::Type{Val{:expjac}},t,u,internal_γ,J) = $expJex)
+    @eval $overloadex
+  end
   # Add the Inverse Jacobian
   if invjac_exists
     overloadex = :(((p::$name))(::Type{Val{:invjac}},t,u,J) = $invJex)
@@ -261,12 +282,12 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
   end
   # Add the Inverse Rosenbrock-W
   if invW_exists
-    overloadex = :(((p::$name))(::Type{Val{:invW}},t,u,γ,J) = $invWex)
+    overloadex = :(((p::$name))(::Type{Val{:invW}},t,u,internal_γ,J) = $invWex)
     @eval $overloadex
   end
   # Add the Inverse Rosenbrock-W Transformed
   if invW_exists
-    overloadex = :(((p::$name))(::Type{Val{:invW_t}},t,u,γ,J) = $invWex_t)
+    overloadex = :(((p::$name))(::Type{Val{:invW_t}},t,u,internal_γ,J) = $invWex_t)
     @eval $overloadex
   end
   # Add the Hessian
