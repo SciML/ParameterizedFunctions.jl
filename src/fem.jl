@@ -4,7 +4,6 @@ macro fem_def(sig,name,ex,params...)
   indvar_dict,syms = build_indvar_dict(ex)
 
   param_dict, inline_dict = build_paramdicts(params)
-
   # Run find replace
   fem_findreplace(ex,indvar_dict,syms,param_dict,inline_dict)
   fex = ex
@@ -22,8 +21,12 @@ macro fem_def(sig,name,ex,params...)
   # Build the type
   f = maketype(name,param_dict,origex,funcs,syms,fex)
   # Overload the Call
-  newsig = :($(sig.args...))
-  overloadex = :(((p::$name))($(sig.args...)) = $ex)
+  if typeof(sig) == Symbol
+    newsig = :(($sig))
+  else
+    newsig = :($(sig.args...))
+  end
+  overloadex = :(((p::$name))($(newsig)) = $ex)
   @eval $overloadex
   return f
 end
