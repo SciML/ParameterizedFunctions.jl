@@ -20,13 +20,13 @@ macro fem_def(sig,name,ex,params...)
   end
   # Build the type
   f = maketype(name,param_dict,origex,funcs,syms,fex)
-  # Overload the Call
   if typeof(sig) == Symbol
-    newsig = :(($sig))
+    overloadex = :(((p::$name))($(sig)) = $ex)
   else
-    newsig = :($(sig.args...))
+    overloadex = :(((p::$name))($(sig.args...)) = $ex)
   end
-  overloadex = :(((p::$name))($(newsig)) = $ex)
+  # Overload the Call
+
   @eval $overloadex
   return f
 end
