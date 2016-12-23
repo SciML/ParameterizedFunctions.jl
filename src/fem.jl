@@ -19,7 +19,7 @@ macro fem_def(sig,name,ex,params...)
     ex = Expr(:hcat,funcs...)
   end
   # Build the type
-  f = maketype(name,param_dict,origex,funcs,syms,fex)
+  typeex,exportex,constructorex = maketype(name,param_dict,origex,funcs,syms,fex)
   if typeof(sig) == Symbol
     overloadex = :(((p::$name))($(sig)) = $ex)
   else
@@ -28,7 +28,7 @@ macro fem_def(sig,name,ex,params...)
   # Overload the Call
 
   @eval $overloadex
-  return f
+  eval(name)()
 end
 
 function fem_findreplace(ex,indvar_dict,syms,param_dict,inline_dict)

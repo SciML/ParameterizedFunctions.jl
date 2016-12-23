@@ -21,7 +21,7 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
                   param_symjac=Matrix{SymEngine.Basic}(0,0),
                   param_Jex=:())
 
-    @eval type $name <: ParameterizedFunction
+    typeex = :(type $name <: ParameterizedFunction
         origex::Expr
         funcs::Vector{Expr}
         symfuncs::Vector{SymEngine.Basic}
@@ -50,11 +50,13 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
         pex::Expr
         params::Vector{Symbol}
         $((:($x::$(typeof(t))) for (x, t) in param_dict)...)
-    end
+    end)
+
+    #@eval $typeex
 
     # Export the type
     exportex = :(export $name)
-    @eval $exportex
+    #@eval $exportex
 
     # Make the default constructor
     new_ex = Meta.quot(origex)
@@ -69,7 +71,7 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
     fex_ex = Meta.quot(fex)
     pex_ex = Meta.quot(pex)
     param_Jex_ex = Meta.quot(param_Jex)
-    constructorex = :($(name)(;$(Expr(:kw,:origex,new_ex)),
+    constructorex = :($(esc(name))(;$(Expr(:kw,:origex,new_ex)),
                   $(Expr(:kw,:funcs,funcs)),
                   $(Expr(:kw,:symfuncs,symfuncs)),
                   $(Expr(:kw,:pfuncs,pfuncs)),
@@ -102,8 +104,9 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
                   param_symjac,tgradex,Jex,expJex,param_Jex,invJex,invWex,invWex_t,
                   Hex,invHex,fex,pex,params,
                   $(((x for x in keys(param_dict))...))))
-    eval(constructorex)
+    #eval(constructorex)
 
     # Make the type instance using the default constructor
-    eval(name)()
+    #eval(name)()
+    typeex,exportex,constructorex
 end

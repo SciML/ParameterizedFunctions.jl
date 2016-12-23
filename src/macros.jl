@@ -53,21 +53,19 @@ macro ode_def_bare(name,ex,params...)
 end
 
 macro ode_def_nohes(name,ex,params...)
-  name_ex = Meta.quot(name)
-  ex_ex = Meta.quot(ex)
-  params = Meta.quot(params)
-  quote
-    opts = Dict{Symbol,Bool}(
-    :build_tgrad => true,
-    :build_jac => true,
-    :build_expjac => false,
-    :build_invjac => true,
-    :build_invW => true,
-    :build_hes => false,
-    :build_invhes => false,
-    :build_dpfuncs => true)
-    ode_def_opts($(esc(name_ex)),opts,$(esc(ex_ex)),$(esc(params))...)
-  end
+  #name_ex = Meta.quot(name)
+  #ex_ex = Meta.quot(ex)
+  #params = Meta.quot(params)
+  opts = Dict{Symbol,Bool}(
+  :build_tgrad => true,
+  :build_jac => true,
+  :build_expjac => false,
+  :build_invjac => true,
+  :build_invW => true,
+  :build_hes => false,
+  :build_invhes => false,
+  :build_dpfuncs => true)
+  ode_def_opts(name,opts,ex,params...)
 end
 
 macro ode_def_nohes_mm(name,ex,M,params...)

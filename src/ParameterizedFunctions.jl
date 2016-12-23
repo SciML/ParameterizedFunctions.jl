@@ -27,6 +27,7 @@ module ParameterizedFunctions
   include("dict_build.jl")
   include("fem.jl")
   include("macros.jl")
+  include("utils.jl")
 
   export @ode_def, @fem_def, ode_def_opts,
          @ode_def_bare, @ode_def_nohes, @ode_def_noinvjac, @ode_def_noinvhes,

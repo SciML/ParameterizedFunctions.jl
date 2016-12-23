@@ -223,7 +223,9 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
   end
 
   # Build the type
-  f = maketype(name,param_dict,origex,funcs,syms,fex,pex=pex,
+  exprs = Vector{Expr}(0)
+
+  typeex,exportex,constructorex = maketype(name,param_dict,origex,funcs,syms,fex,pex=pex,
                symfuncs=symfuncs,symtgrad=symtgrad,tgradex=tgradex,
                symjac=symjac,Jex=Jex,expjac=expjac,expJex=expJex,invjac=invjac,
                invWex=invWex,invWex_t=invWex_t,syminvW=syminvW,
@@ -231,9 +233,15 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
                invHex=invHex,params=param_dict.keys,
                pfuncs=pfuncs,d_pfuncs=d_pfuncs,
                param_symjac=param_symjac,param_Jex=param_Jex)
+
+  push!(exprs,typeex)
+  #push!(exprs,exportex)
+  push!(exprs,constructorex)
+
   # Overload the Call
   overloadex = :(((p::$name))(t::Number,u,du) = $fex)
-  @eval $overloadex
+  #@eval $overloadex
+  #push!(exprs,overloadex)
   # Value Dispatches for the Parameters
   params = param_dict.keys
   for i in 1:length(params)
@@ -241,12 +249,14 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
     param_func = pfuncs[i]
     param_valtype = Val{param}
     overloadex = :(((p::$name))(::Type{$param_valtype},t,u,$param,du) = $param_func)
-    @eval $overloadex
+    #@eval $overloadex
+    #push!(exprs,overloadex)
   end
 
   # Build the Function
   overloadex = :(((p::$name))(t::Number,u,params,du) = $pex)
-  @eval $overloadex
+  #@eval $overloadex
+  #push!(exprs,overloadex)
 
   # Value Dispatches for the Parameter Derivatives
   if pderiv_exists
@@ -255,56 +265,69 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
       param_func = d_pfuncs[i]
       param_valtype = Val{param}
       overloadex = :(((p::$name))(::Type{Val{:deriv}},::Type{$param_valtype},t,u,$param,du) = $param_func)
-      @eval $overloadex
+      #@eval $overloadex
+      #push!(exprs,overloadex)
     end
   end
 
   # Add the t gradient
   if tgrad_exists
     overloadex = :(((p::$name))(::Type{Val{:tgrad}},t,u,grad) = $tgradex)
-    @eval $overloadex
+    #@eval $overloadex
+    #push!(exprs,overloadex)
   end
 
   # Add the Jacobian
   if jac_exists
     overloadex = :(((p::$name))(::Type{Val{:jac}},t,u,J) = $Jex)
-    @eval $overloadex
+    #@eval $overloadex
+    #push!(exprs,overloadex)
   end
   # Add the Exponential Jacobian
   if expjac_exists
     overloadex = :(((p::$name))(::Type{Val{:expjac}},t,u,internal_γ,J) = $expJex)
-    @eval $overloadex
+    #@eval $overloadex
+    #push!(exprs,overloadex)
   end
   # Add the Inverse Jacobian
   if invjac_exists
     overloadex = :(((p::$name))(::Type{Val{:invjac}},t,u,J) = $invJex)
-    @eval $overloadex
+    #@eval $overloadex
+    #push!(exprs,overloadex)
   end
   # Add the Inverse Rosenbrock-W
   if invW_exists
     overloadex = :(((p::$name))(::Type{Val{:invW}},t,u,internal_γ,J) = $invWex)
-    @eval $overloadex
+    #@eval $overloadex
+    #push!(exprs,overloadex)
   end
   # Add the Inverse Rosenbrock-W Transformed
   if invW_exists
     overloadex = :(((p::$name))(::Type{Val{:invW_t}},t,u,internal_γ,J) = $invWex_t)
-    @eval $overloadex
+    #@eval $overloadex
+    #push!(exprs,overloadex)
   end
   # Add the Hessian
   if hes_exists
     overloadex = :(((p::$name))(::Type{Val{:hes}},t,u,J) = $Hex)
-    @eval $overloadex
+    #@eval $overloadex
+    #push!(exprs,overloadex)
   end
   # Add the Inverse Hessian
   if invhes_exists
     overloadex = :(((p::$name))(::Type{Val{:invhes}},t,u,J) = $invHex)
-    @eval $overloadex
+    #@eval $overloadex
+    #push!(exprs,overloadex)
   end
   # Add Parameter Jacobian
   if param_jac_exists
     overloadex = :(((p::$name))(::Type{Val{:paramjac}},t,u,params,J) = $param_Jex)
-    @eval $overloadex
+    #@eval $overloadex
+    #push!(exprs,overloadex)
   end
 
-  return f
+  # Return the type from the default consturctor
+  #push!(exprs,:(($name)()))
+  expr_arr_to_block(exprs)
+  #eval(name)()
 end
