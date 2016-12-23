@@ -1,7 +1,5 @@
 module ParameterizedFunctions
 
-  abstract ParameterizedFunction <: Function
-
   if haskey(ENV, "symengine_jl_safe_failure")
     pre_env_value = ENV["symengine_jl_safe_failure"]
   end
@@ -30,7 +28,7 @@ module ParameterizedFunctions
   include("fem.jl")
   include("macros.jl")
 
-  export ParameterizedFunction, @ode_def, @fem_def, ode_def_opts,
+  export @ode_def, @fem_def, ode_def_opts,
          @ode_def_bare, @ode_def_nohes, @ode_def_noinvjac, @ode_def_noinvhes,
          @ode_def_mm, @ode_def_nohes_mm, @ode_def_noinvjac, @ode_def_noinvhes_mm
 
