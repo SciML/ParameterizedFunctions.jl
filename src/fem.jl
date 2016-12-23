@@ -19,7 +19,7 @@ macro fem_def(sig,name,ex,params...)
     ex = Expr(:hcat,funcs...)
   end
   # Build the type
-  typeex,exportex,constructorex = maketype(name,param_dict,origex,funcs,syms,fex)
+  typeex,constructorex = maketype(name,param_dict,origex,funcs,syms,fex)
   if typeof(sig) == Symbol
     overloadex = :(((p::$name))($(sig)) = $ex)
   else

@@ -52,8 +52,6 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
         $((:($x::$(typeof(t))) for (x, t) in param_dict)...)
     end)
 
-    #@eval $typeex
-
     # Make the default constructor
     new_ex = Meta.quot(origex)
     tgradex_ex = Meta.quot(tgradex)
@@ -100,9 +98,7 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
                   param_symjac,tgradex,Jex,expJex,param_Jex,invJex,invWex,invWex_t,
                   Hex,invHex,fex,pex,params,
                   $(((x for x in keys(param_dict))...)))) |> esc
-    #eval(constructorex)
 
     # Make the type instance using the default constructor
-    #eval(name)()
-    typeex,exportex,constructorex
+    typeex,constructorex
 end
