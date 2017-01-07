@@ -27,7 +27,7 @@ f_2 = @ode_def_nohes LotkaVolterra3 begin
   dy = -c*y + d*x*y
 end a=>1.5 b=>1 c=>3 d=1
 
-type  LotkaVolterra2 <: ParameterizedFunction
+type  LotkaVolterra2 <: AbstractParameterizedFunction
          a::Float64
          b::Int64
 end

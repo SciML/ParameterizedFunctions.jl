@@ -207,7 +207,7 @@ An example of explicitly defining a parameterized function is as follows. This s
 as a general template for doing so:
 
 ```julia
-type  LotkaVolterra <: ParameterizedFunction
+type  LotkaVolterra <: AbstractParameterizedFunction
          a::Float64
          b::Float64
 end
