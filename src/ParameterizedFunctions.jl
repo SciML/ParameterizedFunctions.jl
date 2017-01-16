@@ -35,7 +35,7 @@ module ParameterizedFunctions
          @ode_def_bare, @ode_def_nohes, @ode_def_noinvjac, @ode_def_noinvhes,
          @ode_def_mm, @ode_def_nohes_mm, @ode_def_noinvjac, @ode_def_noinvhes_mm
 
-  export ParameterizedFunction
+  export ParameterizedFunction, DAEParameterizedFunction, DDEParameterizedFunction
 
 end # module
 
