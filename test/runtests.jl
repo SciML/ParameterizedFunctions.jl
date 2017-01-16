@@ -9,6 +9,11 @@ f_t = @ode_def_nohes SymCheck begin # Checks for error due to symbol on 1
   dy = -c*y + d*x*y*t^2
 end a=>1.5 b=>1 c=3 d=1
 
+f_t2 = @ode_def_nohes SymCheck2 begin # Checks for error due to symbol on 1
+  dx = 1
+  dy = -c*y + d*x*y*t^2
+end a=>1.5 b=>1 c=3 d=1
+
 f = @ode_def_noinvhes LotkaVolterra begin
   dx = a*x - b*x*y
   dy = -c*y + d*x*y
@@ -59,6 +64,10 @@ iJ= zeros(2,2)
 iW= zeros(2,2)
 f(t,u,du)
 @test du == [-3.0,-3.0]
+f_t(t,u,du)
+@test du == [2.0,-3.0]
+f_t2(t,u,du)
+@test du == [1.0,-3.0]
 pf(t,u,du)
 @test du == [-3.0,-3.0]
 @test pf2(t,u) == [-3.0,-3.0]

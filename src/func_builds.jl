@@ -62,7 +62,7 @@ function build_component_funcs(symex)
   for (i,arg) in enumerate(symex.args)
     if i%2 == 0
       ex = arg.args[2]
-      if typeof(ex) <: Symbol
+      if (typeof(ex) <: Symbol) || (typeof(ex) <: Number)
         push!(funcs,:(1*$ex))
       else # It's an expression, just push
         push!(funcs,arg.args[2])
