@@ -29,6 +29,7 @@ module ParameterizedFunctions
   include("dict_build.jl")
   include("fem.jl")
   include("macros.jl")
+  include("utils.jl")
   include("parameterized_function_type.jl")
 
   export @ode_def, @fem_def, ode_def_opts,
