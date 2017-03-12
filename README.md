@@ -138,31 +138,6 @@ to be more specific about what to not calculate. In increasing order of calculat
 @ode_def_nohes
 ```
 
-Also, the Rosenbrock-W calculations assume a mass matrix `M` is `I` by default.
-They solve for the explicit `(M - γJ)^(-1)`  and `(M/γ - J)^(-1)` which in the
-Rosenbrock numerical schemes has to computed at each timestep.  To choose a
-different mass matrix, use
-
-```julia
-@ode_def_mm
-@ode_def_noinvjac_mm
-@ode_def_noinvhes_mm
-@ode_def_nohes_mm
-```
-
-where the argument before the expression is the mass matrix, like:
-
-```julia
-M = [2 1
-     1 2]
-f_m = @ode_def_noinvhes_mm LotkaVolterraMassMatrix M begin
-  dx = a*x - b*x*y
-  dy = -c*y + d*x*y
-end a=>1.5 b=>1 c=>3 d=1
-```
-
-Note that for this the mass matrix must be constant.
-
 ### Finite Element PDEs
 
 Similar macros for finite element method definitions also exist. For the finite
@@ -249,7 +224,7 @@ An example of explicitly defining a parameterized function is as follows. This s
 as a general template for doing so:
 
 ```julia
-type  LotkaVolterra <: AbstractParameterizedFunction
+type  LotkaVolterra <: AbstractParameterizedFunction{true}
          a::Float64
          b::Float64
 end
@@ -266,13 +241,13 @@ Let's go step by step to see what this template does. The first part defines a
 type:
 
 ```julia
-type  LotkaVolterra <: ParameterizedFunction
+type  LotkaVolterra <: AbstractParameterizedFunction{true}
          a::Float64
          b::Float64
 end
 ```
 
-The fields are the parameters for our function. Then we built the type:
+The fields are the parameters for our function. The abstract type is parameterized by whether the function is written in-place or not. Then we built the type:
 
 ```julia
 f = LotkaVolterra(0.0,0.0)
