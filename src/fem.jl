@@ -1,4 +1,5 @@
 macro fem_def(sig,name,ex,params...)
+
   origex = ex
   ## Build Symbol dictionary
   indvar_dict,syms = build_indvar_dict(ex)
@@ -18,17 +19,27 @@ macro fem_def(sig,name,ex,params...)
   else
     ex = Expr(:hcat,funcs...)
   end
+
+  exprs = Vector{Expr}(0)
+
   # Build the type
   typeex,constructorex = maketype(name,param_dict,origex,funcs,syms,fex)
+
+  push!(exprs,typeex)
+  push!(exprs,constructorex)
+
   if typeof(sig) == Symbol
-    overloadex = :(((p::$name))($(sig)) = $ex)
+    overloadex = :(((p::$name))($(sig)) = $ex) |> esc
   else
-    overloadex = :(((p::$name))($(sig.args...)) = $ex)
+    overloadex = :(((p::$name))($(sig.args...)) = $ex) |> esc
   end
   # Overload the Call
 
-  @eval $overloadex
-  eval(name)()
+  push!(exprs,overloadex)
+  # Return the type from the default consturctor
+  def_const_ex = :(($name)()) |> esc
+  push!(exprs,def_const_ex)
+  expr_arr_to_block(exprs)
 end
 
 function fem_findreplace(ex,indvar_dict,syms,param_dict,inline_dict)

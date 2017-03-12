@@ -1,7 +1,6 @@
 function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=I,depvar=:t)
   # depvar is the dependent variable. Defaults to t
   # M is the mass matrix in RosW, must be a constant!
-
   origex = copy(ex) # Save the original expression
 
   ## Build independent variable dictionary

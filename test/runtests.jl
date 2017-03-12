@@ -1,6 +1,8 @@
 using ParameterizedFunctions, DiffEqBase
 using Base.Test
 
+using SpecialFunctions
+
 ### ODE Macros
 
 println("Build some examples")
@@ -9,7 +11,7 @@ f_t = @ode_def_nohes SymCheck begin # Checks for error due to symbol on 1
   dy = -c*y + d*x*y*t^2
 end a=>1.5 b=>1 c=3 d=1
 
-f_t2 = @ode_def_nohes SymCheck2 begin # Checks for error due to symbol on 1
+f_t2 = @ode_def_noinvjac SymCheck2 begin # Checks for error due to symbol on 1
   dx = 1
   dy = -c*y + d*x*y*t^2
 end a=>1.5 b=>1 c=3 d=1
@@ -19,20 +21,12 @@ f = @ode_def_noinvhes LotkaVolterra begin
   dy = -c*y + d*x*y
 end a=>1.5 b=>1 c=>3 d=1
 
-# Setup a mass matrix
-M = [2 1
-     1 2]
-f_m = @ode_def_noinvhes_mm LotkaVolterraMassMatrix M begin
-  dx = a*x - b*x*y
-  dy = -c*y + d*x*y
-end a=>1.5 b=>1 c=>3 d=1
-
 f_2 = @ode_def_nohes LotkaVolterra3 begin
   dx = a*x - b^2*x*y
   dy = -c*y + d*x*y
 end a=>1.5 b=>1 c=>3 d=1
 
-type  LotkaVolterra2 <: AbstractParameterizedFunction
+type  LotkaVolterra2 <: AbstractParameterizedFunction{true}
          a::Float64
          b::Int64
 end
@@ -96,13 +90,9 @@ f(Val{:invjac},t,u,iJ)
 println("Test Inv Rosenbrock-W")
 f(Val{:invW},t,u,2.0,iW)
 @test minimum(iW - inv(I - 2*J) .< 1e-10)
-f_m(Val{:invW},t,u,2.0,iW)
-@test minimum(iW - inv(M - 2*J) .< 1e-10)
 
 f(Val{:invW_t},t,u,2.0,iW)
 @test minimum(iW - inv(I/2 - J) .< 1e-10)
-f_m(Val{:invW_t},t,u,2.0,iW)
-@test minimum(iW - inv(M/2 - J) .< 1e-10)
 
 println("Parameter Jacobians")
 pJ = Matrix{Float64}(2,3)
