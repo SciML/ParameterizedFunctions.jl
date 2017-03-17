@@ -15,7 +15,9 @@ end
 function build_paramdicts(params)
   param_dict = OrderedDict{Symbol,Any}(); inline_dict = OrderedDict{Symbol,Any}()
   for i in 1:length(params)
-    if params[i].head == :call
+    if VERSION < v"0.6-" && params[i].head == :(=>)
+      param_dict[params[i].args[1]] = params[i].args[2] # works for k=3, or k=>3
+    elseif params[i].head == :call
       param_dict[params[i].args[2]] = params[i].args[3] # works for k=3, or k=>3
     elseif params[i].head == :(=)
       inline_dict[params[i].args[1]] = params[i].args[2] # works for k=3, or k=>3

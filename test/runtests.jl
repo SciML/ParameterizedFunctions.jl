@@ -1,7 +1,9 @@
 using ParameterizedFunctions, DiffEqBase
 using Base.Test
 
-using SpecialFunctions
+if VERSION >= v"0.6-"
+  using SpecialFunctions
+end
 
 ### ODE Macros
 
