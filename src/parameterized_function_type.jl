@@ -13,6 +13,8 @@ end
 (pf::ParameterizedFunction{false,F,P}){F,P}(t,u) = pf.f(t,u,pf.params)
 (pf::ParameterizedFunction{false,F,P}){F,P}(t,u,params) = pf.f(t,u,params)
 
+param_values(pf::ParameterizedFunction) = pf.params
+
 type DAEParameterizedFunction{isinplace,F,P} <: AbstractParameterizedFunction{isinplace}
   f::F
   params::P
@@ -28,6 +30,8 @@ end
 (pf::DAEParameterizedFunction{false,F,P}){F,P}(t,u,du) = pf.f(t,u,pf.params,du)
 (pf::DAEParameterizedFunction{false,F,P}){F,P}(t,u,params,du) = pf.f(t,u,params,du)
 
+param_values(pf::DAEParameterizedFunction) = pf.params
+
 type DDEParameterizedFunction{isinplace,F,P} <: AbstractParameterizedFunction{isinplace}
   f::F
   params::P
@@ -42,3 +46,5 @@ end
 (pf::DDEParameterizedFunction{true,F,P}){F,P}(t,u,h,params,du) = pf.f(t,u,h,params,du)
 (pf::DDEParameterizedFunction{false,F,P}){F,P}(t,u,h) = pf.f(t,u,h,pf.params)
 (pf::DDEParameterizedFunction{false,F,P}){F,P}(t,u,h,params) = pf.f(t,u,h,params)
+
+param_values(pf::DDEParameterizedFunction) = pf.params

@@ -51,6 +51,8 @@ end
 pf2 = ParameterizedFunction(pf_func2,[1.5,1.0])
 
 println("Test Values")
+@test param_values(f_t) == Real[1.5,1]
+@test param_values(f) == Real[1.5,1,3]
 t = 1.0
 u = [2.0,3.0]
 du = zeros(2)
