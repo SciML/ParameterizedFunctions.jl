@@ -7,7 +7,6 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
   indvar_dict,syms = build_indvar_dict(ex)
   ## Build parameter and inline dictionaries
   param_dict, inline_dict = build_paramdicts(params)
-
   ####
   # Build the Expressions
 
@@ -21,7 +20,6 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
   pex = copy(origex) # Build it from the original expression
   # Parameter find/replace
   ode_findreplace(pex,copy(ex),indvar_dict,param_dict,inline_dict;params_from_function=false)
-
   ######
   # Build the Functions
 
@@ -30,6 +28,8 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
 
   numsyms = length(indvar_dict)
   numparams = length(param_dict)
+
+  param_syms =  param_dict.keys
 
   # Parameter Functions
   paramfuncs = Vector{Vector{Expr}}(numparams)
@@ -79,30 +79,16 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
   if opts[:build_tgrad] || opts[:build_jac] || opts[:build_dpfuncs]
     try #do symbolic calculations
 
-      # Declare the SymEngine symbols
-      symtup,paramtup = symbolize(syms,param_dict.keys)
-      depvar_to_sym_ex = Expr(:(=),depvar,symbols(string(depvar)))
-      @eval $depvar_to_sym_ex
-
       # Set Internal γ, used as a symbol for letting users pass an extra scalar
       γ = symbols("internal_γ")
 
       # Build the symbolic functions
 
-      symfuncs = Vector{SymEngine.Basic}(numsyms)
-
-      for i in eachindex(funcs)
-        funcex = funcs[i]
-        tmp = @eval $funcex
-        symfuncs[i] = SymEngine.Basic(tmp)
-      end
+      symfuncs = [SymEngine.Basic(f) for f in funcs]
 
       if opts[:build_tgrad]
         try
-          symtgrad = Vector{SymEngine.Basic}(numsyms)
-          for i in eachindex(symfuncs)
-            symtgrad[i] = diff(SymEngine.Basic(symfuncs[i]),depvar)
-          end
+          symtgrad = [diff(f,depvar) for f in symfuncs]
           tgrad_exists = true
           tgradex = build_tgrad_func(symtgrad,indvar_dict,param_dict,inline_dict)
         catch err
@@ -115,10 +101,8 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
           # Build the Jacobian Matrix of SymEngine Expressions
           symjac = Matrix{SymEngine.Basic}(numsyms,numsyms)
           for i in eachindex(funcs)
-            funcex = funcs[i]
-            symfunc = @eval $funcex
-            for j in eachindex(symtup)
-              symjac[i,j] = diff(SymEngine.Basic(symfuncs[i]),symtup[j])
+            for j in eachindex(syms)
+              symjac[i,j] = diff(symfuncs[i],syms[j])
             end
           end
 
@@ -160,8 +144,8 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
           if opts[:build_hes]
             try # Hessian
               symhes = Matrix{SymEngine.Basic}(numsyms,numsyms)
-              for i in eachindex(funcs), j in eachindex(symtup)
-                symhes[i,j] = diff(symjac[i,j],symtup[j])
+              for i in eachindex(funcs), j in eachindex(syms)
+                symhes[i,j] = diff(symjac[i,j],syms[j])
               end
               # Build the Julia function
               Hex = build_jac_func(symhes,indvar_dict,param_dict,inline_dict)
@@ -185,18 +169,17 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
       if opts[:build_dpfuncs]
         try # Parameter Gradients
           d_paramfuncs  = Vector{Vector{Expr}}(numparams)
-          for i in eachindex(paramtup)
+          for i in eachindex(param_syms)
             tmp_dpfunc = Vector{Expr}(length(funcs))
             for j in eachindex(funcs)
               funcex = funcs[j]
-              symfunc = @eval $funcex
-              d_curr = diff(SymEngine.Basic(symfunc),paramtup[i])
+              d_curr = diff(symfuncs[j],param_syms[i])
               param_symjac[j,i] = d_curr
               symfunc_str = parse(string(d_curr))
               if typeof(symfunc_str) <: Number
-                tmp_dpfunc[j] = :(1*$symfunc_str)
+                tmp_dpfunc[j] = :($symfunc_str*1)
               elseif typeof(symfunc_str) <: Symbol
-                tmp_dpfunc[j] = :(1*$symfunc_str)
+                tmp_dpfunc[j] = :($symfunc_str*1)
               else
                 tmp_dpfunc[j] = symfunc_str
               end
@@ -231,7 +214,7 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
                symjac=symjac,Jex=Jex,expjac=expjac,expJex=expJex,invjac=invjac,
                invWex=invWex,invWex_t=invWex_t,syminvW=syminvW,
                syminvW_t=syminvW_t,invJex=invJex,symhes=symhes,invhes=invhes,Hex=Hex,
-               invHex=invHex,params=param_dict.keys,
+               invHex=invHex,params=param_syms,
                pfuncs=pfuncs,d_pfuncs=d_pfuncs,
                param_symjac=param_symjac,param_Jex=param_Jex)
 
@@ -242,7 +225,7 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
   overloadex = :(((p::$name))(t::Number,u,du) = $fex) |> esc
   push!(exprs,overloadex)
   # Value Dispatches for the Parameters
-  params = param_dict.keys
+  params = param_syms
   for i in 1:length(params)
     param = Symbol(params[i])
     param_func = pfuncs[i]

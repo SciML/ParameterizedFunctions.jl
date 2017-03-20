@@ -135,6 +135,7 @@ println("Test booleans")
 
 @code_llvm has_paramjac(f)
 
+test_fail(x,y,d) = erf(x*y/d)
 println("Test non-differentiable")
 NJ = @ode_def NoJacTest begin
   dx = a*x - b*x*y
@@ -142,7 +143,9 @@ NJ = @ode_def NoJacTest begin
 end a=>1.5 b=>1 c=3 d=4
 NJ(t,u,du)
 @test du == [-3.0;-3*3.0 + erf(2.0*3.0/4)]
-@test has_jac(NJ) == false
+@test has_jac(NJ) == true
+println(NJ.Jex)
+#NJ(Val{:jac},t,u,J)
 
 ### FEM Macros
 
