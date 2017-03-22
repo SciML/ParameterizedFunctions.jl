@@ -62,6 +62,7 @@ iJ= zeros(2,2)
 iW= zeros(2,2)
 f(t,u,du)
 @test du == [-3.0,-3.0]
+@test du == f(t,u)
 f_t(t,u,du)
 @test du == [2.0,-3.0]
 f_t2(t,u,du)
@@ -119,6 +120,7 @@ g = LotkaVolterra(a=1.0,b=2.0)
 @test g.a * u[1] - g.b * u[1]*u[2] == -10.0
 g(t,u,du)
 @test du == [-10.0,-3.0]
+@test du == g(t,u)
 h = LotkaVolterra2(1.0,2.0)
 h(t,u,du)
 @test du == [-10.0,-3.0]
@@ -143,6 +145,7 @@ NJ = @ode_def NoJacTest begin
 end a=>1.5 b=>1 c=3 d=4
 NJ(t,u,du)
 @test du == [-3.0;-3*3.0 + erf(2.0*3.0/4)]
+@test du == NJ(t,u)
 @test has_jac(NJ) == true
 println(NJ.Jex)
 #NJ(Val{:jac},t,u,J)
