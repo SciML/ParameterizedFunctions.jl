@@ -238,6 +238,10 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
   overloadex = :(((p::$name))(t::Number,u,params,du) = $pex) |> esc
   push!(exprs,overloadex)
 
+  # Add a method which allocates the `du` and returns it instead of being inplace
+  overloadex = :(((p::$name))(t::Number,u) = (du=similar(u); p(t,u,du); du)) |> esc
+  push!(exprs,overloadex)
+
   # Value Dispatches for the Parameter Derivatives
   if pderiv_exists
     for i in 1:length(params)
