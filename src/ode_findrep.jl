@@ -39,18 +39,5 @@ function ode_symbol_findreplace(ex,indvar_dict,param_dict,inline_dict;params_fro
       ex = :(params[$idx])
     end
   end
-  :($ex*1) # Add the 1 to make it an expression not a Symbol
-end
-
-
-function flip_mult!(ex)
-  for (i,arg) in enumerate(ex.args)
-    if isa(arg,Expr)
-      if arg.args[1] == :(*) && length(arg.args) >= 3 && (isa(arg.args[2], Number) || (isa(arg.args[2], Expr) && arg.args[2].args[1] == :-))
-        arg.args[3],arg.args[2] = arg.args[2], arg.args[3]
-      else
-        flip_mult!(arg)
-      end
-    end
-  end
+  :(1*$ex) # Add the 1 to make it an expression not a Symbol
 end

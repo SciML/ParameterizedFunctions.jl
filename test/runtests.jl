@@ -137,7 +137,6 @@ println("Test booleans")
 
 @code_llvm has_paramjac(f)
 
-test_fail(x,y,d) = erf(x*y/d)
 println("Test non-differentiable")
 NJ = @ode_def NoJacTest begin
   dx = a*x - b*x*y

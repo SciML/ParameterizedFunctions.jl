@@ -63,11 +63,9 @@ function build_component_funcs(symex)
     if i%2 == 0
       ex = arg.args[2]
       if (typeof(ex) <: Symbol) || (typeof(ex) <: Number)
-        push!(funcs,:($ex*1))
+        push!(funcs,:(1*$ex))
       else # It's an expression, just push
-        fix_ex = copy(ex)
-        flip_mult!(fix_ex)
-        push!(funcs,fix_ex)
+        push!(funcs,arg.args[2])
       end
     end
   end
