@@ -165,5 +165,5 @@ end α=>0.5 β=2.0
 @test f(1.0,x) == g(1.0,x)
 @test h(1.0,x,x) == l(1.0,x,x)
 
-# Make sure all of the problems in the problem library build
+println("Make sure all of the problems in the problem library build")
 using DiffEqProblemLibrary
