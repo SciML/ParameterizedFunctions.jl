@@ -213,6 +213,11 @@ way when a function (usually an ODE/SDE solver) is dispatched on `f`. It is
 requested that solvers should only use the explicit functions when they exist
 to help with performance.
 
+In addition, the following functions are provided:
+
+- `param_values(f)` : Returns an array of the values for each of the parameters
+- `num_params(f)` : Returns the number of parameters for `f`
+
 ## Internals: How it Works
 
 This shows how to manually build a ParameterizedFunction to give to
