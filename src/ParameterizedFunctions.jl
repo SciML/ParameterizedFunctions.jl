@@ -39,7 +39,8 @@ module ParameterizedFunctions
 
   export ParameterizedFunction, DAEParameterizedFunction, DDEParameterizedFunction
 
-  export param_values
+  export param_values, num_params
+  
 end # module
 
 
