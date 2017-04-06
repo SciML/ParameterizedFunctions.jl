@@ -1,4 +1,6 @@
-type ParameterizedFunction{isinplace,F,P} <: AbstractParameterizedFunction{isinplace}
+abstract ConstructedParameterizedFunction{isinplace} <: AbstractParameterizedFunction{isinplace}
+
+type ParameterizedFunction{isinplace,F,P} <: ConstructedParameterizedFunction{isinplace}
   f::F
   params::P
 end
@@ -13,9 +15,7 @@ end
 (pf::ParameterizedFunction{false,F,P}){F,P}(t,u) = pf.f(t,u,pf.params)
 (pf::ParameterizedFunction{false,F,P}){F,P}(t,u,params) = pf.f(t,u,params)
 
-param_values(pf::ParameterizedFunction) = pf.params
-
-type DAEParameterizedFunction{isinplace,F,P} <: AbstractParameterizedFunction{isinplace}
+type DAEParameterizedFunction{isinplace,F,P} <: ConstructedParameterizedFunction{isinplace}
   f::F
   params::P
 end
@@ -30,9 +30,7 @@ end
 (pf::DAEParameterizedFunction{false,F,P}){F,P}(t,u,du) = pf.f(t,u,pf.params,du)
 (pf::DAEParameterizedFunction{false,F,P}){F,P}(t,u,params,du) = pf.f(t,u,params,du)
 
-param_values(pf::DAEParameterizedFunction) = pf.params
-
-type DDEParameterizedFunction{isinplace,F,P} <: AbstractParameterizedFunction{isinplace}
+type DDEParameterizedFunction{isinplace,F,P} <: ConstructedParameterizedFunction{isinplace}
   f::F
   params::P
 end
@@ -47,4 +45,19 @@ end
 (pf::DDEParameterizedFunction{false,F,P}){F,P}(t,u,h) = pf.f(t,u,h,pf.params)
 (pf::DDEParameterizedFunction{false,F,P}){F,P}(t,u,h,params) = pf.f(t,u,h,params)
 
-param_values(pf::DDEParameterizedFunction) = pf.params
+type ProbParameterizedFunction{F,P} <: ConstructedParameterizedFunction{false}
+  f::F
+  params::P
+end
+(pf::ProbParameterizedFunction{F,P}){F,P}(prob,i) = pf.f(prob,i,params)
+
+type OutputParameterizedFunction{F,P} <: ConstructedParameterizedFunction{false}
+  f::F
+  params::P
+end
+(pf::OutputParameterizedFunction{F,P}){F,P}(sol) = pf.f(sol,params)
+
+### Interface
+
+DiffEqBase.param_values(pf::ConstructedParameterizedFunction) = pf.params
+DiffEqBase.num_params(pf::ConstructedParameterizedFunction) = length(pf.params)
