@@ -147,6 +147,7 @@ end a=>1.5 b=>1 c=3 d=4
 NJ(t,u,du)
 @test du == [-3.0;-3*3.0 + erf(2.0*3.0/4)]
 @test du == NJ(t,u)
+@test_throws MethodError NJ(Val{:jac},t,u,iH)
 # NJ(Val{:jac},t,u,J) # Currently gives E not defined, will be fixed by the next SymEgine
 ### FEM Macros
 
