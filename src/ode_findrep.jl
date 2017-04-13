@@ -26,6 +26,17 @@ function ode_findreplace(ex,symex,indvar_dict,param_dict,inline_dict;params_from
   end
 end
 
+function bad_derivative(ex)
+  for (i,arg) in enumerate(ex.args)
+    if isa(arg,Expr)
+      bad_derivative(arg)
+    elseif arg == :Derivative
+      warn("Undefined derivative found. If you are using a non-elementary function, you must define the derivative in order to calculate Jacobians et. al. Please refer to the documentation.")
+      error("Failed")
+    end
+  end
+end
+
 
 
 function ode_symbol_findreplace(ex,indvar_dict,param_dict,inline_dict;params_from_function=true)

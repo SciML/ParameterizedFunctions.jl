@@ -108,12 +108,14 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
 
           # Build the Julia function
           Jex = build_jac_func(symjac,indvar_dict,param_dict,inline_dict)
+          bad_derivative(Jex)
           jac_exists = true
 
           if opts[:build_expjac]
             try
               expjac = expm(γ*symjac) # This does not work, which is why disabled
               expJex = build_jac_func(expjac,indvar_dict,param_dict,inline_dict)
+              bad_derivative(expJex)
               expjac_exists = true
             catch
               warn("Jacobian could not exponentiate")
@@ -124,6 +126,7 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
             try # Jacobian Inverse
               invjac = inv(symjac)
               invJex = build_jac_func(invjac,indvar_dict,param_dict,inline_dict)
+              bad_derivative(invJex)
               invjac_exists = true
             catch err
               warn("Jacobian could not invert")
@@ -134,8 +137,10 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
               syminvW = inv(M - γ*symjac)
               syminvW_t = inv(M/γ - symjac)
               invWex = build_jac_func(syminvW,indvar_dict,param_dict,inline_dict)
+              bad_derivative(invWex)
               invW_exists = true
               invWex_t = build_jac_func(syminvW_t,indvar_dict,param_dict,inline_dict)
+              bad_derivative(invWex_t)
               invW_t_exists = true
             catch err
               warn("Rosenbrock-W could not invert")
@@ -149,11 +154,13 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
               end
               # Build the Julia function
               Hex = build_jac_func(symhes,indvar_dict,param_dict,inline_dict)
+              bad_derivative(Hex)
               hes_exists = true
               if opts[:build_invhes]
                 try # Hessian Inverse
                   invhes = inv(symhes)
                   invHex = build_jac_func(invhes,indvar_dict,param_dict,inline_dict)
+                  bad_derivative(invHex)
                   invhes_exists = true
                 catch err
                   warn("Hessian could not invert")
