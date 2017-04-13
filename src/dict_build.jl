@@ -1,11 +1,17 @@
 function build_indvar_dict(ex)
   indvar_dict = OrderedDict{Symbol,Int}()
+  cur_sym = 0
   for i in 2:2:length(ex.args) #Every odd line is line number
     arg = ex.args[i].args[1] #Get the first thing, should be dsomething
-    nodarg = Symbol(string(arg)[2:end]) #Take off the d
-    if !haskey(indvar_dict,nodarg)
-      s = string(arg)
-      indvar_dict[Symbol(string(arg)[2:end])] = i/2 # and label it the next int if not seen before
+    firstarg = Symbol(first(string(arg))) # Check for d
+    if firstarg == :d
+      nodarg = Symbol(join(drop(string(arg), 1))) # join(drop(s, 1)) is 2:end
+      if !haskey(indvar_dict,nodarg)
+        cur_sym += 1
+        indvar_dict[nodarg] = cur_sym
+      else
+        error("The derivative term for $nodarg is repeated. This is not allowed.")
+      end
     end
   end
   syms = indvar_dict.keys

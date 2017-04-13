@@ -14,7 +14,7 @@ module ParameterizedFunctions
     delete!(ENV,"symengine_jl_safe_failure")
   end
 
-  using DataStructures, DiffEqBase, SimpleTraits
+  using DataStructures, DiffEqBase, SimpleTraits, Iterators
   import Base: getindex
 
   const FEM_SYMBOL_DICT = Dict{Symbol,Expr}(:x=>:(x[:,1]),:y=>:(x[:,2]),:z=>:(x[:,3]))

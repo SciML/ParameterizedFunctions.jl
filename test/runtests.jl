@@ -18,6 +18,11 @@ f_t2 = @ode_def_noinvjac SymCheck2 begin # Checks for error due to symbol on 1
   dy = -c*y + d*x*y*t^2
 end a=>1.5 b=>1 c=3 d=1
 
+f_t3 = @ode_def_noinvjac ExprCheck begin # Checks for error due to symbol on 1
+  dx = a*x - b*x*y
+  dy = -c*y + d*x*y
+end a=>1.5 b=>2.0 c=t*x d=2pi # Change to π after unicode fix
+
 f = @ode_def_noinvhes LotkaVolterra begin
   dx = a*x - b*x*y
   dy = -c*y + d*x*y
@@ -123,16 +128,26 @@ println("Test booleans")
 
 @code_llvm has_paramjac(f)
 
-test_fail(x,y,d) = erf(x*y/d)
-println("Test non-differentiable")
-NJ = @ode_def NoJacTest begin
+println("Test difficult differentiable")
+NJ = @ode_def_nohes DiffDiff begin
   dx = a*x - b*x*y
   dy = -c*y + erf(x*y/d)
 end a=>1.5 b=>1 c=3 d=4
 NJ(t,u,du)
 @test du == [-3.0;-3*3.0 + erf(2.0*3.0/4)]
 @test du == NJ(t,u)
+# NJ(Val{:jac},t,u,J) # Currently gives E not defined, will be fixed by the next SymEgine
 
+test_fail(x,y,d) = erf(x*y/d)
+println("Test non-differentiable")
+NJ = @ode_def NoJacTest begin
+  dx = a*x - b*x*y
+  dy = -c*y + test_fail(x,y,d)
+end a=>1.5 b=>1 c=3 d=4
+NJ(t,u,du)
+@test du == [-3.0;-3*3.0 + erf(2.0*3.0/4)]
+@test du == NJ(t,u)
+# NJ(Val{:jac},t,u,J) # Currently gives E not defined, will be fixed by the next SymEgine
 ### FEM Macros
 
 println("Test FEM")
