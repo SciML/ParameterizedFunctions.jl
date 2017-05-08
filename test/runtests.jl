@@ -141,9 +141,9 @@ NJ(t,u,du)
 test_fail(x,y,d) = erf(x*y/d)
 println("Test non-differentiable")
 NJ = @ode_def NoJacTest begin
-  dx = a*x - b*x*y
+  dx = a*x - μ*x*y
   dy = -c*y + test_fail(x,y,d)
-end a=>1.5 b=>1 c=3 d=4
+end a=>1.5 μ=>1 c=3 d=4
 NJ(t,u,du)
 @test du == [-3.0;-3*3.0 + erf(2.0*3.0/4)]
 @test du == NJ(t,u)
@@ -169,5 +169,4 @@ end α=>0.5 β=2.0
 @test h(1.0,x,x) == l(1.0,x,x)
 
 println("Make sure all of the problems in the problem library build")
-#segfaults because of unicode
-#using DiffEqProblemLibrary
+using DiffEqProblemLibrary

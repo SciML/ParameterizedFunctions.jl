@@ -1,3 +1,5 @@
+__precompile__()
+
 module ParameterizedFunctions
 
   if haskey(ENV, "symengine_jl_safe_failure")
