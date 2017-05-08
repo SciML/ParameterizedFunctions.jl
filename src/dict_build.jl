@@ -5,7 +5,11 @@ function build_indvar_dict(ex)
     arg = ex.args[i].args[1] #Get the first thing, should be dsomething
     firstarg = Symbol(first(string(arg))) # Check for d
     if firstarg == :d
-      nodarg = Symbol(join(drop(string(arg), 1))) # join(drop(s, 1)) is 2:end
+      @static if VERSION < v"0.6.0-dev.1015"
+        nodarg = Symbol(join(drop(string(arg), 1))) # join(drop(s, 1)) is 2:end
+      else
+        nodarg = Symbol(join(Base.Iterators.drop(string(arg), 1))) # join(drop(s, 1)) is 2:end
+      end
       if !haskey(indvar_dict,nodarg)
         cur_sym += 1
         indvar_dict[nodarg] = cur_sym
