@@ -28,7 +28,7 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
   vector_ex_return = copy(origex) # Build it from the original expression
   ode_findreplace(vector_ex_return,copy(origex),indvar_dict,param_dict,inline_dict;
                   vectorized_form=true,vectorized_returns=:vals)
-  dus = [Symbol("du$i") for i in 1:length(keys(indvar_dict))]
+  dus = [Symbol("du$i") for i in 1:length(keys(indvar_dict))] # TODO: vectorized forms need @. to work
   push!(vector_ex_return.args,:(hcat($(dus...)))) # Make the return void
 
   ######
