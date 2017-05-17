@@ -20,6 +20,17 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
   pex = copy(origex) # Build it from the original expression
   # Parameter find/replace
   ode_findreplace(pex,copy(ex),indvar_dict,param_dict,inline_dict;params_from_function=false)
+
+  # Vectorized Functions
+  vector_ex = copy(origex) # Build it from the original expression
+  ode_findreplace(vector_ex,copy(origex),indvar_dict,param_dict,inline_dict;
+                  vectorized_form=true,vectorized_returns=:slice)
+  vector_ex_return = copy(origex) # Build it from the original expression
+  ode_findreplace(vector_ex_return,copy(origex),indvar_dict,param_dict,inline_dict;
+                  vectorized_form=true,vectorized_returns=:vals)
+  dus = [Symbol("du$i") for i in 1:length(keys(indvar_dict))]
+  push!(vector_ex_return.args,:(hcat($(dus...)))) # Make the return void
+
   ######
   # Build the Functions
 
@@ -217,6 +228,7 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
   exprs = Vector{Expr}(0)
 
   typeex,constructorex = maketype(name,param_dict,origex,funcs,syms,fex,pex=pex,
+               vector_ex = vector_ex,vector_ex_return = vector_ex_return,
                symfuncs=symfuncs,symtgrad=symtgrad,tgradex=tgradex,
                symjac=symjac,Jex=Jex,expjac=expjac,expJex=expJex,invjac=invjac,
                invWex=invWex,invWex_t=invWex_t,syminvW=syminvW,
@@ -248,6 +260,18 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
   # Add a method which allocates the `du` and returns it instead of being inplace
   overloadex = :(((p::$name))(t::Number,u) = (du=similar(u); p(t,u,du); du)) |> esc
   push!(exprs,overloadex)
+
+  # Build the Vectorized functions
+  overloadex = :(((p::$name))(::Type{Val{:vec}},t::Number,u,du) = $vector_ex) |> esc
+  push!(exprs,overloadex)
+
+  # Build the Vectorized functions
+  overloadex = :(((p::$name))(::Type{Val{:vec}},t::Number,u) = $vector_ex_return) |> esc
+  push!(exprs,overloadex)
+  #=
+  overloadex = :(((p::$name))(::Type{Val{:vec}},t::Number,u) = (du=similar(u); p(t,u,du); du)) |> esc
+  push!(exprs,overloadex)
+  =#
 
   # Value Dispatches for the Parameter Derivatives
   if pderiv_exists

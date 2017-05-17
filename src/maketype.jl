@@ -1,5 +1,5 @@
 function maketype(name,param_dict,origex,funcs,syms,fex;
-                  pex=:(),
+                  pex=:(), vector_ex = :(), vector_ex_return = :(),
                   symtgrad=Vector{SymEngine.Basic}(0),
                   tgradex = :(),
                   symjac=Matrix{SymEngine.Basic}(0,0),
@@ -48,6 +48,8 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
         invHex::Expr
         fex::Expr
         pex::Expr
+        vector_ex::Expr
+        vector_ex_return::Expr
         params::Vector{Symbol}
         $((:($x::$(typeof(t))) for (x, t) in param_dict)...)
     end)
@@ -64,6 +66,8 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
     invHex_ex = Meta.quot(invHex)
     fex_ex = Meta.quot(fex)
     pex_ex = Meta.quot(pex)
+    vector_ex_ex = Meta.quot(vector_ex)
+    vector_ex_return_ex = Meta.quot(vector_ex_return)
     param_Jex_ex = Meta.quot(param_Jex)
     constructorex = :($(name)(;$(Expr(:kw,:origex,new_ex)),
                   $(Expr(:kw,:funcs,funcs)),
@@ -91,12 +95,14 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
                   $(Expr(:kw,:invHex,invHex_ex)),
                   $(Expr(:kw,:fex,fex_ex)),
                   $(Expr(:kw,:pex,pex_ex)),
+                  $(Expr(:kw,:vector_ex,vector_ex_ex)),
+                  $(Expr(:kw,:vector_ex_return,vector_ex_return_ex)),
                   $(Expr(:kw,:params,params)),
                   $((Expr(:kw,x,t) for (x, t) in param_dict)...)) =
                   $(name)(origex,funcs,symfuncs,pfuncs,d_pfuncs,syms,
                   symtgrad,symjac,expjac,invjac,syminvW,syminvW_t,symhes,invhes,
                   param_symjac,tgradex,Jex,expJex,param_Jex,invJex,invWex,invWex_t,
-                  Hex,invHex,fex,pex,params,
+                  Hex,invHex,fex,pex,vector_ex,vector_ex_return,params,
                   $(((x for x in keys(param_dict))...)))) |> esc
 
     # Make the type instance using the default constructor

@@ -1,11 +1,18 @@
-function ode_findreplace(ex,symex,indvar_dict,param_dict,inline_dict;params_from_function=true)
+function ode_findreplace(ex,symex,indvar_dict,param_dict,inline_dict;params_from_function=true,
+                         vectorized_form=false,vectorized_returns=:standard)
   for (i,arg) in enumerate(ex.args)
     if isa(arg,Expr)
-      ode_findreplace(arg,symex.args[i],indvar_dict,param_dict,inline_dict;params_from_function=params_from_function)
+      ode_findreplace(arg,symex.args[i],indvar_dict,param_dict,inline_dict;
+                      params_from_function=params_from_function,vectorized_form=vectorized_form,
+                      vectorized_returns=vectorized_returns)
     elseif isa(arg,Symbol)
       s = string(arg)
       if haskey(indvar_dict,arg)
-        ex.args[i] = :(u[$(indvar_dict[arg])]) # replace with u[i]
+        if vectorized_form
+          ex.args[i] = :(u[:,$(indvar_dict[arg])]) # replace with u[:,i]
+        else
+          ex.args[i] = :(u[$(indvar_dict[arg])]) # replace with u[i]
+        end
       elseif haskey(inline_dict,arg)
         ex.args[i] = :($(inline_dict[arg])) # inline from inline_dict
         symex.args[i] = :($(inline_dict[arg])) # also do in symbolic
@@ -19,8 +26,16 @@ function ode_findreplace(ex,symex,indvar_dict,param_dict,inline_dict;params_from
         symex.args[i] = arg # keep arg
       elseif length(string(arg))>1 && haskey(indvar_dict,Symbol(s[nextind(s, 1):end])) && Symbol(s[1])==:d
         tmp = Symbol(s[nextind(s, 1):end]) # Remove the first letter, the d
-        ex.args[i] = :(du[$(indvar_dict[tmp])])
-        symex.args[i] = :(du[$(indvar_dict[tmp])]) #also do in symbolic
+        if vectorized_returns == :slice
+          ex.args[i] = :(du[:,$(indvar_dict[tmp])])
+          symex.args[i] = :(du[:,$(indvar_dict[tmp])]) #also do in symbolic
+        elseif vectorized_returns == :vals
+          ex.args[i] = Symbol("du$(indvar_dict[tmp])")
+          symex.args[i] = Symbol("du$(indvar_dict[tmp])") #also do in symbolic
+        else # vectorized_returns == :standard
+          ex.args[i] = :(du[$(indvar_dict[tmp])])
+          symex.args[i] = :(du[$(indvar_dict[tmp])]) #also do in symbolic
+        end
       end
     end
   end
