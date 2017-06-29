@@ -294,6 +294,8 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
   if jac_exists
     overloadex = :(((p::$name))(::Type{Val{:jac}},t,u,J) = $Jex) |> esc
     push!(exprs,overloadex)
+    overloadex = :(((p::$name))(::Type{Val{:jac}},t::Number,u) = (J=similar(u); p(Val{:jac},t,u,J); J)) |> esc
+    push!(exprs,overloadex)
   end
   # Add the Exponential Jacobian
   if expjac_exists
