@@ -81,6 +81,7 @@ f(Val{:jac},t,u,J)
 f(Val{:invjac},t,u,iJ)
 @test J  == [-1.5 -2.0
              3.0 -1.0]
+@test f(Val{:jac}, t, u) == [-1.5 -2.0; 3.0 -1.0]
 @test minimum(iJ - inv(J) .< 1e-10)
 
 println("Test Inv Rosenbrock-W")
