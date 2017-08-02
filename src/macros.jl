@@ -5,8 +5,8 @@ macro ode_def(name,ex,params...)
     :build_expjac => false,
     :build_invjac => true,
     :build_invW => true,
-    :build_hes => true,
-    :build_invhes => true,
+    :build_hes => false,
+    :build_invhes => false,
     :build_dpfuncs => true)
     ode_def_opts(name,opts,ex,params...)
 end
@@ -44,7 +44,7 @@ macro ode_def_noinvhes(name,ex,params...)
     :build_expjac => false,
     :build_invjac => true,
     :build_invW => true,
-    :build_hes => true,
+    :build_hes => false,
     :build_invhes => false,
     :build_dpfuncs => true)
     ode_def_opts(name,opts,ex,params...)

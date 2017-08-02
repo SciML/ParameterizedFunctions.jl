@@ -122,8 +122,8 @@ opts = Dict{Symbol,Bool}(
       :build_invjac => true,
       :build_invW => true,
       :build_invW_t => true,
-      :build_hes => true,
-      :build_invhes => true,
+      :build_hes => false,
+      :build_invhes => false,
       :build_dpfuncs => true)
 ```
 

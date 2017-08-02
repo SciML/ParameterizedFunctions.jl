@@ -97,6 +97,7 @@ f(Val{:paramjac},t,u,[2.0;2.5;3.0],pJ)
 @test pJ == [2.0 -6.0 0
              0 0 -3.0]
 
+#=
 println("Test Hessians")
 H = J
 iH = iJ
@@ -104,6 +105,7 @@ f(Val{:hes},t,u,H)
 @test_throws MethodError f(Val{:invhes},t,u,iH)
 @test J  == [0.0 0.0
              0.0 0.0]
+=#
 
 println("Test using new parameters")
 g = LotkaVolterra(a=1.0,b=2.0)
@@ -122,7 +124,7 @@ h(t,u,du)
 println("Test booleans")
 @test has_jac(f) == true
 @test has_invjac(f) == true
-@test has_hes(f) == true
+@test has_hes(f) == false
 @test has_invhes(f) == false
 @test has_paramderiv(f) == true
 @test has_paramjac(f) == true
@@ -148,7 +150,7 @@ end a=>1.5 μ=>1 c=3 d=4
 NJ(t,u,du)
 @test du == [-3.0;-3*3.0 + erf(2.0*3.0/4)]
 @test du == NJ(t,u)
-@test_throws MethodError NJ(Val{:jac},t,u,iH)
+@test_throws MethodError NJ(Val{:jac},t,u,iJ)
 # NJ(Val{:jac},t,u,J) # Currently gives E not defined, will be fixed by the next SymEgine
 ### FEM Macros
 
