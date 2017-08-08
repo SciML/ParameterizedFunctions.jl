@@ -5,7 +5,7 @@ function build_indvar_dict(ex)
     arg = ex.args[i].args[1] #Get the first thing, should be dsomething
     firstarg = Symbol(first(string(arg))) # Check for d
     if firstarg == :d
-      @static nodarg = Symbol(join(Base.Iterators.drop(string(arg), 1)))
+      nodarg = Symbol(join(Base.Iterators.drop(string(arg), 1)))
       if !haskey(indvar_dict,nodarg)
         cur_sym += 1
         indvar_dict[nodarg] = cur_sym
