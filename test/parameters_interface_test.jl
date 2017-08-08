@@ -1,4 +1,3 @@
-using OrdinaryDiffEq
 using ParameterizedFunctions
 using DiffEqBase
 using Base.Test
