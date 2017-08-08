@@ -9,9 +9,6 @@ lorenz = @ode_def Lorenz begin
   dz = x*y-β*z
 end σ => 10.0 β = 8.0/3.0 ρ => 28.0
 
-lorenz_compat = DiffEqBase.CompatibilityDiffEqFunction(lorenz)
-@test lorenz_compat.jac != nothing
-
 # make a clean instance to change
 lorenz_test = Lorenz()
 lorenz_test.params
