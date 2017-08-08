@@ -13,6 +13,8 @@ f_t = @ode_def_nohes SymCheck begin # Checks for error due to symbol on 1
   dy = -c*y + d*x*y*t^2
 end a=>1.5 b=>1 c=3 d=1
 
+@test has_syms(f_t)
+
 f_t2 = @ode_def_noinvjac SymCheck2 begin # Checks for error due to symbol on 1
   dx = 1
   dy = -c*y + d*x*y*t^2
@@ -170,6 +172,8 @@ end α=>0.5 β=2.0
 
 @test f(1.0,x) == g(1.0,x)
 @test h(1.0,x,x) == l(1.0,x,x)
+
+@testset "Parameters Interface Test" begin include("parameters_interface_test.jl") end
 
 println("Make sure all of the problems in the problem library build")
 using DiffEqProblemLibrary
