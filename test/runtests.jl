@@ -1,9 +1,7 @@
 using ParameterizedFunctions, DiffEqBase
 using Base.Test
 
-if VERSION >= v"0.6-"
-  using SpecialFunctions
-end
+using SpecialFunctions
 
 ### ODE Macros
 
@@ -35,7 +33,7 @@ f_2 = @ode_def_nohes LotkaVolterra3 begin
   dy = -c*y + d*x*y
 end a=>1.5 b=>1 c=>3 d=1
 
-type  LotkaVolterra2 <: AbstractParameterizedFunction{true}
+mutable struct  LotkaVolterra2 <: AbstractParameterizedFunction{true}
          a::Float64
          b::Int64
 end
