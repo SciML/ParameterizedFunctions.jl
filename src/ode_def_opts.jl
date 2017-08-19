@@ -180,7 +180,7 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
             end
           end
         catch err
-          warn("Failed to build the Jacoboian. This means the Hessian is not built as well.")
+          warn("Failed to build the Jacobian. This means the Hessian is not built as well.")
         end
       end # End Jacobian tree
 
