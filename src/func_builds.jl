@@ -8,7 +8,7 @@ function build_jac_func(symjac,indvar_dict,param_dict,inline_dict;params_from_fu
       else
         ex = ode_symbol_findreplace(ex,indvar_dict,param_dict,inline_dict,params_from_function=params_from_function)
       end
-      push!(Jex.args,:(J[$i,$j] = $ex))
+      push!(Jex.args,:(___J[$i,$j] = $ex))
     end
   end
   Jex.head = :block
@@ -25,7 +25,7 @@ function build_tgrad_func(symtgrad,indvar_dict,param_dict,inline_dict;params_fro
     else
       ex = ode_symbol_findreplace(ex,indvar_dict,param_dict,inline_dict,params_from_function=params_from_function)
     end
-    push!(tgradex.args,:(grad[$i] = $ex))
+    push!(tgradex.args,:(___grad[$i] = $ex))
   end
   tgradex.head = :block
   push!(tgradex.args,nothing)
@@ -48,7 +48,7 @@ function build_p_funcs(paramfuncs,indvar_dict,param_dict,inline_dict)
       else
         ex = ode_symbol_findreplace(ex,indvar_dict,param_dict_drop_cur,inline_dict)
       end
-      push!(pfunc.args,:(du[$j] = $ex))
+      push!(pfunc.args,:(___du[$j] = $ex))
     end
     pfunc.head = :block
     push!(pfunc.args,nothing)
