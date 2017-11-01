@@ -241,7 +241,7 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
   push!(exprs,constructorex)
 
   # Overload the Call
-  overloadex = :(((p::$name))(t::Number,___u,___du) = $fex) |> esc
+  overloadex = :(((___p::$name))(t::Number,___u,___du) = $fex) |> esc
   push!(exprs,overloadex)
   # Value Dispatches for the Parameters
   params = param_syms
@@ -249,27 +249,27 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
     param = Symbol(params[i])
     param_func = pfuncs[i]
     param_valtype = Val{param}
-    overloadex = :(((p::$name))(::Type{$param_valtype},t,___u,$param,___du) = $param_func) |> esc
+    overloadex = :(((___p::$name))(::Type{$param_valtype},t,___u,$param,___du) = $param_func) |> esc
     push!(exprs,overloadex)
   end
 
   # Build the Function
-  overloadex = :(((p::$name))(t::Number,___u,params,___du) = $pex) |> esc
+  overloadex = :(((___p::$name))(t::Number,___u,params,___du) = $pex) |> esc
   push!(exprs,overloadex)
 
   # Add a method which allocates the `du` and returns it instead of being inplace
-  overloadex = :(((p::$name))(t::Number,u) = (du=similar(u); p(t,u,du); du)) |> esc
+  overloadex = :(((___p::$name))(t::Number,u) = (du=similar(u); ___p(t,u,du); du)) |> esc
   push!(exprs,overloadex)
 
   # Build the Vectorized functions
-  overloadex = :(((p::$name))(::Type{Val{:vec}},t::Number,___u,___du) = $vector_ex) |> esc
+  overloadex = :(((___p::$name))(::Type{Val{:vec}},t::Number,___u,___du) = $vector_ex) |> esc
   push!(exprs,overloadex)
 
   # Build the Vectorized functions
-  overloadex = :(((p::$name))(::Type{Val{:vec}},t::Number,___u) = $vector_ex_return) |> esc
+  overloadex = :(((___p::$name))(::Type{Val{:vec}},t::Number,___u) = $vector_ex_return) |> esc
   push!(exprs,overloadex)
   #=
-  overloadex = :(((p::$name))(::Type{Val{:vec}},t::Number,u) = (du=similar(u); p(t,___u,du); du)) |> esc
+  overloadex = :(((___p::$name))(::Type{Val{:vec}},t::Number,u) = (du=similar(u); p(t,___u,du); du)) |> esc
   push!(exprs,overloadex)
   =#
 
@@ -279,57 +279,57 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
       param = Symbol(params[i])
       param_func = d_pfuncs[i]
       param_valtype = Val{param}
-      overloadex = :(((p::$name))(::Type{Val{:deriv}},::Type{$param_valtype},t,___u,$param,___du) = $param_func) |> esc
+      overloadex = :(((___p::$name))(::Type{Val{:deriv}},::Type{$param_valtype},t,___u,$param,___du) = $param_func) |> esc
       push!(exprs,overloadex)
     end
   end
 
   # Add the t gradient
   if tgrad_exists
-    overloadex = :(((p::$name))(::Type{Val{:tgrad}},t,___u,___grad) = $tgradex) |> esc
+    overloadex = :(((___p::$name))(::Type{Val{:tgrad}},t,___u,___grad) = $tgradex) |> esc
     push!(exprs,overloadex)
   end
 
   # Add the Jacobian
   if jac_exists
-    overloadex = :(((p::$name))(::Type{Val{:jac}},t,___u,___J) = $Jex) |> esc
+    overloadex = :(((___p::$name))(::Type{Val{:jac}},t,___u,___J) = $Jex) |> esc
     push!(exprs,overloadex)
-    overloadex = :(((p::$name))(::Type{Val{:jac}},t::Number,u) = (J=similar(u, (length(u), length(u))); p(Val{:jac},t,u,J); J)) |> esc
+    overloadex = :(((___p::$name))(::Type{Val{:jac}},t::Number,u) = (J=similar(u, (length(u), length(u))); ___p(Val{:jac},t,u,J); J)) |> esc
     push!(exprs,overloadex)
   end
   # Add the Exponential Jacobian
   if expjac_exists
-    overloadex = :(((p::$name))(::Type{Val{:expjac}},t,___u,internal_γ,___J) = $expJex) |> esc
+    overloadex = :(((___p::$name))(::Type{Val{:expjac}},t,___u,internal_γ,___J) = $expJex) |> esc
     push!(exprs,overloadex)
   end
   # Add the Inverse Jacobian
   if invjac_exists
-    overloadex = :(((p::$name))(::Type{Val{:invjac}},t,___u,___J) = $invJex) |> esc
+    overloadex = :(((___p::$name))(::Type{Val{:invjac}},t,___u,___J) = $invJex) |> esc
     push!(exprs,overloadex)
   end
   # Add the Inverse Rosenbrock-W
   if invW_exists
-    overloadex = :(((p::$name))(::Type{Val{:invW}},t,___u,internal_γ,___J) = $invWex) |> esc
+    overloadex = :(((___p::$name))(::Type{Val{:invW}},t,___u,internal_γ,___J) = $invWex) |> esc
     push!(exprs,overloadex)
   end
   # Add the Inverse Rosenbrock-W Transformed
   if invW_exists
-    overloadex = :(((p::$name))(::Type{Val{:invW_t}},t,___u,internal_γ,___J) = $invWex_t) |> esc
+    overloadex = :(((___p::$name))(::Type{Val{:invW_t}},t,___u,internal_γ,___J) = $invWex_t) |> esc
     push!(exprs,overloadex)
   end
   # Add the Hessian
   if hes_exists
-    overloadex = :(((p::$name))(::Type{Val{:hes}},t,___u,___J) = $Hex) |> esc
+    overloadex = :(((___p::$name))(::Type{Val{:hes}},t,___u,___J) = $Hex) |> esc
     push!(exprs,overloadex)
   end
   # Add the Inverse Hessian
   if invhes_exists
-    overloadex = :(((p::$name))(::Type{Val{:invhes}},t,___u,___J) = $invHex) |> esc
+    overloadex = :(((___p::$name))(::Type{Val{:invhes}},t,___u,___J) = $invHex) |> esc
     push!(exprs,overloadex)
   end
   # Add Parameter Jacobian
   if param_jac_exists
-    overloadex = :(((p::$name))(::Type{Val{:paramjac}},t,___u,params,___J) = $param_Jex) |> esc
+    overloadex = :(((___p::$name))(::Type{Val{:paramjac}},t,___u,params,___J) = $param_Jex) |> esc
     push!(exprs,overloadex)
   end
 

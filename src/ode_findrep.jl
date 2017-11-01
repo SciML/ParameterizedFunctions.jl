@@ -18,7 +18,7 @@ function ode_findreplace(ex,symex,indvar_dict,param_dict,inline_dict;params_from
         symex.args[i] = :($(inline_dict[arg])) # also do in symbolic
       elseif haskey(param_dict,arg)
         if params_from_function
-          ex.args[i] = :(p.$arg) # replace with p.arg
+          ex.args[i] = :(___p.$arg) # replace with ___p.arg
         else
           idx = findfirst(param_dict.keys .== arg)
           ex.args[i] = :(params[$idx]) # replace with params[arg]
@@ -59,7 +59,7 @@ function ode_symbol_findreplace(ex,indvar_dict,param_dict,inline_dict;params_fro
     ex = :(___u[$(indvar_dict[ex])]) # replace with ___u[i]
   elseif haskey(param_dict,ex)
     if params_from_function
-      ex = :(p.$ex) # replace with ___u[i]
+      ex = :(___p.$ex) # replace with ___u[i]
     else
       idx = findfirst(param_dict.keys .== ex)
       ex = :(params[$idx])
