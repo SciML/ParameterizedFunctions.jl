@@ -1,4 +1,4 @@
-function build_indvar_dict(ex)
+function build_indvar_dict(ex,depvar)
   indvar_dict = OrderedDict{Symbol,Int}()
   cur_sym = 0
   for i in 2:2:length(ex.args) #Every odd line is line number
@@ -6,6 +6,9 @@ function build_indvar_dict(ex)
     firstarg = Symbol(first(string(arg))) # Check for d
     if firstarg == :d
       nodarg = Symbol(join(Base.Iterators.drop(string(arg), 1)))
+      if nodarg == depvar
+        warn("$depvar is fixed as the independent variable but is also used as a dependent variable. Results my be incorrect.")
+      end
       if !haskey(indvar_dict,nodarg)
         cur_sym += 1
         indvar_dict[nodarg] = cur_sym

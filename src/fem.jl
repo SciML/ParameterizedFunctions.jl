@@ -2,7 +2,7 @@ macro fem_def(sig,name,ex,params...)
 
   origex = ex
   ## Build Symbol dictionary
-  indvar_dict,syms = build_indvar_dict(ex)
+  indvar_dict,syms = build_indvar_dict(ex,:t)
 
   param_dict, inline_dict = build_paramdicts(params)
   # Run find replace

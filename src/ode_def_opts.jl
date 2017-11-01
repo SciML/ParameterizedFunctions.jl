@@ -4,7 +4,7 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
   origex = copy(ex) # Save the original expression
 
   ## Build independent variable dictionary
-  indvar_dict,syms = build_indvar_dict(ex)
+  indvar_dict,syms = build_indvar_dict(ex,depvar)
   ## Build parameter and inline dictionaries
   param_dict, inline_dict = build_paramdicts(params)
   ####
