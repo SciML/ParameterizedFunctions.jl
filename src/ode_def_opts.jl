@@ -1,4 +1,4 @@
-function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=I,depvar=:t)
+function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=I,depvar=:t,prefix=:__)
   # depvar is the dependent variable. Defaults to t
   # M is the mass matrix in RosW, must be a constant!
   origex = copy(ex) # Save the original expression
@@ -12,23 +12,23 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
 
   # Run find replace to make the function expression
   symex = copy(ex) # Different expression for symbolic computations
-  ode_findreplace(ex,symex,indvar_dict,param_dict,inline_dict)
+  ode_findreplace(ex,symex,indvar_dict,param_dict,inline_dict,prefix)
   push!(ex.args,nothing) # Make the return void
   fex = ex # Save this expression as the expression for the call
 
   # Parameter-Explicit Functions
   pex = copy(origex) # Build it from the original expression
   # Parameter find/replace
-  ode_findreplace(pex,copy(ex),indvar_dict,param_dict,inline_dict;params_from_function=false)
+  ode_findreplace(pex,copy(ex),indvar_dict,param_dict,inline_dict,prefix;params_from_function=false)
 
   # Vectorized Functions
   vector_ex = copy(origex) # Build it from the original expression
-  ode_findreplace(vector_ex,copy(origex),indvar_dict,param_dict,inline_dict;
+  ode_findreplace(vector_ex,copy(origex),indvar_dict,param_dict,inline_dict,prefix;
                   vectorized_form=true,vectorized_returns=:slice)
   vector_ex_return = copy(origex) # Build it from the original expression
-  ode_findreplace(vector_ex_return,copy(origex),indvar_dict,param_dict,inline_dict;
+  ode_findreplace(vector_ex_return,copy(origex),indvar_dict,param_dict,inline_dict,prefix;
                   vectorized_form=true,vectorized_returns=:vals)
-  dus = [Symbol("___du$i") for i in 1:length(keys(indvar_dict))] # TODO: vectorized forms need @. to work
+  dus = [Symbol("$(prefix)du$i") for i in 1:length(keys(indvar_dict))] # TODO: vectorized forms need @. to work
   push!(vector_ex_return.args,:(hcat($(dus...)))) # Make the return void
 
   ######
@@ -51,7 +51,7 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
     end
     paramfuncs[i] = tmp_pfunc
   end
-  pfuncs = build_p_funcs(paramfuncs,indvar_dict,param_dict,inline_dict)
+  pfuncs = build_p_funcs(paramfuncs,indvar_dict,param_dict,inline_dict,prefix)
 
   # Symbolic Setup
   symfuncs = Vector{SymEngine.Basic}(0)
@@ -101,7 +101,7 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
         try
           symtgrad = [diff(f,depvar) for f in symfuncs]
           tgrad_exists = true
-          tgradex = build_tgrad_func(symtgrad,indvar_dict,param_dict,inline_dict)
+          tgradex = build_tgrad_func(symtgrad,indvar_dict,param_dict,inline_dict,prefix)
         catch err
           warn("Time Derivative Gradient could not invert")
         end
@@ -118,14 +118,14 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
           end
 
           # Build the Julia function
-          Jex = build_jac_func(symjac,indvar_dict,param_dict,inline_dict)
+          Jex = build_jac_func(symjac,indvar_dict,param_dict,inline_dict,prefix)
           bad_derivative(Jex)
           jac_exists = true
 
           if opts[:build_expjac]
             try
               expjac = expm(γ*symjac) # This does not work, which is why disabled
-              expJex = build_jac_func(expjac,indvar_dict,param_dict,inline_dict)
+              expJex = build_jac_func(expjac,indvar_dict,param_dict,inline_dict,prefix)
               bad_derivative(expJex)
               expjac_exists = true
             catch
@@ -136,7 +136,7 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
           if opts[:build_invjac]
             try # Jacobian Inverse
               invjac = inv(symjac)
-              invJex = build_jac_func(invjac,indvar_dict,param_dict,inline_dict)
+              invJex = build_jac_func(invjac,indvar_dict,param_dict,inline_dict,prefix)
               bad_derivative(invJex)
               invjac_exists = true
             catch err
@@ -147,10 +147,10 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
             try # Rosenbrock-W Inverse
               syminvW = inv(M - γ*symjac)
               syminvW_t = inv(M/γ - symjac)
-              invWex = build_jac_func(syminvW,indvar_dict,param_dict,inline_dict)
+              invWex = build_jac_func(syminvW,indvar_dict,param_dict,inline_dict,prefix)
               bad_derivative(invWex)
               invW_exists = true
-              invWex_t = build_jac_func(syminvW_t,indvar_dict,param_dict,inline_dict)
+              invWex_t = build_jac_func(syminvW_t,indvar_dict,param_dict,inline_dict,prefix)
               bad_derivative(invWex_t)
               invW_t_exists = true
             catch err
@@ -164,13 +164,13 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
                 symhes[i,j] = diff(symjac[i,j],syms[j])
               end
               # Build the Julia function
-              Hex = build_jac_func(symhes,indvar_dict,param_dict,inline_dict)
+              Hex = build_jac_func(symhes,indvar_dict,param_dict,inline_dict,prefix)
               bad_derivative(Hex)
               hes_exists = true
               if opts[:build_invhes]
                 try # Hessian Inverse
                   invhes = inv(symhes)
-                  invHex = build_jac_func(invhes,indvar_dict,param_dict,inline_dict)
+                  invHex = build_jac_func(invhes,indvar_dict,param_dict,inline_dict,prefix)
                   bad_derivative(invHex)
                   invhes_exists = true
                 catch err
@@ -213,7 +213,7 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
             param_symjac_ex[:,i] = d_paramfuncs[i]
           end
 
-          param_Jex = build_jac_func(param_symjac_ex,indvar_dict,param_dict,inline_dict,params_from_function=false)
+          param_Jex = build_jac_func(param_symjac_ex,indvar_dict,param_dict,inline_dict,prefix,params_from_function=false)
           param_jac_exists = true
         catch err
           warn("Failed to build the parameter derivatives.")
@@ -241,35 +241,37 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
   push!(exprs,constructorex)
 
   # Overload the Call
-  overloadex = :(((___p::$name))(t::Number,___u,___du) = $fex) |> esc
+  overloadex = :((($(esc(Symbol("$(prefix)p")))::$(esc(name)))(t::Number,$(esc(Symbol("$(prefix)u"))),$(esc(Symbol("$(prefix)du")))) = $esc(fex)))
+  display(overloadex)
   push!(exprs,overloadex)
+
   # Value Dispatches for the Parameters
   params = param_syms
   for i in 1:length(params)
     param = Symbol(params[i])
     param_func = pfuncs[i]
     param_valtype = Val{param}
-    overloadex = :(((___p::$name))(::Type{$param_valtype},t,___u,$param,___du) = $param_func) |> esc
+    overloadex = :((($(Symbol("$(prefix)p"))::$name))(::Type{$param_valtype},t,$(Symbol("$(prefix)u")),$param,$(Symbol("$(prefix)du"))) = $param_func) |> esc
     push!(exprs,overloadex)
   end
 
   # Build the Function
-  overloadex = :(((___p::$name))(t::Number,___u,params,___du) = $pex) |> esc
+  overloadex = :((($(Symbol("$(prefix)p"))::$name))(t::Number,$(Symbol("$(prefix)u")),params,$(Symbol("$(prefix)du"))) = $pex) |> esc
   push!(exprs,overloadex)
 
   # Add a method which allocates the `du` and returns it instead of being inplace
-  overloadex = :(((___p::$name))(t::Number,u) = (du=similar(u); ___p(t,u,du); du)) |> esc
+  overloadex = :((($(Symbol("$(prefix)p"))::$name))(t::Number,u) = (du=similar(u); $(Symbol("$(prefix)p"))(t,u,du); du)) |> esc
   push!(exprs,overloadex)
 
   # Build the Vectorized functions
-  overloadex = :(((___p::$name))(::Type{Val{:vec}},t::Number,___u,___du) = $vector_ex) |> esc
+  overloadex = :((($(Symbol("$(prefix)p"))::$name))(::Type{Val{:vec}},t::Number,$(Symbol("$(prefix)u")),$(Symbol("$(prefix)du"))) = $vector_ex) |> esc
   push!(exprs,overloadex)
 
   # Build the Vectorized functions
-  overloadex = :(((___p::$name))(::Type{Val{:vec}},t::Number,___u) = $vector_ex_return) |> esc
+  overloadex = :((($(Symbol("$(prefix)p"))::$name))(::Type{Val{:vec}},t::Number,$(Symbol("$(prefix)u"))) = $vector_ex_return) |> esc
   push!(exprs,overloadex)
   #=
-  overloadex = :(((___p::$name))(::Type{Val{:vec}},t::Number,u) = (du=similar(u); p(t,___u,du); du)) |> esc
+  overloadex = :((($(Symbol("$(prefix)p"))::$name))(::Type{Val{:vec}},t::Number,u) = (du=similar(u); p(t,$(Symbol("$(prefix)u")),du); du)) |> esc
   push!(exprs,overloadex)
   =#
 
@@ -279,57 +281,57 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
       param = Symbol(params[i])
       param_func = d_pfuncs[i]
       param_valtype = Val{param}
-      overloadex = :(((___p::$name))(::Type{Val{:deriv}},::Type{$param_valtype},t,___u,$param,___du) = $param_func) |> esc
+      overloadex = :((($(Symbol("$(prefix)p"))::$name))(::Type{Val{:deriv}},::Type{$param_valtype},t,$(Symbol("$(prefix)u")),$param,$(Symbol("$(prefix)du"))) = $param_func) |> esc
       push!(exprs,overloadex)
     end
   end
 
   # Add the t gradient
   if tgrad_exists
-    overloadex = :(((___p::$name))(::Type{Val{:tgrad}},t,___u,___grad) = $tgradex) |> esc
+    overloadex = :((($(Symbol("$(prefix)p"))::$name))(::Type{Val{:tgrad}},t,$(Symbol("$(prefix)u")),$(Symbol("$(prefix)grad"))) = $tgradex) |> esc
     push!(exprs,overloadex)
   end
 
   # Add the Jacobian
   if jac_exists
-    overloadex = :(((___p::$name))(::Type{Val{:jac}},t,___u,___J) = $Jex) |> esc
+    overloadex = :((($(Symbol("$(prefix)p"))::$name))(::Type{Val{:jac}},t,$(Symbol("$(prefix)u")),$(Symbol("$(prefix)J"))) = $Jex) |> esc
     push!(exprs,overloadex)
-    overloadex = :(((___p::$name))(::Type{Val{:jac}},t::Number,u) = (J=similar(u, (length(u), length(u))); ___p(Val{:jac},t,u,J); J)) |> esc
+    overloadex = :((($(Symbol("$(prefix)p"))::$name))(::Type{Val{:jac}},t::Number,u) = (J=similar(u, (length(u), length(u))); $(Symbol("$(prefix)p"))(Val{:jac},t,u,J); J)) |> esc
     push!(exprs,overloadex)
   end
   # Add the Exponential Jacobian
   if expjac_exists
-    overloadex = :(((___p::$name))(::Type{Val{:expjac}},t,___u,internal_γ,___J) = $expJex) |> esc
+    overloadex = :((($(Symbol("$(prefix)p"))::$name))(::Type{Val{:expjac}},t,$(Symbol("$(prefix)u")),internal_γ,$(Symbol("$(prefix)J"))) = $expJex) |> esc
     push!(exprs,overloadex)
   end
   # Add the Inverse Jacobian
   if invjac_exists
-    overloadex = :(((___p::$name))(::Type{Val{:invjac}},t,___u,___J) = $invJex) |> esc
+    overloadex = :((($(Symbol("$(prefix)p"))::$name))(::Type{Val{:invjac}},t,$(Symbol("$(prefix)u")),$(Symbol("$(prefix)J"))) = $invJex) |> esc
     push!(exprs,overloadex)
   end
   # Add the Inverse Rosenbrock-W
   if invW_exists
-    overloadex = :(((___p::$name))(::Type{Val{:invW}},t,___u,internal_γ,___J) = $invWex) |> esc
+    overloadex = :((($(Symbol("$(prefix)p"))::$name))(::Type{Val{:invW}},t,$(Symbol("$(prefix)u")),internal_γ,$(Symbol("$(prefix)J"))) = $invWex) |> esc
     push!(exprs,overloadex)
   end
   # Add the Inverse Rosenbrock-W Transformed
   if invW_exists
-    overloadex = :(((___p::$name))(::Type{Val{:invW_t}},t,___u,internal_γ,___J) = $invWex_t) |> esc
+    overloadex = :((($(Symbol("$(prefix)p"))::$name))(::Type{Val{:invW_t}},t,$(Symbol("$(prefix)u")),internal_γ,$(Symbol("$(prefix)J"))) = $invWex_t) |> esc
     push!(exprs,overloadex)
   end
   # Add the Hessian
   if hes_exists
-    overloadex = :(((___p::$name))(::Type{Val{:hes}},t,___u,___J) = $Hex) |> esc
+    overloadex = :((($(Symbol("$(prefix)p"))::$name))(::Type{Val{:hes}},t,$(Symbol("$(prefix)u")),$(Symbol("$(prefix)J"))) = $Hex) |> esc
     push!(exprs,overloadex)
   end
   # Add the Inverse Hessian
   if invhes_exists
-    overloadex = :(((___p::$name))(::Type{Val{:invhes}},t,___u,___J) = $invHex) |> esc
+    overloadex = :((($(Symbol("$(prefix)p"))::$name))(::Type{Val{:invhes}},t,$(Symbol("$(prefix)u")),$(Symbol("$(prefix)J"))) = $invHex) |> esc
     push!(exprs,overloadex)
   end
   # Add Parameter Jacobian
   if param_jac_exists
-    overloadex = :(((___p::$name))(::Type{Val{:paramjac}},t,___u,params,___J) = $param_Jex) |> esc
+    overloadex = :((($(Symbol("$(prefix)p"))::$name))(::Type{Val{:paramjac}},t,$(Symbol("$(prefix)u")),params,$(Symbol("$(prefix)J"))) = $param_Jex) |> esc
     push!(exprs,overloadex)
   end
 

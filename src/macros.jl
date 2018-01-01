@@ -11,6 +11,20 @@ macro ode_def(name,ex,params...)
     ode_def_opts(name,opts,ex,params...)
 end
 
+macro ode_def_stan(name,ex,params...)
+    opts = Dict{Symbol,Bool}(
+    :build_tgrad => false,
+    :build_jac => false,
+    :build_expjac => false,
+    :build_invjac => false,
+    :build_invW => false,
+    :build_hes => false,
+    :build_invhes => false,
+    :build_dpfuncs => false)
+    ode_def_opts(name,opts,ex,params...;prefix=:aaaaaaaaa)
+end
+
+
 macro ode_def_bare(name,ex,params...)
     opts = Dict{Symbol,Bool}(
     :build_tgrad => false,

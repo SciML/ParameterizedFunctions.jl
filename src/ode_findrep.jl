@@ -1,24 +1,24 @@
-function ode_findreplace(ex,symex,indvar_dict,param_dict,inline_dict;params_from_function=true,
+function ode_findreplace(ex,symex,indvar_dict,param_dict,inline_dict,prefix;params_from_function=true,
                          vectorized_form=false,vectorized_returns=:standard)
   for (i,arg) in enumerate(ex.args)
     if isa(arg,Expr)
-      ode_findreplace(arg,symex.args[i],indvar_dict,param_dict,inline_dict;
+      ode_findreplace(arg,symex.args[i],indvar_dict,param_dict,inline_dict,prefix;
                       params_from_function=params_from_function,vectorized_form=vectorized_form,
                       vectorized_returns=vectorized_returns)
     elseif isa(arg,Symbol)
       s = string(arg)
       if haskey(indvar_dict,arg)
         if vectorized_form
-          ex.args[i] = :(___u[:,$(indvar_dict[arg])]) # replace with ___u[:,i]
+          ex.args[i] = :($(Symbol("$(prefix)u[:,$(indvar_dict[arg])]"))) # replace with ___u[:,i]
         else
-          ex.args[i] = :(___u[$(indvar_dict[arg])]) # replace with ___u[i]
+          ex.args[i] = :($(Symbol("$(prefix)u[$(indvar_dict[arg])]"))) # replace with ___u[i]
         end
       elseif haskey(inline_dict,arg)
         ex.args[i] = :($(inline_dict[arg])) # inline from inline_dict
         symex.args[i] = :($(inline_dict[arg])) # also do in symbolic
       elseif haskey(param_dict,arg)
         if params_from_function
-          ex.args[i] = :(___p.$arg) # replace with ___p.arg
+          ex.args[i] = Symbol("$(prefix)p.$arg") # replace with ___p.arg
         else
           idx = findfirst(param_dict.keys .== arg)
           ex.args[i] = :(params[$idx]) # replace with params[arg]
@@ -27,14 +27,14 @@ function ode_findreplace(ex,symex,indvar_dict,param_dict,inline_dict;params_from
       elseif length(string(arg))>1 && haskey(indvar_dict,Symbol(s[nextind(s, 1):end])) && Symbol(s[1])==:d
         tmp = Symbol(s[nextind(s, 1):end]) # Remove the first letter, the d
         if vectorized_returns == :slice
-          ex.args[i] = :(___du[:,$(indvar_dict[tmp])])
-          symex.args[i] = :(___du[:,$(indvar_dict[tmp])]) #also do in symbolic
+          ex.args[i] = :($(Symbol("$(prefix)du[:,$(indvar_dict[tmp])]")))
+          symex.args[i] = :($(Symbol("$(prefix)du[:,$(indvar_dict[tmp])]"))) #also do in symbolic
         elseif vectorized_returns == :vals
-          ex.args[i] = Symbol("___du$(indvar_dict[tmp])")
-          symex.args[i] = Symbol("___du$(indvar_dict[tmp])") #also do in symbolic
+          ex.args[i] = Symbol("$(prefix)du$(indvar_dict[tmp])")
+          symex.args[i] = Symbol("$(prefix)du$(indvar_dict[tmp])") #also do in symbolic
         else # vectorized_returns == :standard
-          ex.args[i] = :(___du[$(indvar_dict[tmp])])
-          symex.args[i] = :(___du[$(indvar_dict[tmp])]) #also do in symbolic
+          ex.args[i] = Symbol("$(prefix)du[$(indvar_dict[tmp])]")
+          symex.args[i] = Symbol("$(prefix)du[$(indvar_dict[tmp])]") #also do in symbolic
         end
       end
     end
@@ -54,12 +54,12 @@ end
 
 
 
-function ode_symbol_findreplace(ex,indvar_dict,param_dict,inline_dict;params_from_function=true)
+function ode_symbol_findreplace(ex,indvar_dict,param_dict,inline_dict,prefix;params_from_function=true)
   if haskey(indvar_dict,ex)
-    ex = :(___u[$(indvar_dict[ex])]) # replace with ___u[i]
+    ex = Symbol("$(prefix)u[$(indvar_dict[ex])]") # replace with ___u[i]
   elseif haskey(param_dict,ex)
     if params_from_function
-      ex = :(___p.$ex) # replace with ___u[i]
+      ex = Symbol("$(prefix)p.$ex") # replace with ___u[i]
     else
       idx = findfirst(param_dict.keys .== ex)
       ex = :(params[$idx])

@@ -1,14 +1,14 @@
-function build_jac_func(symjac,indvar_dict,param_dict,inline_dict;params_from_function=true)
+function build_jac_func(symjac,indvar_dict,param_dict,inline_dict,prefix;params_from_function=true)
   Jex = :()
   for i in 1:size(symjac,1)
     for j in 1:size(symjac,2)
       ex = parse(string(symjac[i,j]))
       if typeof(ex) <: Expr
-        ode_findreplace(ex,copy(ex),indvar_dict,param_dict,inline_dict,params_from_function=params_from_function)
+        ode_findreplace(ex,copy(ex),indvar_dict,param_dict,inline_dict,prefix,params_from_function=params_from_function)
       else
-        ex = ode_symbol_findreplace(ex,indvar_dict,param_dict,inline_dict,params_from_function=params_from_function)
+        ex = ode_symbol_findreplace(ex,indvar_dict,param_dict,inline_dict,prefix,params_from_function=params_from_function)
       end
-      push!(Jex.args,:(___J[$i,$j] = $ex))
+      push!(Jex.args,:(parse("$(prefix)J[$i,$j] = $ex")))
     end
   end
   Jex.head = :block
@@ -16,23 +16,23 @@ function build_jac_func(symjac,indvar_dict,param_dict,inline_dict;params_from_fu
   Jex
 end
 
-function build_tgrad_func(symtgrad,indvar_dict,param_dict,inline_dict;params_from_function=false)
+function build_tgrad_func(symtgrad,indvar_dict,param_dict,inline_dict,prefix;params_from_function=false)
   tgradex = :()
   for i in 1:length(symtgrad)
     ex = parse(string(symtgrad[i]))
     if typeof(ex) <: Expr
-      ode_findreplace(ex,copy(ex),indvar_dict,param_dict,inline_dict,params_from_function=params_from_function)
+      ode_findreplace(ex,copy(ex),indvar_dict,param_dict,inline_dict,prefix,params_from_function=params_from_function)
     else
-      ex = ode_symbol_findreplace(ex,indvar_dict,param_dict,inline_dict,params_from_function=params_from_function)
+      ex = ode_symbol_findreplace(ex,indvar_dict,param_dict,inline_dict,prefix,params_from_function=params_from_function)
     end
-    push!(tgradex.args,:(___grad[$i] = $ex))
+    push!(tgradex.args,:(parse("$(prefix)grad[$i] = $ex")))
   end
   tgradex.head = :block
   push!(tgradex.args,nothing)
   tgradex
 end
 
-function build_p_funcs(paramfuncs,indvar_dict,param_dict,inline_dict)
+function build_p_funcs(paramfuncs,indvar_dict,param_dict,inline_dict,prefix)
   params = param_dict.keys
   pfuncs = Vector{Expr}(length(params))
   param_dict_type = typeof(param_dict)
@@ -44,11 +44,11 @@ function build_p_funcs(paramfuncs,indvar_dict,param_dict,inline_dict)
     for j in 1:length(paramfuncs[1])
       ex = paramfuncs[i][j]
       if typeof(ex) <: Expr
-        ode_findreplace(ex,copy(ex),indvar_dict,param_dict_drop_cur,inline_dict)
+        ode_findreplace(ex,copy(ex),indvar_dict,param_dict_drop_cur,inline_dict,prefix)
       else
-        ex = ode_symbol_findreplace(ex,indvar_dict,param_dict_drop_cur,inline_dict)
+        ex = ode_symbol_findreplace(ex,indvar_dict,param_dict_drop_cur,inline_dict,prefix)
       end
-      push!(pfunc.args,:(___du[$j] = $ex))
+      push!(pfunc.args,:(parse("$(prefix)du[$j] = $ex")))
     end
     pfunc.head = :block
     push!(pfunc.args,nothing)
