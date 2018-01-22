@@ -51,7 +51,6 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
         vector_ex::Expr
         vector_ex_return::Expr
         params::Vector{Symbol}
-        $((:($x::$(typeof(t))) for (x, t) in param_dict)...)
     end)
 
     # Make the default constructor
@@ -97,13 +96,11 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
                   $(Expr(:kw,:pex,pex_ex)),
                   $(Expr(:kw,:vector_ex,vector_ex_ex)),
                   $(Expr(:kw,:vector_ex_return,vector_ex_return_ex)),
-                  $(Expr(:kw,:params,params)),
-                  $((Expr(:kw,x,t) for (x, t) in param_dict)...)) =
+                  $(Expr(:kw,:params,params))) =
                   $(name)(origex,funcs,symfuncs,pfuncs,d_pfuncs,syms,
                   symtgrad,symjac,expjac,invjac,syminvW,syminvW_t,symhes,invhes,
                   param_symjac,tgradex,Jex,expJex,param_Jex,invJex,invWex,invWex_t,
-                  Hex,invHex,fex,pex,vector_ex,vector_ex_return,params,
-                  $(((x for x in keys(param_dict))...)))) |> esc
+                  Hex,invHex,fex,pex,vector_ex,vector_ex_return,params)) |> esc
 
     # Make the type instance using the default constructor
     typeex,constructorex

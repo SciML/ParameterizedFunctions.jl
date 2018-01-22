@@ -17,7 +17,7 @@ module ParameterizedFunctions
   end
 
   using DataStructures, DiffEqBase, SimpleTraits
-  
+
   import Base: getindex
 
   const FEM_SYMBOL_DICT = Dict{Symbol,Expr}(:x=>:(x[:,1]),:y=>:(x[:,2]),:z=>:(x[:,3]))
@@ -28,7 +28,6 @@ module ParameterizedFunctions
   include("func_builds.jl")
   include("maketype.jl")
   include("dict_build.jl")
-  include("fem.jl")
   include("macros.jl")
   include("utils.jl")
 

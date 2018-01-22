@@ -1,8 +1,8 @@
-function ode_findreplace(ex,symex,indvar_dict,param_dict,inline_dict;params_from_function=true,
+function ode_findreplace(ex,symex,indvar_dict,params;params_from_function=true,
                          vectorized_form=false,vectorized_returns=:standard)
   for (i,arg) in enumerate(ex.args)
     if isa(arg,Expr)
-      ode_findreplace(arg,symex.args[i],indvar_dict,param_dict,inline_dict;
+      ode_findreplace(arg,symex.args[i],indvar_dict,params;
                       params_from_function=params_from_function,vectorized_form=vectorized_form,
                       vectorized_returns=vectorized_returns)
     elseif isa(arg,Symbol)
@@ -13,16 +13,9 @@ function ode_findreplace(ex,symex,indvar_dict,param_dict,inline_dict;params_from
         else
           ex.args[i] = :(internal_var___u[$(indvar_dict[arg])]) # replace with internal_var___u[i]
         end
-      elseif haskey(inline_dict,arg)
-        ex.args[i] = :($(inline_dict[arg])) # inline from inline_dict
-        symex.args[i] = :($(inline_dict[arg])) # also do in symbolic
-      elseif haskey(param_dict,arg)
-        if params_from_function
-          ex.args[i] = :(internal_var___p.$arg) # replace with internal_var___p.arg
-        else
-          idx = findfirst(param_dict.keys .== arg)
-          ex.args[i] = :(params[$idx]) # replace with params[arg]
-        end
+      elseif arg in params
+        idx = findfirst(params .== arg)
+        ex.args[i] = :(internal_var___p[$idx]) # replace with params[arg]
         symex.args[i] = arg # keep arg
       elseif length(string(arg))>1 && haskey(indvar_dict,Symbol(s[nextind(s, 1):end])) && Symbol(s[1])==:d
         tmp = Symbol(s[nextind(s, 1):end]) # Remove the first letter, the d
@@ -54,16 +47,12 @@ end
 
 
 
-function ode_symbol_findreplace(ex,indvar_dict,param_dict,inline_dict;params_from_function=true)
+function ode_symbol_findreplace(ex,indvar_dict,params;params_from_function=true)
   if haskey(indvar_dict,ex)
     ex = :(internal_var___u[$(indvar_dict[ex])]) # replace with internal_var___u[i]
-  elseif haskey(param_dict,ex)
-    if params_from_function
-      ex = :(internal_var___p.$ex) # replace with internal_var___u[i]
-    else
-      idx = findfirst(param_dict.keys .== ex)
-      ex = :(params[$idx])
-    end
+  elseif ex in params
+    idx = findfirst(params .== ex)
+    ex = :(internal_var___p[$idx])
   end
   :($ex*1) # Add the 1 to make it an expression not a Symbol
 end
