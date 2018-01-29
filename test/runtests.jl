@@ -34,8 +34,6 @@ f_2 = @ode_def_nohes LotkaVolterra3 begin
 end a b c d
 
 println("Test Values")
-@test num_params(f_t) == 4
-@test num_params(f) == 4
 t = 1.0
 u = [2.0,3.0]
 p = [1.5,1,3,1]
