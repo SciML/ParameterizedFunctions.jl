@@ -34,48 +34,6 @@ a function can be used, just with the extra functionality ignored.
 
 ## Basic Usage
 
-### ParameterizedFunction Constructor
-
-The easiest way to make a `ParameterizedFunction` is to use the constructor:
-
-```julia
-pf = ParameterizedFunction(f,params)
-```
-
-The form for `f` is `f(t,u,params,du)`
-where `params` is any type which defines the parameters. The
-resulting `ParameterizedFunction` has the function call `pf(t,u,params,du)`
-which matches the original function, and a call `pf(t,u,du)` which uses internal
-parmaeters which can be used with a differential equation solver. Note that the
-internal parameters can be modified at any time via the field: `pf.p = ...`.
-
-An additional version exists for `f(t,u,params)` which will then act as the
-not inplace version `f(t,u)` in the differential equation solvers.
-
-#### Example
-
-```julia
-pf_func = function (t,u,p,du)
-  du[1] = p[1] * u[1] - p[2] * u[1]*u[2]
-  du[2] = -3 * u[2] + u[1]*u[2]
-end
-
-pf = ParameterizedFunction(pf_func,[1.5,1.0])
-```
-
-And now `pf` can be used in the differential equation solvers and the ecosystem
-functionality which requires explicit parameters (parameter estimation, etc.).
-
-Note that the not inplace version works the same:
-
-```julia
-pf_func2 = function (t,u,p)
-  [p[1] * u[1] - p[2] * u[1]*u[2];-3 * u[2] + u[1]*u[2]]
-end
-
-pf2 = ParameterizedFunction(pf_func2,[1.5,1.0])
-```
-
 ### ODE Macros
 
 A helper macro is provided to make it easier to define a `ParameterizedFunction`,
@@ -87,16 +45,8 @@ you can use the following command:
 f = @ode_def LotkaVolterra begin
   dx = a*x - b*x*y
   dy = -c*y + d*x*y
-end a=>1.5 b=>1 c=3 d=1
+end a b c d
 ```
-
-Note that the syntax  for parameters here is that `=>` will
-put these inside the parameter type, while `=` will inline the number (i.e. replace
-each instance of `c` with `3`). Inlining slightly decreases the function cost and
-so is preferred in any case where you know that the parameter will always be constant.
-This will silently create the `LotkaVolterra` type and thus `g=LotkaVolterra(a=1.0,b=2.0)`
-will create a different function where `a=1.0` and `b=2.0`. However, at any time
-the parameters of `f` can be changed by using `f.a =` or `f.b = `.
 
 The macro also defines the Jacobian `f'`. This is defined as an in-place Jacobian `f(Val{:jac},t,u,J)`.
 This is calculated using SymEngine.jl automatically, so it's no effort on your part.
@@ -130,36 +80,6 @@ opts = Dict{Symbol,Bool}(
 and calls the function `ode_def_opts(name::Symbol,opts,ex::Expr,params)`. Note that
 params is an iterator holding expressions for the parameters.
 
-#### Extra Little Tricks
-
-There are some extra little tricks you can do. Since `@ode_def` is a macro,
-you cannot directly make the parameters something that requires a runtime value.
-Thus the following will error:
-
-```julia
-vec = rand(1,4)
-f = @ode_def LotkaVolterraExample begin
-dx = ax - bxy
-dy = -cy + dxy
-end a=>vec[1] b=>vec[2] c=>vec[3] d=vec[4]
-```
-
-To do the same thing, instead initialize it with values of the same type, and simply
-replace them:
-
-```julia
-vec = rand(1,4)
-f = @ode_def LotkaVolterraExample begin
-dx = ax - bxy
-dy = -cy + dxy
-end a=>1.0 b=>1.0 c=>1.0 d=vec[4]
-f.a,f.b,f.c = vec[1:3]
-```
-
-Notice that when using `=`, it can inline expressions. It can even inline expressions
-of time, like `d=3*t` or `d=2π`. However, do not use something like `d=3*x` as that will
-fail to transform the `x`.
-
 In addition, one can also use their own function inside of the macro. For example:
 
 ```julia
@@ -184,151 +104,6 @@ to be more specific about what to not calculate. In increasing order of calculat
 @ode_def_noinvhes
 @ode_def_nohes
 ```
-
-### Finite Element PDEs
-
-Similar macros for finite element method definitions also exist. For the finite
-element solvers, the definitions use `x[:,1]` instead of `x` and `x[:,2]` instead of `y`.
-To more easily define systems of equations for finite element solvers, we can
-use the `@fem_def` macro. The first argument is the function signature. This
-is required in order to tell the solver linearity. Other than that, the macro
-usage is similar to before. For example,
-
-```julia
-l = @fem_def (t,x,u) BirthDeath begin
-  du = 1-x*α*u
-  dv = 1-y*v
-end α=0.5
-```
-
-defines a system of equations
-
-```julia
-l = (t,x,u)  -> [1-.5*x[:,1]*u[:,1]   1-x[:,2]*u[:,2]]
-```
-
-which is in the form for the FEM solver.
-
-## The ParameterizedFunction Interface
-
-The ParameterizedFunction interface is as follows:
-
-- ParameterizedFunction is a type which is a subtype of Function
-- The type must hold the parameters.
-- Hessians, Inverse Jacobians, Inverse Hessians, explicit parameter functions,
-  parameter derivatives, and parameter Jacobians.
-- The standard call `(p::TypeName)(t,u,du)` must be overloaded for the function
-  calculation. All other functions are optional.
-
-Solvers can interface with ParameterizedFunctions as follows:
-
-```julia
-f.a # accesses the parameter a
-f(t,u,du) # Call the function
-f(t,u,params,du) # Call the function to calculate with parameters params (vector)
-f(Val{:tgrad},t,u,J) # Call the explicit t-gradient function
-f(Val{:a},t,u,2.0,du) # Call the explicit parameter function with a=2.0
-f(Val{:deriv},Val{:a},t,u,2.0,df) # Call the explicit parameter derivative function with a=2.0
-f(Val{:paramjac},t,u,params,J) # Call the explicit parameter Jacobian function
-f(Val{:jac},t,u,J) # Call the explicit Jacobian function
-f(Val{:expjac},t,u,γ,J) # Call the explicit exponential Jacobian function exp(γJ)
-f(Val{:invjac},t,u,iJ) # Call the explicit Inverse Jacobian function
-f(Val{:invW},t,u,γ,iW) # Call the explicit inverse Rosenbrock-W function (M - γJ)^(-1)
-f(Val{:invW_t},t,u,γ,iW) # Call the explicit transformed inverse Rosenbrock-W function (M/γ - J)^(-1)
-f(Val{:hes},t,u,H) # Call the explicit Hessian function
-f(Val{:invhes},t,u,iH) # Call the explicit Inverse Hessian function
-```
-
-To test for whether certain overloads exist, the following functions are provided
-by traits in [DiffEqBase.jl](https://github.com/JuliaDiffEq/DiffEqBase.jl):
-
-```julia
-has_jac(f)
-has_expjac(f)
-has_invjac(f)
-has_tgrad(f)
-has_hes(f)
-has_invhes(f)
-has_invW(f)
-has_invW_t(f)
-has_paramjac(f)
-has_paramderiv(f)
-```
-
-These are compile-time checks and thus the inappropriate branches will compile
-way when a function (usually an ODE/SDE solver) is dispatched on `f`. It is
-requested that solvers should only use the explicit functions when they exist
-to help with performance.
-
-In addition, the following functions are provided:
-
-- `param_values(f)` : Returns an array of the values for each of the parameters
-- `num_params(f)` : Returns the number of parameters for `f`
-
-## Internals: How it Works
-
-This shows how to manually build a ParameterizedFunction to give to
-a solver.
-
-### Template
-
-An example of explicitly defining a parameterized function is as follows. This serves
-as a general template for doing so:
-
-```julia
-type  LotkaVolterra <: AbstractParameterizedFunction{true}
-         a::Float64
-         b::Float64
-end
-f = LotkaVolterra(0.0,0.0)
-(p::LotkaVolterra)(t,u,du) = begin
-         du[1] = p.a * u[1] - p.b * u[1]*u[2]
-         du[2] = -3 * u[2] + u[1]*u[2]
-end
-```
-
-### Explanation
-
-Let's go step by step to see what this template does. The first part defines a
-type:
-
-```julia
-type  LotkaVolterra <: AbstractParameterizedFunction{true}
-         a::Float64
-         b::Float64
-end
-```
-
-The fields are the parameters for our function. The abstract type is parameterized by whether the function is written in-place or not. Then we built the type:
-
-```julia
-f = LotkaVolterra(0.0,0.0)
-```
-
-We put in values for the parameters and told it that we will be defining each of
-those functions. First we define the main overload. This is required even if none
-of the other functions are provided. The function for the main overload is the
-differential equation, so for the Lotka-Volterra equation:
-
-```julia
-(p::LotkaVolterra)(t,u,du) = begin
-         du[1] = p.a * u[1] - p.b * u[1]*u[2]
-         du[2] = -3 * u[2] + u[1]*u[2]
-end
-```
-
-Note how we represented the parameters in the equation. If you did this and set
-the booleans to false, the result is `f` is a `ParameterizedFunction`,
-but `f(t,u,du)` acts like the function:
-
-```julia
-function f(t,u,du)
-         du[1] = 0.0 * u[1] - 0.0 * u[1]*u[2]
-         du[2] = -3 * u[2] + u[1]*u[2]
-end
-```
-
-At anytime the function parameters can be accessed by the fields (`f.a`, `f.b`).
 
 ### Extra Functions
 
@@ -360,43 +135,22 @@ function (p::LotkaVolterra)(::Type{Val{:invjac}},t,u,J)
 end
 ```
 
-#### Hessian and Inverse Hessian
-
-These are the same as the Jacobians, except with value types `:hes` and `:invhes`.
-
-#### Explicit Parameter Functions
-
-For solvers which need to auto-differentiate parameters (local sensitivity analysis),
-explicit parameter functions are required. For our example, we do the following:
-
-```julia
-function (p::LotkaVolterra)(::Type{Val{:a}},t,u,a,du)
-  du[1] = a * u[1] - p.b * u[1] * u[2]
-  du[2] = -3 * u[2] + 1 * u[1] * u[2]
-  nothing
-end
-function (p::LotkaVolterra)(::Type{Val{:b}},t,u,b,du)
-  du[1] = p.a * u[1] - b * u[1] * u[2]
-  du[2] = -3 * u[2] + 1 * u[1] * u[2]
-  nothing
-end
-```
-
-#### Explicit Parameter Derivatives
+#### Parameter Jacobian
 
 For solvers which need parameters derivatives, specifying the functions can increase
 performance. For our example, we allow the solvers to use the explicit derivatives
-in the parameters `a` and `b` by:
+in the parameters by:
 
 ```julia
-function (p::LotkaVolterra)(::Type{Val{:deriv}},::Type{Val{:a}},t,u,a,du)
-  du[1] = 1 * u[1]
-  du[2] = 1 * 0
-  nothing
-end
-function (p::LotkaVolterra)(::Type{Val{:deriv}},::Type{Val{:b}},t,u,b,du)
-  du[1] = -(u[1]) * u[2]
-  du[2] = 1 * 0
-  nothing
+function (p::LotkaVolterra)(::Type{Val{:paramjac}},J,u,p,t)
+    J[1, 1] = u[1] * 1
+    J[1, 2] = -(u[1]) * u[2]
+    J[1, 3] = 0 * 1
+    J[1, 4] = 0 * 1
+    J[2, 1] = 0 * 1
+    J[2, 2] = 0 * 1
+    J[2, 3] = -(u[2])
+    J[2, 4] = u[1] * u[2]
+    nothing
 end
 ```
