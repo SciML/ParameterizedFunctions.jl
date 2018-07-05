@@ -11,7 +11,7 @@ f_t = @ode_def_nohes SymCheck begin # Checks for error due to symbol on 1
   dy = -c*y + d*x*y*t^2
 end a b c d
 
-@test has_syms(f_t)
+@test DiffEqBase.__has_syms(f_t)
 
 f_t2 = @ode_def_noinvjac SymCheck2 begin # Checks for error due to symbol on 1
   dx = 1

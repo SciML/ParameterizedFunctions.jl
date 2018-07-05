@@ -21,7 +21,7 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
                   param_symjac=Matrix{SymEngine.Basic}(0,0),
                   param_Jex=:())
 
-    typeex = :(mutable struct $name <: AbstractParameterizedFunction{true}
+    typeex = :(mutable struct $name <: DiffEqBase.AbstractParameterizedFunction{true}
         origex::Expr
         funcs::Vector{Expr}
         symfuncs::Vector{SymEngine.Basic}
