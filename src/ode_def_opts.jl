@@ -1,4 +1,4 @@
-function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=I,depvar=:t)
+function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;_M=I,depvar=:t)
   # depvar is the dependent variable. Defaults to t
   # M is the mass matrix in RosW, must be a constant!
   origex = copy(ex) # Save the original expression
@@ -42,7 +42,7 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
 
   numsyms = length(indvar_dict)
   numparams = length(params)
-
+  M = Matrix(1*_M,numsyms,numsyms)
   # Parameter Functions
   paramfuncs = Vector{Vector{Expr}}(undef, numparams)
   for i in 1:numparams
