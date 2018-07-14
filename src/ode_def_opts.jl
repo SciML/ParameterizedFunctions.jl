@@ -44,7 +44,7 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
   numparams = length(params)
 
   # Parameter Functions
-  paramfuncs = Vector{Vector{Expr}}(numparams)
+  paramfuncs = Vector{Vector{Expr}}(undef, numparams)
   for i in 1:numparams
     tmp_pfunc = Vector{Expr}(length(funcs))
     for j in eachindex(funcs)
@@ -55,16 +55,16 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
   pfuncs = build_p_funcs(paramfuncs,indvar_dict,params)
 
   # Symbolic Setup
-  symfuncs = Vector{SymEngine.Basic}(0)
-  symtgrad = Vector{SymEngine.Basic}(0)
-  symjac   = Matrix{SymEngine.Basic}(0,0)
-  expjac   = Matrix{SymEngine.Basic}(0,0)
-  invjac   = Matrix{SymEngine.Basic}(0,0)
-  symhes   = Matrix{SymEngine.Basic}(0,0)
-  invhes   = Matrix{SymEngine.Basic}(0,0)
-  syminvW  = Matrix{SymEngine.Basic}(0,0)
-  syminvW_t= Matrix{SymEngine.Basic}(0,0)
-  param_symjac = Matrix{SymEngine.Basic}(0,0)
+  symfuncs = Vector{SymEngine.Basic}(undef, 0)
+  symtgrad = Vector{SymEngine.Basic}(undef, 0)
+  symjac   = Matrix{SymEngine.Basic}(undef, 0,0)
+  expjac   = Matrix{SymEngine.Basic}(undef, 0,0)
+  invjac   = Matrix{SymEngine.Basic}(undef, 0,0)
+  symhes   = Matrix{SymEngine.Basic}(undef, 0,0)
+  invhes   = Matrix{SymEngine.Basic}(undef, 0,0)
+  syminvW  = Matrix{SymEngine.Basic}(undef, 0,0)
+  syminvW_t= Matrix{SymEngine.Basic}(undef, 0,0)
+  param_symjac = Matrix{SymEngine.Basic}(undef, 0,0)
   tgradex = :(error("t-gradient Does Not Exist"))
   tgrad_exists = false
   Jex = :(error("Jacobian Does Not Exist"))
