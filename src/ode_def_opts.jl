@@ -84,7 +84,7 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
   param_Jex = :(error("Parameter Jacobian Does Not Exist"))
   param_jac_exists = false
 
-  d_pfuncs = Vector{Expr}(0)
+  d_pfuncs = Vector{Expr}(undef, 0)
   param_symjac = Matrix{SymEngine.Basic}(numsyms,numparams)
   pderiv_exists = false
 
@@ -227,7 +227,7 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
   end
 
   # Build the type
-  exprs = Vector{Expr}(0)
+  exprs = Vector{Expr}(undef, 0)
 
   typeex,constructorex = maketype(name,params,origex,funcs,syms,fex,pex=pex,
                vector_ex = vector_ex,vector_ex_return = vector_ex_return,
