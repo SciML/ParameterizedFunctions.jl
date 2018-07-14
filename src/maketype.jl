@@ -18,7 +18,7 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
                   invW_t_expr=:(),
                   param_jac_expr=:())
 
-    typeex = :(mutable struct $name{F,J,T,W,Wt,PJ} <: DiffEqBase.AbstractODEFunction{true}
+    typeex = :(mutable struct $name{F,J,T,W,Wt,PJ} <: DiffEqBase.AbstractParameterizedFunction{true}
         f::F
         analytic::Nothing
         jac::J
