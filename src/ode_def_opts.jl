@@ -136,19 +136,21 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;_M
 
           if opts[:build_invjac]
             try # Jacobian Inverse
-              invjac = inv(symjac)
+              L = Base.convert(SymEngine.CDenseMatrix,symjac)
+              invjac = inv(L)
               invJex = build_jac_func(invjac,indvar_dict,params)
               bad_derivative(invJex)
               invjac_exists = true
             catch err
-              println(err)
               @warn("Jacobian could not invert")
             end
           end
           if opts[:build_invW]
             try # Rosenbrock-W Inverse
-              syminvW = inv(M - γ*symjac)
-              syminvW_t = inv(M/γ - symjac)
+              L = Base.convert(SymEngine.CDenseMatrix,M - γ*symjac)
+              syminvW = inv(L)
+              L = Base.convert(SymEngine.CDenseMatrix,M/γ - symjac)
+              syminvW_t = inv(L)
               invWex = build_jac_func(syminvW,indvar_dict,params)
               bad_derivative(invWex)
               invW_exists = true
@@ -156,7 +158,6 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;_M
               bad_derivative(invWex_t)
               invW_t_exists = true
             catch err
-              println(err)
               @warn("Rosenbrock-W could not invert")
             end
           end
@@ -172,7 +173,8 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;_M
               hes_exists = true
               if opts[:build_invhes]
                 try # Hessian Inverse
-                  invhes = inv(symhes)
+                  L = Base.convert(SymEngine.CDenseMatrix,symhes)
+                  invhes = inv(L)
                   invHex = build_jac_func(invhes,indvar_dict,params)
                   bad_derivative(invHex)
                   invhes_exists = true
@@ -221,7 +223,6 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;_M
           param_Jex = build_jac_func(param_symjac_ex,indvar_dict,params,params_from_function=false)
           param_jac_exists = true
         catch err
-          println(err)
           @warn("Failed to build the parameter derivatives.")
         end
       end

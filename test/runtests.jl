@@ -75,7 +75,7 @@ f(Val{:paramjac},pJ,u,[2.0;2.5;3.0;1.0],t)
 @test pJ == [2.0 -6.0 0 0.0
              0 0 -3.0 6.0]
 
-@code_llvm has_jac(f)
+@code_llvm DiffEqBase.has_jac(f)
 
 println("Test booleans")
 @test DiffEqBase.has_jac(f) == true
