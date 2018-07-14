@@ -236,13 +236,12 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;_M
 
   typeex,constructorex = maketype(name,params,origex,funcs,syms,fex,pex=pex,
                vector_ex = vector_ex,vector_ex_return = vector_ex_return,
-               symfuncs=symfuncs,symtgrad=symtgrad,tgradex=tgradex,
-               symjac=symjac,Jex=Jex,expjac=expjac,expJex=expJex,invjac=invjac,
-               invWex=invWex,invWex_t=invWex_t,syminvW=syminvW,
-               syminvW_t=syminvW_t,invJex=invJex,symhes=symhes,invhes=invhes,Hex=Hex,
+               tgradex=tgradex,expJex=expJex,Jex=Jex,
+               invWex=invWex,invWex_t=invWex_t,
+               invJex=invJex,Hex=Hex,
                invHex=invHex,params=params,
                pfuncs=pfuncs,d_pfuncs=d_pfuncs,
-               param_symjac=param_symjac,param_Jex=param_Jex)
+               param_Jex=param_Jex)
 
   push!(exprs,typeex)
   push!(exprs,constructorex)
