@@ -10,7 +10,7 @@ module ParameterizedFunctions
 
   using SymEngine
 
-  if isdefined(:pre_env_value)
+  if @isdefined pre_env_value
     ENV["symengine_jl_safe_failure"] = pre_env_value
   else
     delete!(ENV,"symengine_jl_safe_failure")
