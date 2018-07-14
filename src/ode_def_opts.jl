@@ -231,123 +231,81 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;_M
     end
   end
 
+  # Build the Function
+  f_expr = :((internal_var___du,internal_var___u,internal_var___p,t::Number) -> $pex)
+
+  #=
+  # Add a method which allocates the `du` and returns it instead of being inplace
+  overloadex = :(((f::$name))(u,p,t::Number) = (du=similar(u); f(du,u,p,t); du)) |> esc
+  push!(exprs,overloadex)
+  =#
+
+  # Add the t gradient
+  if tgrad_exists
+    tgrad_expr = :((internal_var___grad,internal_var___u,internal_var___p,t) -> $tgradex)
+  else
+    tgrad_expr = :(nothing)
+  end
+
+  # Add the Jacobian
+  if jac_exists
+    jac_expr = :((internal_var___J,internal_var___u,internal_var___p,t) -> $Jex)
+  else
+    jac_expr = :(nothing)
+  end
+
+  # Add the Inverse Jacobian
+  if invjac_exists
+    invjac_expr = :((internal_var___J,internal_var___u,internal_var___p,t) -> $invJex)
+  else
+    invjac_expr = :(nothing)
+  end
+
+  # Add the Inverse Rosenbrock-W
+  if invW_exists
+    invW_expr = :((internal_var___J,internal_var___u,internal_var___p,internal_γ,t) -> $invWex)
+  else
+    invW_expr = :(nothing)
+  end
+
+  # Add the Inverse Rosenbrock-W Transformed
+  if invW_exists
+    invW_t_expr = :((internal_var___J,internal_var___u,internal_var___p,internal_γ,t) -> $invWex_t)
+  else
+    invW_t_expr = :(nothing)
+  end
+
+  # Add Parameter Jacobian
+  if param_jac_exists
+    param_jac_expr = :((internal_var___J,internal_var___u,internal_var___p,t) -> $param_Jex)
+  else
+    param_jac_expr = :(nothing)
+  end
+
   # Build the type
   exprs = Vector{Expr}(undef, 0)
 
-  typeex,constructorex = maketype(name,params,origex,funcs,syms,fex,pex=pex,
+  typeex,constructorex,callex,callex2 = maketype(name,params,origex,
+               funcs,syms,fex,
+               pex=pex,
                vector_ex = vector_ex,vector_ex_return = vector_ex_return,
                tgradex=tgradex,expJex=expJex,Jex=Jex,
                invWex=invWex,invWex_t=invWex_t,
                invJex=invJex,Hex=Hex,
                invHex=invHex,params=params,
                pfuncs=pfuncs,d_pfuncs=d_pfuncs,
-               param_Jex=param_Jex)
+               param_Jex=param_Jex,
+               f_expr=f_expr,tgrad_expr=tgrad_expr,
+               jac_expr=jac_expr,
+               invjac_expr=invjac_expr,
+               invW_expr=invW_expr,
+               invW_t_expr=invW_t_expr,
+               param_jac_expr=param_jac_expr)
 
   push!(exprs,typeex)
   push!(exprs,constructorex)
-
-
-
-  #=
-  # Value Dispatches for the Parameters
-  for i in 1:length(params)
-    param = Symbol(params[i])
-    param_func = pfuncs[i]
-    param_valtype = Val{param}
-    overloadex = :(((f::$name))(::Type{$param_valtype},t,internal_var___u,$param,internal_var___du) = $param_func) |> esc
-    push!(exprs,overloadex)
-  end
-  =#
-
-  # Build the Function
-  overloadex = :(((f::$name))(internal_var___du,internal_var___u,internal_var___p,t::Number) = $pex) |> esc
-  push!(exprs,overloadex)
-
-  # Add a method which allocates the `du` and returns it instead of being inplace
-  overloadex = :(((f::$name))(u,p,t::Number) = (du=similar(u); f(du,u,p,t); du)) |> esc
-  push!(exprs,overloadex)
-
-  #=
-  # Build the Vectorized functions
-  overloadex = :(((internal_var___p::$name))(::Type{Val{:vec}},t::Number,internal_var___u,internal_var___du) = $vector_ex) |> esc
-  push!(exprs,overloadex)
-
-  # Build the Vectorized functions
-  overloadex = :(((internal_var___p::$name))(::Type{Val{:vec}},t::Number,internal_var___u) = $vector_ex_return) |> esc
-  push!(exprs,overloadex)
-
-  overloadex = :(((internal_var___p::$name))(::Type{Val{:vec}},t::Number,u) = (du=similar(u); p(t,internal_var___u,du); du)) |> esc
-  push!(exprs,overloadex)
-  =#
-
-  # Value Dispatches for the Parameter Derivatives
-  #=
-  if pderiv_exists
-    for i in 1:length(params)
-      param = Symbol(params[i])
-      param_func = d_pfuncs[i]
-      param_valtype = Val{param}
-      overloadex = :(((internal_var___p::$name))(::Type{Val{:deriv}},::Type{$param_valtype},t,internal_var___u,$param,internal_var___du) = $param_func) |> esc
-      push!(exprs,overloadex)
-    end
-  end
-  =#
-
-  # Add the t gradient
-  if tgrad_exists
-    overloadex = :(((f::$name))(::Type{Val{:tgrad}},internal_var___grad,internal_var___u,internal_var___p,t) = $tgradex) |> esc
-    push!(exprs,overloadex)
-  end
-
-  # Add the Jacobian
-  if jac_exists
-    overloadex = :(((f::$name))(::Type{Val{:jac}},internal_var___J,internal_var___u,internal_var___p,t) = $Jex) |> esc
-    push!(exprs,overloadex)
-    overloadex = :(((f::$name))(::Type{Val{:jac}},u,p,t::Number) = (J=similar(u, (length(u), length(u))); f(Val{:jac},J,u,p,t); J)) |> esc
-    push!(exprs,overloadex)
-  end
-
-  #=
-  # Add the Exponential Jacobian
-  if expjac_exists
-    overloadex = :(((internal_var___p::$name))(::Type{Val{:expjac}},t,internal_var___u,internal_γ,internal_var___J) = $expJex) |> esc
-    push!(exprs,overloadex)
-  end
-  =#
-
-  # Add the Inverse Jacobian
-  if invjac_exists
-    overloadex = :(((f::$name))(::Type{Val{:invjac}},internal_var___J,internal_var___u,internal_var___p,t) = $invJex) |> esc
-    push!(exprs,overloadex)
-  end
-  # Add the Inverse Rosenbrock-W
-  if invW_exists
-    overloadex = :(((f::$name))(::Type{Val{:invW}},internal_var___J,internal_var___u,internal_var___p,internal_γ,t) = $invWex) |> esc
-    push!(exprs,overloadex)
-  end
-  # Add the Inverse Rosenbrock-W Transformed
-  if invW_exists
-    overloadex = :(((f::$name))(::Type{Val{:invW_t}},internal_var___J,internal_var___u,internal_var___p,internal_γ,t) = $invWex_t) |> esc
-    push!(exprs,overloadex)
-  end
-  #=
-  # Add the Hessian
-  if hes_exists
-    overloadex = :(((internal_var___p::$name))(::Type{Val{:hes}},t,internal_var___u,internal_var___J) = $Hex) |> esc
-    push!(exprs,overloadex)
-  end
-  # Add the Inverse Hessian
-  if invhes_exists
-    overloadex = :(((internal_var___p::$name))(::Type{Val{:invhes}},t,internal_var___u,internal_var___J) = $invHex) |> esc
-    push!(exprs,overloadex)
-  end
-  =#
-
-  # Add Parameter Jacobian
-  if param_jac_exists
-    overloadex = :(((f::$name))(::Type{Val{:paramjac}},internal_var___J,internal_var___u,internal_var___p,t) = $param_Jex) |> esc
-    push!(exprs,overloadex)
-  end
+  push!(exprs,callex)
+  push!(exprs,callex2)
 
   # Return the type from the default consturctor
   def_const_ex = :(($name)()) |> esc

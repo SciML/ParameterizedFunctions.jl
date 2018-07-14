@@ -51,27 +51,27 @@ f_t2(du,u,p,t)
 @test du == [1.0,-3.0]
 
 println("Test t-gradient")
-f(Val{:tgrad},grad,u,p,t)
+f.tgrad(grad,u,p,t)
 @test grad == zeros(2)
-f_t(Val{:tgrad},grad,u,p,t)
+f_t.tgrad(grad,u,p,t)
 @test grad == [0.0;12.0]
 
 println("Test Jacobians")
-f(Val{:jac},J,u,p,t)
+f.jac(J,u,p,t)
 @test J  == [-1.5 -2.0
              3.0 -1.0]
-@test f(Val{:jac}, u, p, t) == [-1.5 -2.0; 3.0 -1.0]
+#@test f.jac(u, p, t) == [-1.5 -2.0; 3.0 -1.0]
 
 println("Test Inv Rosenbrock-W")
-f(Val{:invW},iW,u,p,2.0,t)
+f.invW(iW,u,p,2.0,t)
 @test minimum(iW - inv(I - 2*J) .< 1e-10)
 
-f(Val{:invW_t},iW,u,p,2.0,t)
+f.invW_t(iW,u,p,2.0,t)
 @test minimum(iW - inv(I/2 - J) .< 1e-10)
 
 println("Parameter Jacobians")
 pJ = Matrix{Float64}(2,4)
-f(Val{:paramjac},pJ,u,[2.0;2.5;3.0;1.0],t)
+f.paramjac(pJ,u,[2.0;2.5;3.0;1.0],t)
 @test pJ == [2.0 -6.0 0 0.0
              0 0 -3.0 6.0]
 
@@ -79,8 +79,6 @@ f(Val{:paramjac},pJ,u,[2.0;2.5;3.0;1.0],t)
 
 println("Test booleans")
 @test DiffEqBase.has_jac(f) == true
-@test DiffEqBase.has_hes(f) == false
-@test DiffEqBase.has_invhes(f) == false
 @test DiffEqBase.has_paramjac(f) == true
 
 @code_llvm DiffEqBase.has_paramjac(f)
@@ -107,5 +105,11 @@ NJ(du,u,[1.5,1,3,4],t)
 @test_throws MethodError NJ(Val{:jac},iJ,u,p,t)
 # NJ(Val{:jac},t,u,J) # Currently gives E not defined, will be fixed by the next SymEgine
 
-println("Make sure all of the problems in the problem library build")
+println("Make the problems in the problem library build")
+
 using DiffEqProblemLibrary
+using DiffEqProblemLibrary.ODEProblemLibrary: importodeproblems
+using DiffEqProblemLibrary.SDEProblemLibrary: importsdeproblems
+
+importodeproblems()
+importsdeproblems()
