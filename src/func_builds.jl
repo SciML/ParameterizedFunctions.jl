@@ -2,7 +2,7 @@ function build_jac_func(symjac,indvar_dict,params;params_from_function=true)
   Jex = :()
   for i in 1:size(symjac,1)
     for j in 1:size(symjac,2)
-      ex = parse(string(symjac[i,j]))
+      ex = Meta.parse(string(symjac[i,j]))
       if typeof(ex) <: Expr
         ode_findreplace(ex,copy(ex),indvar_dict,params,params_from_function=params_from_function)
       else
