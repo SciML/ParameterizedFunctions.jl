@@ -85,7 +85,7 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
   param_jac_exists = false
 
   d_pfuncs = Vector{Expr}(undef, 0)
-  param_symjac = Matrix{SymEngine.Basic}(numsyms,numparams)
+  param_symjac = Matrix{SymEngine.Basic}(undef,numsyms,numparams)
   pderiv_exists = false
 
   if opts[:build_tgrad] || opts[:build_jac] || opts[:build_dpfuncs]
@@ -187,14 +187,14 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
 
       if opts[:build_dpfuncs]
         try # Parameter Gradients
-          d_paramfuncs  = Vector{Vector{Expr}}(numparams)
+          d_paramfuncs  = Vector{Vector{Expr}}(undef,numparams)
           for i in eachindex(params)
-            tmp_dpfunc = Vector{Expr}(length(funcs))
+            tmp_dpfunc = Vector{Expr}(undef,length(funcs))
             for j in eachindex(funcs)
               funcex = funcs[j]
               d_curr = diff(symfuncs[j],params[i])
               param_symjac[j,i] = d_curr
-              symfunc_str = parse(string(d_curr))
+              symfunc_str = Meta.parse(string(d_curr))
               if typeof(symfunc_str) <: Number
                 tmp_dpfunc[j] = :($symfunc_str*1)
               elseif typeof(symfunc_str) <: Symbol
@@ -209,7 +209,7 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
           pderiv_exists = true
 
           # Now build the parameter Jacobian
-          param_symjac_ex = Matrix{Expr}(numsyms,numparams)
+          param_symjac_ex = Matrix{Expr}(undef,numsyms,numparams)
           for i in 1:numparams
             param_symjac_ex[:,i] = d_paramfuncs[i]
           end
