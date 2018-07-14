@@ -46,7 +46,7 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
   # Parameter Functions
   paramfuncs = Vector{Vector{Expr}}(undef, numparams)
   for i in 1:numparams
-    tmp_pfunc = Vector{Expr}(length(funcs))
+    tmp_pfunc = Vector{Expr}(undef,length(funcs))
     for j in eachindex(funcs)
       tmp_pfunc[j] = copy(funcs[j])
     end
@@ -104,14 +104,14 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
           tgrad_exists = true
           tgradex = build_tgrad_func(symtgrad,indvar_dict,params)
         catch err
-          warn("Time Derivative Gradient could not be built")
+          @warn("Time Derivative Gradient could not be built")
         end
       end
 
       if opts[:build_jac]
         try #Jacobians and Hessian
           # Build the Jacobian Matrix of SymEngine Expressions
-          symjac = Matrix{SymEngine.Basic}(numsyms,numsyms)
+          symjac = Matrix{SymEngine.Basic}(undef,numsyms,numsyms)
           for i in eachindex(funcs)
             for j in eachindex(syms)
               symjac[i,j] = diff(symfuncs[i],syms[j])
@@ -125,12 +125,12 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
 
           if opts[:build_expjac]
             try
-              expjac = expm(γ*symjac) # This does not work, which is why disabled
+              expjac = exp(γ*symjac) # This does not work, which is why disabled
               expJex = build_jac_func(expjac,indvar_dict,params)
               bad_derivative(expJex)
               expjac_exists = true
             catch
-              warn("Jacobian could not exponentiate")
+              @warn("Jacobian could not exponentiate")
             end
           end
 
@@ -141,7 +141,8 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
               bad_derivative(invJex)
               invjac_exists = true
             catch err
-              warn("Jacobian could not invert")
+              println(err)
+              @warn("Jacobian could not invert")
             end
           end
           if opts[:build_invW]
@@ -155,7 +156,8 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
               bad_derivative(invWex_t)
               invW_t_exists = true
             catch err
-              warn("Rosenbrock-W could not invert")
+              println(err)
+              @warn("Rosenbrock-W could not invert")
             end
           end
           if opts[:build_hes]
@@ -175,13 +177,15 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
                   bad_derivative(invHex)
                   invhes_exists = true
                 catch err
-                  warn("Hessian could not invert")
+                  @warn("Hessian could not invert")
                 end
               end
+            catch err
+              @warn("Hessians failed to build.")
             end
           end
         catch err
-          warn("Failed to build the Jacobian. This means the Hessian is not built as well.")
+          @warn("Failed to build the Jacobian. This means the Hessian is not built as well.")
         end
       end # End Jacobian tree
 
@@ -218,11 +222,11 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;M=
           param_jac_exists = true
         catch err
           println(err)
-          warn("Failed to build the parameter derivatives.")
+          @warn("Failed to build the parameter derivatives.")
         end
       end
     catch err
-      warn("Symbolic calculations could not initiate. Likely there's a function which is not differentiable by SymEngine.")
+      @warn("Symbolic calculations could not initiate. Likely there's a function which is not differentiable by SymEngine.")
     end
   end
 

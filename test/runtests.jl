@@ -1,5 +1,5 @@
 using ParameterizedFunctions, DiffEqBase
-using Base.Test
+using Test
 
 using SpecialFunctions
 
@@ -58,11 +58,9 @@ f_t(Val{:tgrad},grad,u,p,t)
 
 println("Test Jacobians")
 f(Val{:jac},J,u,p,t)
-f(Val{:invjac},iJ,u,p,t)
 @test J  == [-1.5 -2.0
              3.0 -1.0]
 @test f(Val{:jac}, u, p, t) == [-1.5 -2.0; 3.0 -1.0]
-@test minimum(iJ - inv(J) .< 1e-10)
 
 println("Test Inv Rosenbrock-W")
 f(Val{:invW},iW,u,p,2.0,t)
@@ -80,13 +78,12 @@ f(Val{:paramjac},pJ,u,[2.0;2.5;3.0;1.0],t)
 @code_llvm has_jac(f)
 
 println("Test booleans")
-@test has_jac(f) == true
-@test has_invjac(f) == true
-@test has_hes(f) == false
-@test has_invhes(f) == false
-@test has_paramjac(f) == true
+@test DiffEqBase.has_jac(f) == true
+@test DiffEqBase.has_hes(f) == false
+@test DiffEqBase.has_invhes(f) == false
+@test DiffEqBase.has_paramjac(f) == true
 
-@code_llvm has_paramjac(f)
+@code_llvm DiffEqBase.has_paramjac(f)
 
 println("Test difficult differentiable")
 NJ = @ode_def_nohes DiffDiff begin

@@ -19,7 +19,7 @@ end
 function build_tgrad_func(symtgrad,indvar_dict,params;params_from_function=false)
   tgradex = :()
   for i in 1:length(symtgrad)
-    ex = parse(string(symtgrad[i]))
+    ex = Meta.parse(string(symtgrad[i]))
     if typeof(ex) <: Expr
       ode_findreplace(ex,copy(ex),indvar_dict,params,params_from_function=params_from_function)
     else
@@ -33,7 +33,7 @@ function build_tgrad_func(symtgrad,indvar_dict,params;params_from_function=false
 end
 
 function build_p_funcs(paramfuncs,indvar_dict,params)
-  pfuncs = Vector{Expr}(length(params))
+  pfuncs = Vector{Expr}(undef,length(params))
   params_type = typeof(params)
   for i in 1:length(params)
     pfunc = :()
@@ -56,7 +56,7 @@ function build_p_funcs(paramfuncs,indvar_dict,params)
 end
 
 function build_component_funcs(symex)
-  funcs = Vector{Expr}(0) # Get all of the functions for symbolic computation
+  funcs = Vector{Expr}(undef,0) # Get all of the functions for symbolic computation
   for (i,arg) in enumerate(symex.args)
     if i%2 == 0
       ex = arg.args[2]
