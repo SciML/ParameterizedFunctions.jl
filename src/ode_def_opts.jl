@@ -234,12 +234,6 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;_M
   # Build the Function
   f_expr = :((internal_var___du,internal_var___u,internal_var___p,t::Number) -> $pex)
 
-  #=
-  # Add a method which allocates the `du` and returns it instead of being inplace
-  overloadex = :(((f::$name))(u,p,t::Number) = (du=similar(u); f(du,u,p,t); du)) |> esc
-  push!(exprs,overloadex)
-  =#
-
   # Add the t gradient
   if tgrad_exists
     tgrad_expr = :((internal_var___grad,internal_var___u,internal_var___p,t) -> $tgradex)
