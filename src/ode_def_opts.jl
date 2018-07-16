@@ -294,7 +294,9 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;_M
                invjac_expr=invjac_expr,
                invW_expr=invW_expr,
                invW_t_expr=invW_t_expr,
-               param_jac_expr=param_jac_expr)
+               param_jac_expr=param_jac_expr,
+               symjac = convert.(Expr,symjac),
+               symtgrad = convert.(Expr,symtgrad))
 
   push!(exprs,typeex)
   push!(exprs,constructorex)

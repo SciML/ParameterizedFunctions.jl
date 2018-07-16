@@ -7,8 +7,10 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
                   Hex = :(),
                   invHex = :(),
                   params = Symbol[],
-                  pfuncs=Vector{Expr}(0),
-                  d_pfuncs = Vector{Expr}(0),
+                  pfuncs=Vector{Expr}(undef,0),
+                  d_pfuncs = Vector{Expr}(undef,0),
+                  symjac = Matrix{Expr}(undef,0,0),
+                  symtgrad = Vector{Expr}(undef,0),
                   param_Jex=:(),
                   f_expr=:(),
                   tgrad_expr=:(),
@@ -31,6 +33,8 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
         pfuncs::Vector{Expr}
         d_pfuncs::Vector{Expr}
         syms::Vector{Symbol}
+        symjac::Matrix{Any} # https://github.com/symengine/SymEngine.jl/issues/122
+        symtgrad::Vector{Any}
         tgradex::Expr
         Jex::Expr
         expJex::Expr
@@ -85,7 +89,7 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
                   $(Expr(:kw,:params,params))) =
                   $(name)($f_expr,nothing,
                   $jac_expr,$tgrad_expr,$invW_expr,$invW_t_expr,$param_jac_expr,
-                  origex,funcs,pfuncs,d_pfuncs,syms,
+                  origex,funcs,pfuncs,d_pfuncs,syms,$symjac,$symtgrad,
                   tgradex,Jex,expJex,param_Jex,
                   invJex,invWex,invWex_t,
                   Hex,invHex,fex,pex,vector_ex,vector_ex_return,params)) |> esc
