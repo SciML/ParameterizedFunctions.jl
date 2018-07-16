@@ -67,32 +67,14 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
     vector_ex_return_ex = Meta.quot(vector_ex_return)
     param_Jex_ex = Meta.quot(param_Jex)
 
-    constructorex = :($(name)(;
-                  $(Expr(:kw,:origex,new_ex)),
-                  $(Expr(:kw,:funcs,funcs)),
-                  $(Expr(:kw,:pfuncs,pfuncs)),
-                  $(Expr(:kw,:d_pfuncs,d_pfuncs)),
-                  $(Expr(:kw,:syms,syms)),
-                  $(Expr(:kw,:tgradex,tgradex_ex)),
-                  $(Expr(:kw,:Jex,Jex_ex)),
-                  $(Expr(:kw,:expJex,expJex_ex)),
-                  $(Expr(:kw,:param_Jex,param_Jex_ex)),
-                  $(Expr(:kw,:invJex,invJex_ex)),
-                  $(Expr(:kw,:invWex,invWex_ex)),
-                  $(Expr(:kw,:invWex_t,invWex_t_ex)),
-                  $(Expr(:kw,:Hex,Hex_ex)),
-                  $(Expr(:kw,:invHex,invHex_ex)),
-                  $(Expr(:kw,:fex,fex_ex)),
-                  $(Expr(:kw,:pex,pex_ex)),
-                  $(Expr(:kw,:vector_ex,vector_ex_ex)),
-                  $(Expr(:kw,:vector_ex_return,vector_ex_return_ex)),
-                  $(Expr(:kw,:params,params))) =
+    constructorex = :($(name)() =
                   $(name)($f_expr,nothing,
                   $jac_expr,$tgrad_expr,$invW_expr,$invW_t_expr,$param_jac_expr,
-                  origex,funcs,pfuncs,d_pfuncs,syms,$symjac,$symtgrad,
-                  tgradex,Jex,expJex,param_Jex,
-                  invJex,invWex,invWex_t,
-                  Hex,invHex,fex,pex,vector_ex,vector_ex_return,params)) |> esc
+                  $new_ex,$funcs,$pfuncs,$d_pfuncs,$syms,$symjac,$symtgrad,
+                  $tgradex_ex,$Jex_ex,$expJex_ex,$param_Jex_ex,
+                  $invJex_ex,$invWex_ex,$invWex_t_ex,
+                  $Hex_ex,$invHex_ex,$fex_ex,$pex_ex,$vector_ex_ex,
+                  $vector_ex_return_ex,$params)) |> esc
 
     callex = :(((f::$name))(args...) = f.f(args...)) |> esc
     callex2 = :(((f::$name))(u,p,t::Number) = (du=similar(u);f.f(du,u,p,t);du)) |> esc
