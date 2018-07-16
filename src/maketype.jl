@@ -20,7 +20,7 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
                   invW_t_expr=:(),
                   param_jac_expr=:())
 
-    typeex = :(mutable struct $name{F,J,T,W,Wt,PJ} <: DiffEqBase.AbstractParameterizedFunction{true}
+    typeex = :(mutable struct $name{F,J,T,W,Wt,PJ,TT1,TT2} <: DiffEqBase.AbstractParameterizedFunction{true}
         f::F
         analytic::Nothing
         jac::J
@@ -33,8 +33,8 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
         pfuncs::Vector{Expr}
         d_pfuncs::Vector{Expr}
         syms::Vector{Symbol}
-        symjac::Matrix{Any} # https://github.com/symengine/SymEngine.jl/issues/122
-        symtgrad::Vector{Any}
+        symjac::Matrix{TT1} # https://github.com/symengine/SymEngine.jl/issues/122
+        symtgrad::Vector{TT2}
         tgradex::Expr
         Jex::Expr
         expJex::Expr
