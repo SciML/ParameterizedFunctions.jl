@@ -6,7 +6,7 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;_M
   if !(eltype(params) <: Symbol)
     error("The syntax for ParameterizedFunctions has changed. Simply list the parameters at the end, i.e. `a b c d`, instead of `a=5.0 b=>3.0 ...`. Parameters are defined in the problem type. See the documentation for more information.")
   end
-  params = [params...]
+  params = Symbol[params...]
 
   ## Build independent variable dictionary
   indvar_dict,syms = build_indvar_dict(ex,depvar)
