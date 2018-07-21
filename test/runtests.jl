@@ -1,12 +1,12 @@
 using ParameterizedFunctions, DiffEqBase
-using Test, LinearAlgebra
+using Test, LinearAlgebra, InteractiveUtils
 
 using SpecialFunctions
 
 ### ODE Macros
 
 println("Build some examples")
-f_t = @ode_def_bare SymCheck begin # Checks for error due to symbol on 1
+f_t = @ode_def SymCheck begin # Checks for error due to symbol on 1
   dx = x
   dy = -c*y + d*x*y*t^2
 end a b c d
