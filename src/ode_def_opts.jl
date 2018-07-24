@@ -234,6 +234,9 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;_M
   # Build the Function
   f_expr = :((internal_var___du,internal_var___u,internal_var___p,t::Number) -> $pex)
 
+  # Add the mass matrix
+  mm_expr = quote $M end
+
   # Add the t gradient
   if tgrad_exists
     tgrad_expr = :((internal_var___grad,internal_var___u,internal_var___p,t) -> $tgradex)
@@ -295,6 +298,7 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;_M
                invW_expr=invW_expr,
                invW_t_expr=invW_t_expr,
                param_jac_expr=param_jac_expr,
+               mm_expr=mm_expr,
                symjac = convert.(Expr,symjac),
                symtgrad = convert.(Expr,symtgrad))
 

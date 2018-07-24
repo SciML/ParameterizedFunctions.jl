@@ -18,10 +18,12 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
                   invjac_expr=:(),
                   invW_expr=:(),
                   invW_t_expr=:(),
-                  param_jac_expr=:())
+                  param_jac_expr=:(),
+                  mm_expr=:())
 
-    typeex = :(mutable struct $name{F,J,T,W,Wt,PJ,TT1,TT2} <: DiffEqBase.AbstractParameterizedFunction{true}
+    typeex = :(mutable struct $name{F,MM,J,T,W,Wt,PJ,TT1,TT2} <: DiffEqBase.AbstractParameterizedFunction{true}
         f::F
+        mass_matrix::MM
         analytic::Nothing
         jac::J
         tgrad::T
@@ -69,7 +71,7 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
     param_Jex_ex = Meta.quot(param_Jex)
 
     constructorex = :($(name)() =
-                  $(name)($f_expr,nothing,
+                  $(name)($f_expr,$mm_expr,nothing,
                   $jac_expr,$tgrad_expr,$invW_expr,$invW_t_expr,$param_jac_expr,
                   $(LinearAlgebra.I),$new_ex,$funcs,$pfuncs,$d_pfuncs,
                   $syms,$symjac,$symtgrad,
