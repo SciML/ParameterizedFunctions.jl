@@ -28,6 +28,7 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
         invW::W
         invW_t::Wt
         paramjac::PJ
+        mass_matrix::LinearAlgebra.UniformScaling{Bool}
         origex::Expr
         funcs::Vector{Expr}
         pfuncs::Vector{Expr}
@@ -70,7 +71,8 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
     constructorex = :($(name)() =
                   $(name)($f_expr,nothing,
                   $jac_expr,$tgrad_expr,$invW_expr,$invW_t_expr,$param_jac_expr,
-                  $new_ex,$funcs,$pfuncs,$d_pfuncs,$syms,$symjac,$symtgrad,
+                  $(LinearAlgebra.I),$new_ex,$funcs,$pfuncs,$d_pfuncs,
+                  $syms,$symjac,$symtgrad,
                   $tgradex_ex,$Jex_ex,$expJex_ex,$param_Jex_ex,
                   $invJex_ex,$invWex_ex,$invWex_t_ex,
                   $Hex_ex,$invHex_ex,$fex_ex,$pex_ex,$vector_ex_ex,
