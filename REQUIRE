@@ -1,4 +1,4 @@
-julia 0.7-beta2
+julia 0.7
 SymEngine 0.2.0
 DataStructures 0.4.6
 DiffEqBase 0.14.0
