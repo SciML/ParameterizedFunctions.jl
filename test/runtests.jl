@@ -70,10 +70,10 @@ f.invW_t(iW,u,p,2.0,t)
 @test minimum(iW - inv(I/2 - J) .< 1e-10)
 
 println("Parameter Jacobians")
-pJ = Matrix{Float64}(2,4)
+pJ = zeros(Float64,2,4)
 f.paramjac(pJ,u,[2.0;2.5;3.0;1.0],t)
-@test pJ == [2.0 -6.0 0 0.0
-             0 0 -3.0 6.0]
+@test pJ == [2.0 -6.0  0.0 0.0
+             0.0  0.0 -3.0 6.0]
 
 @code_llvm DiffEqBase.has_jac(f)
 
