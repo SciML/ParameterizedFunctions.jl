@@ -105,6 +105,15 @@ NJ(du,u,[1.5,1,3,4],t)
 @test_throws MethodError NJ.jac(iJ,u,p,t)
 # NJ(Val{:jac},t,u,J) # Currently gives E not defined, will be fixed by the next SymEgine
 
+println("Test anonymous definition")
+
+f_t_noname = @ode_def begin # Checks for error due to symbol on 1
+  dx = x
+  dy = -c*y + d*x*y*t^2
+end a b c d
+
+@test DiffEqBase.__has_syms(f_t_noname)
+
 println("Make the problems in the problem library build")
 
 using DiffEqProblemLibrary
