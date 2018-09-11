@@ -8,7 +8,8 @@ macro ode_def(name,ex,params...)
     :build_hes => false,
     :build_invhes => false,
     :build_dpfuncs => true)
-    ode_def_opts(name,opts,ex,params...)
+    name isa Expr ? ode_def_opts(gensym(),opts,name,params...) :
+        ode_def_opts(name,opts,ex,params...)
 end
 
 macro ode_def_bare(name,ex,params...)
@@ -21,7 +22,8 @@ macro ode_def_bare(name,ex,params...)
     :build_hes => false,
     :build_invhes => false,
     :build_dpfuncs => false)
-    ode_def_opts(name,opts,ex,params...)
+    name isa Expr ? ode_def_opts(gensym(),opts,name,params...) :
+        ode_def_opts(name,opts,ex,params...)
 end
 
 macro ode_def_nohes(name,ex,params...)
@@ -34,7 +36,8 @@ macro ode_def_nohes(name,ex,params...)
   :build_hes => false,
   :build_invhes => false,
   :build_dpfuncs => true)
-  ode_def_opts(name,opts,ex,params...)
+  name isa Expr ? ode_def_opts(gensym(),opts,name,params...) :
+    ode_def_opts(name,opts,ex,params...)
 end
 
 macro ode_def_noinvhes(name,ex,params...)
@@ -47,7 +50,8 @@ macro ode_def_noinvhes(name,ex,params...)
     :build_hes => false,
     :build_invhes => false,
     :build_dpfuncs => true)
-    ode_def_opts(name,opts,ex,params...)
+    name isa Expr ? ode_def_opts(gensym(),opts,name,params...) :
+        ode_def_opts(name,opts,ex,params...)
 end
 
 macro ode_def_noinvjac(name,ex,params...)
@@ -60,5 +64,6 @@ macro ode_def_noinvjac(name,ex,params...)
     :build_hes => false,
     :build_invhes => false,
     :build_dpfuncs => true)
-    ode_def_opts(name,opts,ex,params...)
+    name isa Expr ? ode_def_opts(gensym(),opts,name,params...) :
+        ode_def_opts(name,opts,ex,params...)
 end
