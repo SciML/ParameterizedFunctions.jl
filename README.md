@@ -48,6 +48,15 @@ f = @ode_def LotkaVolterra begin
 end a b c d
 ```
 
+or you can define it anonymously:
+
+```julia
+f = @ode_def begin
+  dx = a*x - b*x*y
+  dy = -c*y + d*x*y
+end a b c d
+```
+
 The macro also defines the Jacobian `f'`. This is defined as an in-place Jacobian `f(Val{:jac},t,u,J)`.
 This is calculated using SymEngine.jl automatically, so it's no effort on your part.
 The symbolic inverse of the Jacobian is also computed, and an in-place function
@@ -87,7 +96,7 @@ f(x,y,d) = erf(x*y/d)
 NJ = @ode_def FuncTest begin
   dx = a*x - b*x*y
   dy = -c*y + f(x,y,d)
-end a=>1.5 b=>1 c=3 d=4
+end a b c d
 ```
 
 will do fine. The symbolic derivatives will not work unless you define a derivative
