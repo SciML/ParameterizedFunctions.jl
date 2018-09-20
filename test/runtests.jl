@@ -114,6 +114,12 @@ end a b c d
 
 @test DiffEqBase.__has_syms(f_t_noname)
 
+f = @ode_def begin
+  dx = a*x - b*x*y
+  dy = -c*y + d*x*y
+end a b c d
+@test_nowarn f([0.1,0.2], [1,2], [1,2,3,4], 1)
+
 println("Make the problems in the problem library build")
 
 using DiffEqProblemLibrary
