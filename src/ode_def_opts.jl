@@ -1,6 +1,7 @@
-function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;_M=I,depvar=:t)
+function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;depvar=:t)
   # depvar is the dependent variable. Defaults to t
   # M is the mass matrix in RosW, must be a constant!
+
   origex = copy(ex) # Save the original expression
 
   if !(eltype(params) <: Symbol)
@@ -42,7 +43,7 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;_M
 
   numsyms = length(indvar_dict)
   numparams = length(params)
-  M = Matrix(1*_M,numsyms,numsyms)
+  M = Matrix(1*LinearAlgebra.I,numsyms,numsyms)
   # Parameter Functions
   paramfuncs = Vector{Vector{Expr}}(undef, numparams)
   for i in 1:numparams
@@ -52,7 +53,9 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;_M
     end
     paramfuncs[i] = tmp_pfunc
   end
+
   pfuncs = build_p_funcs(paramfuncs,indvar_dict,params)
+
 
   # Symbolic Setup
   symfuncs = Vector{SymEngine.Basic}(undef, 0)
@@ -88,6 +91,7 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;_M
   param_symjac = Matrix{SymEngine.Basic}(undef,numsyms,numparams)
   pderiv_exists = false
 
+
   if opts[:build_tgrad] || opts[:build_jac] || opts[:build_dpfuncs]
     try #do symbolic calculations
 
@@ -105,6 +109,7 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;_M
           tgradex = build_tgrad_func(symtgrad,indvar_dict,params)
         catch err
           @warn("Time Derivative Gradient could not be built")
+          symtgrad = Vector{SymEngine.Basic}(undef, 0)
         end
       end
 
@@ -118,10 +123,14 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;_M
             end
           end
 
+
           # Build the Julia function
           Jex = build_jac_func(symjac,indvar_dict,params)
           bad_derivative(Jex)
           jac_exists = true
+
+
+
 
           if opts[:build_expjac]
             try
@@ -145,11 +154,12 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;_M
               @warn("Jacobian could not invert")
             end
           end
+
           if opts[:build_invW]
             try # Rosenbrock-W Inverse
-              L = Base.convert(SymEngine.CDenseMatrix,M - γ*symjac)
+              L = Base.convert(SymEngine.CDenseMatrix,1LinearAlgebra.I - γ*symjac)
               syminvW = inv(L)
-              L = Base.convert(SymEngine.CDenseMatrix,M/γ - symjac)
+              L = Base.convert(SymEngine.CDenseMatrix,1LinearAlgebra.I/γ - symjac)
               syminvW_t = inv(L)
               invWex = build_jac_func(syminvW,indvar_dict,params)
               bad_derivative(invWex)
@@ -158,6 +168,7 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;_M
               bad_derivative(invWex_t)
               invW_t_exists = true
             catch err
+              throw(err)
               @warn("Rosenbrock-W could not invert")
             end
           end
@@ -167,6 +178,7 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;_M
               for i in eachindex(funcs), j in eachindex(syms)
                 symhes[i,j] = diff(symjac[i,j],syms[j])
               end
+
               # Build the Julia function
               Hex = build_jac_func(symhes,indvar_dict,params)
               bad_derivative(Hex)
@@ -187,7 +199,9 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;_M
             end
           end
         catch err
+          throw(err)
           @warn("Failed to build the Jacobian. This means the Hessian is not built as well.")
+          symjac   = Matrix{SymEngine.Basic}(undef, 0,0)
         end
       end # End Jacobian tree
 
@@ -275,7 +289,6 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},ex::Expr,params...;_M
   else
     param_jac_expr = :(nothing)
   end
-
   # Build the type
   exprs = Vector{Expr}(undef, 0)
 

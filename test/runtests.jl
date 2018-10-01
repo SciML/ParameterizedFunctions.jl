@@ -23,7 +23,7 @@ f_t3 = @ode_def_noinvjac ExprCheck begin # Checks for error due to symbol on 1
   dy = -c*y + d*x*y
 end a b c d # Change to π after unicode fix
 
-f = @ode_def_noinvhes LotkaVolterra begin
+f = @ode_def LotkaVolterra begin
   dx = a*x - b*x*y
   dy = -c*y + d*x*y
 end a b c d
@@ -119,6 +119,14 @@ f = @ode_def begin
   dy = -c*y + d*x*y
 end a b c d
 @test_nowarn f([0.1,0.2], [1,2], [1,2,3,4], 1)
+
+# Test failures of derivatives should not have #undef
+sir_ode = @ode_def SIRModel begin
+  dS = -b*S*I
+  dI =  b*S*I - g*I
+  dR =  g*I
+end b g
+
 
 println("Make the problems in the problem library build")
 
