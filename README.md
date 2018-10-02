@@ -109,9 +109,8 @@ to be more specific about what to not calculate. In increasing order of calculat
 
 ```julia
 @ode_def_bare
-@ode_def_noinvjac
-@ode_def_noinvhes
-@ode_def_nohes
+@ode_def
+@ode_def_all
 ```
 
 ### Extra Functions

@@ -13,22 +13,22 @@ end a b c d
 
 @test DiffEqBase.__has_syms(f_t)
 
-f_t2 = @ode_def_noinvjac SymCheck2 begin # Checks for error due to symbol on 1
+f_t2 = @ode_def SymCheck2 begin # Checks for error due to symbol on 1
   dx = 1
   dy = -c*y + d*x*y*t^2
 end a b c d
 
-f_t3 = @ode_def_noinvjac ExprCheck begin # Checks for error due to symbol on 1
+f_t3 = @ode_def ExprCheck begin # Checks for error due to symbol on 1
   dx = a*x - b*x*y
   dy = -c*y + d*x*y
 end a b c d # Change to π after unicode fix
 
-f = @ode_def LotkaVolterra begin
+f = @ode_def_all LotkaVolterra begin
   dx = a*x - b*x*y
   dy = -c*y + d*x*y
 end a b c d
 
-f_2 = @ode_def_nohes LotkaVolterra3 begin
+f_2 = @ode_def LotkaVolterra3 begin
   dx = a*x - b^2*x*y
   dy = -c*y + d*x*y
 end a b c d
@@ -84,7 +84,7 @@ println("Test booleans")
 @code_llvm DiffEqBase.has_paramjac(f)
 
 println("Test difficult differentiable")
-NJ = @ode_def_nohes DiffDiff begin
+NJ = @ode_def DiffDiff begin
   dx = a*x - b*x*y
   dy = -c*y + erf(x*y/d)
 end a b c d

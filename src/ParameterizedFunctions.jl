@@ -33,9 +33,7 @@ module ParameterizedFunctions
   include("macros.jl")
   include("utils.jl")
 
-  export @ode_def, @fem_def, ode_def_opts,@ode_def_bare, @ode_def_nohes,
-         @ode_def_noinvjac, @ode_def_noinvhes,@ode_def_noinvjac
-
+  export @ode_def,ode_def_opts,@ode_def_bare, @ode_def_all
 end # module
 
 
