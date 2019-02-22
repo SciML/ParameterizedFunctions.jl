@@ -51,6 +51,7 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
         vector_ex::Expr
         vector_ex_return::Expr
         params::Vector{Symbol}
+        nf::Ref{Int} # number of function evals
     end)
 
     # Make the default constructor
@@ -77,10 +78,10 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
                   $tgradex_ex,$Jex_ex,$expJex_ex,$param_Jex_ex,
                   $invJex_ex,$invWex_ex,$invWex_t_ex,
                   $Hex_ex,$invHex_ex,$fex_ex,$pex_ex,$vector_ex_ex,
-                  $vector_ex_return_ex,$params)) |> esc
+                  $vector_ex_return_ex,$params,Ref(0))) |> esc
 
-    callex = :(((f::$name))(args...) = f.f(args...)) |> esc
-    callex2 = :(((f::$name))(u,p,t::Number) = (du=similar(u);f.f(du,u,p,t);du)) |> esc
+    callex = :(((f::$name))(args...) = (f.nf[] += 1; f.f(args...))) |> esc
+    callex2 = :(((f::$name))(u,p,t::Number) = (f.nf[] += 1;du=similar(u);f.f(du,u,p,t);du)) |> esc
 
     # Make the type instance using the default constructor
     typeex,constructorex,callex,callex2
