@@ -1,0 +1,21 @@
+name = "ParameterizedFunctions"
+uuid = "65888b18-ceab-5e60-b2b9-181511a3b968"
+authors = ["Chris Rackauckas <accounts@chrisrackauckas.com>"]
+version = "4.2.0"
+
+[deps]
+DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
+DiffEqBase = "2b5f629d-d688-5b77-993f-72d75c75574e"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+SymEngine = "123dc426-2d89-5057-bbad-38513e3affd8"
+
+[compat]
+julia = "1"
+
+[extras]
+DiffEqProblemLibrary = "a077e3f3-b75c-5d7f-a0c6-6bc4c8ec64a9"
+SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["SpecialFunctions", "Test"]

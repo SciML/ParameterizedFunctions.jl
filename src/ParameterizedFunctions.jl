@@ -16,7 +16,7 @@ module ParameterizedFunctions
     delete!(ENV,"symengine_jl_safe_failure")
   end
 
-  using DataStructures, DiffEqBase, SimpleTraits
+  using DataStructures, DiffEqBase
 
   import LinearAlgebra
 

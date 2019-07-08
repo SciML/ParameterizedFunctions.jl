@@ -126,13 +126,3 @@ sir_ode = @ode_def SIRModel begin
   dI =  b*S*I - g*I
   dR =  g*I
 end b g
-
-
-println("Make the problems in the problem library build")
-
-using DiffEqProblemLibrary
-using DiffEqProblemLibrary.ODEProblemLibrary: importodeproblems
-using DiffEqProblemLibrary.SDEProblemLibrary: importsdeproblems
-
-importodeproblems()
-importsdeproblems()
