@@ -85,3 +85,6 @@ function maketype(name,param_dict,origex,funcs,syms,fex;
     # Make the type instance using the default constructor
     typeex,constructorex,callex,callex2
 end
+
+DiffEqBase.has_Wfact(::DiffEqBase.AbstractParameterizedFunction) = false
+DiffEqBase.has_Wfact_t(::DiffEqBase.AbstractParameterizedFunction) = false
