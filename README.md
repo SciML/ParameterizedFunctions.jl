@@ -6,6 +6,9 @@
 [![ParameterizedFunctions](http://pkg.julialang.org/badges/ParameterizedFunctions_0.5.svg)](http://pkg.julialang.org/?pkg=ParameterizedFunctions)
 [![ParameterizedFunctions](http://pkg.julialang.org/badges/ParameterizedFunctions_0.6.svg)](http://pkg.julialang.org/?pkg=ParameterizedFunctions)
 
+
+## Note that this library is deprecated in favor of [ModelingToolkit.jl](https://github.com/JuliaDiffEq/ModelingToolkit.jl). ParameterizedFunctions.jl will continue to work but is in maitanance mode.
+
 ParameterizedFunctions.jl is a component of the JuliaDiffEq ecosystem which allows
 for parameters to be explicitly present within functions. The interface which
 ParameterizedFunctions describes allows for functionality which requires parameters,
