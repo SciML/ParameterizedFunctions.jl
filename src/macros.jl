@@ -8,8 +8,8 @@ macro ode_def(name,ex,params...)
     :build_hes => false,
     :build_invhes => false,
     :build_dpfuncs => true)
-    name isa Expr ? ode_def_opts(gensym(),opts,name,ex,params...) :
-        ode_def_opts(name,opts,ex,params...)
+    name isa Expr ? ode_def_opts(gensym(),opts,__module__,name,ex,params...) :
+        ode_def_opts(name,opts,__module__,ex,params...)
 end
 
 macro ode_def_bare(name,ex,params...)
@@ -22,8 +22,8 @@ macro ode_def_bare(name,ex,params...)
     :build_hes => false,
     :build_invhes => false,
     :build_dpfuncs => false)
-    name isa Expr ? ode_def_opts(gensym(),opts,name,ex,params...) :
-        ode_def_opts(name,opts,ex,params...)
+    name isa Expr ? ode_def_opts(gensym(),opts,__module__,name,ex,params...) :
+        ode_def_opts(name,opts,__module__,ex,params...)
 end
 
 macro ode_def_all(name,ex,params...)
@@ -36,6 +36,6 @@ macro ode_def_all(name,ex,params...)
     :build_hes => false,
     :build_invhes => false,
     :build_dpfuncs => true)
-    name isa Expr ? ode_def_opts(gensym(),opts,name,ex,params...) :
-        ode_def_opts(name,opts,ex,params...)
+    name isa Expr ? ode_def_opts(gensym(),opts,__module__,name,ex,params...) :
+        ode_def_opts(name,opts,__module__,ex,params...)
 end

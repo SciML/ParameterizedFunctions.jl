@@ -1,18 +1,17 @@
 name = "ParameterizedFunctions"
 uuid = "65888b18-ceab-5e60-b2b9-181511a3b968"
 authors = ["Chris Rackauckas <accounts@chrisrackauckas.com>"]
-version = "4.2.1"
+version = "4.3.0"
 
 [deps]
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
 DiffEqBase = "2b5f629d-d688-5b77-993f-72d75c75574e"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
-SymEngine = "123dc426-2d89-5057-bbad-38513e3affd8"
+ModelingToolkit = "961ee093-0014-501f-94e3-6117800e7a78"
 
 [compat]
 DataStructures = "0.17"
 DiffEqBase = "6.5"
-SymEngine = "0.7"
 julia = "1"
 
 [extras]

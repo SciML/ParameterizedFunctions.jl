@@ -2,36 +2,17 @@ __precompile__()
 
 module ParameterizedFunctions
 
-  if haskey(ENV, "symengine_jl_safe_failure")
-    pre_env_value = ENV["symengine_jl_safe_failure"]
-  end
-
-  ENV["symengine_jl_safe_failure"] = "yes"
-
-  using SymEngine
-
-  if @isdefined pre_env_value
-    ENV["symengine_jl_safe_failure"] = pre_env_value
-  else
-    delete!(ENV,"symengine_jl_safe_failure")
-  end
-
-  using DataStructures, DiffEqBase
+  using DataStructures, DiffEqBase, ModelingToolkit
 
   import LinearAlgebra
 
   import Base: getindex
 
-  const FEM_SYMBOL_DICT = Dict{Symbol,Expr}(:x=>:(x[:,1]),:y=>:(x[:,2]),:z=>:(x[:,3]))
-
   include("ode_def_opts.jl")
-  include("symengine_utils.jl")
   include("ode_findrep.jl")
-  include("func_builds.jl")
-  include("maketype.jl")
+  include("utils.jl")
   include("dict_build.jl")
   include("macros.jl")
-  include("utils.jl")
 
   export @ode_def,ode_def_opts,@ode_def_bare, @ode_def_all
 end # module

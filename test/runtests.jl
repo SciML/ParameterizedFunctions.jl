@@ -60,28 +60,12 @@ println("Test Jacobians")
 f.jac(J,u,p,t)
 @test J  == [-1.5 -2.0
              3.0 -1.0]
-#@test f.jac(u, p, t) == [-1.5 -2.0; 3.0 -1.0]
-
-println("Test Inv Rosenbrock-W")
-f.invW(iW,u,p,2.0,t)
-@test minimum(iW - inv(I - 2*J) .< 1e-10)
-
-f.invW_t(iW,u,p,2.0,t)
-@test minimum(iW - inv(I/2 - J) .< 1e-10)
-
-println("Parameter Jacobians")
-pJ = zeros(Float64,2,4)
-f.paramjac(pJ,u,[2.0;2.5;3.0;1.0],t)
-@test pJ == [2.0 -6.0  0.0 0.0
-             0.0  0.0 -3.0 6.0]
+@test f.jac(u, p, t) == [-1.5 -2.0; 3.0 -1.0]
 
 @code_llvm DiffEqBase.has_jac(f)
 
 println("Test booleans")
 @test DiffEqBase.has_jac(f) == true
-@test DiffEqBase.has_paramjac(f) == true
-
-@code_llvm DiffEqBase.has_paramjac(f)
 
 println("Test difficult differentiable")
 NJ = @ode_def DiffDiff begin
@@ -91,7 +75,6 @@ end a b c d
 NJ(du,u,[1.5,1,3,4],t)
 @test du == [-3.0;-3*3.0 + erf(2.0*3.0/4)]
 @test du == NJ(u, [1.5,1,3,4], t)
-# NJ(Val{:jac},t,u,J) # Currently gives E not defined, will be fixed by the next SymEgine
 
 test_fail(x,y,d) = erf(x*y/d)
 println("Test non-differentiable")
