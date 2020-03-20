@@ -3,8 +3,6 @@
 [![Join the chat at https://gitter.im/JuliaDiffEq/Lobby](https://badges.gitter.im/JuliaDiffEq/Lobby.svg)](https://gitter.im/JuliaDiffEq/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Travis](https://travis-ci.org/JuliaDiffEq/ParameterizedFunctions.jl.svg?branch=master)](https://travis-ci.org/JuliaDiffEq/ParameterizedFunctions.jl) [![AppVeyor](https://ci.appveyor.com/api/projects/status/k6b7d86ddbas1ajk?svg=true)](https://ci.appveyor.com/project/ChrisRackauckas/parameterizedfunctions-jl)
 [![codecov](https://codecov.io/gh/JuliaDiffEq/ParameterizedFunctions.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/JuliaDiffEq/ParameterizedFunctions.jl)
-[![ParameterizedFunctions](http://pkg.julialang.org/badges/ParameterizedFunctions_0.5.svg)](http://pkg.julialang.org/?pkg=ParameterizedFunctions)
-[![ParameterizedFunctions](http://pkg.julialang.org/badges/ParameterizedFunctions_0.6.svg)](http://pkg.julialang.org/?pkg=ParameterizedFunctions)
 
 
 ## Note that this library is deprecated in favor of [ModelingToolkit.jl](https://github.com/JuliaDiffEq/ModelingToolkit.jl). ParameterizedFunctions.jl will continue to work but is in maitanance mode.
