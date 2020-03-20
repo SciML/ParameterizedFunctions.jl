@@ -117,7 +117,7 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},curmod,ex::Expr,param
   quote
     struct $name{F,TG,TJ,TW,TWt,S} <: DiffEqBase.AbstractParameterizedFunction{true}
       f::F
-      mass_matrix::Nothing
+      mass_matrix::LinearAlgebra.UniformScaling
       analytic::Nothing
       tgrad::TG
       jac::TJ
@@ -141,7 +141,7 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},curmod,ex::Expr,param
     $full_jex
     $full_wex
 
-    $name($fname,nothing,nothing,$tname,$jname,nothing,nothing,nothing,nothing,
-          $Wname,$W_tname,nothing,$syms,nothing,$sys)
+    $name($fname,LinearAlgebra.I,nothing,$tname,$jname,nothing,nothing,
+          nothing,nothing,$Wname,$W_tname,nothing,$syms,nothing,$sys)
   end |> esc
 end
