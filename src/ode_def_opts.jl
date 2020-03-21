@@ -115,7 +115,7 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},curmod,ex::Expr,param
   end
 
   quote
-    struct $name{F,TG,TJ,TW,TWt,S} <: DiffEqBase.AbstractParameterizedFunction{true}
+    struct $name{F,TG,TJ,TW,TWt,S} <: ParameterizedFunctions.DiffEqBase.AbstractParameterizedFunction{true}
       f::F
       mass_matrix::ParameterizedFunctions.LinearAlgebra.UniformScaling
       analytic::Nothing
