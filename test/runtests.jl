@@ -1,5 +1,5 @@
 using ParameterizedFunctions, DiffEqBase
-using Test, LinearAlgebra, InteractiveUtils
+using Test, InteractiveUtils
 
 using SpecialFunctions
 
