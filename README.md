@@ -4,34 +4,8 @@
 [![Travis](https://travis-ci.org/JuliaDiffEq/ParameterizedFunctions.jl.svg?branch=master)](https://travis-ci.org/JuliaDiffEq/ParameterizedFunctions.jl) [![AppVeyor](https://ci.appveyor.com/api/projects/status/k6b7d86ddbas1ajk?svg=true)](https://ci.appveyor.com/project/ChrisRackauckas/parameterizedfunctions-jl)
 [![codecov](https://codecov.io/gh/JuliaDiffEq/ParameterizedFunctions.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/JuliaDiffEq/ParameterizedFunctions.jl)
 
-
-## Note that this library is deprecated in favor of [ModelingToolkit.jl](https://github.com/JuliaDiffEq/ModelingToolkit.jl). ParameterizedFunctions.jl will continue to work but is in maitanance mode.
-
-ParameterizedFunctions.jl is a component of the JuliaDiffEq ecosystem which allows
-for parameters to be explicitly present within functions. The interface which
-ParameterizedFunctions describes allows for functionality which requires parameters,
-such as parameter sensitivity analysis and parameter estimation, to be added to
-the differential equation solvers of [DifferentialEquations.jl](https://github.com/JuliaDiffEq/DifferentialEquations.jl).
-While the interface itself is of importance to ecosystem developers,
-ParameterizedFunctions.jl provides user-facing macros which make a
-`ParameterizedFunction` easy to define, and automatically
-include optimizations like explicit Jacobian functions and explicit inverse Jacobian
-functions for the differential equation solvers to take advantage of. The result
-is an easy to use API which allows for more functionality and more performance
-optimizations than could traditionally be offered.
-
-test
-
-## The Basic Idea
-
-`ParameterizedFunction` is a type which can be used in various JuliaDiffEq solvers where
-the parameters must be accessible by the solver function. These use call overloading
-generate a type which acts like a function `f(t,u,du)` but has access to many more
-features. For example, a `ParameterizedFunction` can contain a function for the Jacobian
-or Inverse Jacobian. If such functions exist, the solvers can use them to increase
-the speed of computations. If they don't exist, the solvers will ignore them. Since
-`ParameterizedFunction` is a subtype of `Function`, these can be used anywhere that
-a function can be used, just with the extra functionality ignored.
+ParameterizedFunctions.jl is a component of the SciML ecosystem which allows
+for easily defining parameterized ODE models in a simple syntax.
 
 ## Basic Usage
 
