@@ -1,5 +1,5 @@
 using ParameterizedFunctions, DiffEqBase
-using Test, InteractiveUtils, Latexify
+using Test, InteractiveUtils
 
 using SpecialFunctions
 
@@ -14,7 +14,7 @@ end a b c d
 @test latexify(f_t) ==
 raw"$\begin{align}
 \frac{dx(t)}{dt} =& \mathrm{x}\left( t \right) 1 \\
-\frac{dy(t)}{dt} =& \mathrm{y}\left( t \right)  - c + d \mathrm{x}\left( t \right) \mathrm{y}\left( t \right) t^{2}
+\frac{dy(t)}{dt} =& \mathrm{y}\left( t \right) \left(  - c \right) + d \mathrm{x}\left( t \right) \mathrm{y}\left( t \right) t^{2}
 \end{align}
 $"
 
