@@ -2,7 +2,7 @@ __precompile__()
 
 module ParameterizedFunctions
 
-  using DataStructures, DiffEqBase, ModelingToolkit
+  using DataStructures, DiffEqBase, ModelingToolkit, Latexify
 
   import LinearAlgebra
 
@@ -13,6 +13,7 @@ module ParameterizedFunctions
   include("utils.jl")
   include("dict_build.jl")
   include("macros.jl")
+  include("latexify.jl")
 
   export @ode_def,ode_def_opts,@ode_def_bare, @ode_def_all
 end # module
