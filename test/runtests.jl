@@ -1,5 +1,5 @@
 using ParameterizedFunctions, DiffEqBase
-using Test, InteractiveUtils
+using Test, InteractiveUtils, Latexify
 
 using SpecialFunctions
 
