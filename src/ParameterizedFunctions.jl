@@ -2,7 +2,9 @@ __precompile__()
 
 module ParameterizedFunctions
 
-  using DataStructures, DiffEqBase, ModelingToolkit, Latexify
+  using DataStructures, DiffEqBase, Latexify
+  using Reexport
+  @reexport using ModelingToolkit
 
   import LinearAlgebra
 
