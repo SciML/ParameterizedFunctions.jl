@@ -1,8 +1,10 @@
 # ParameterizedFunctions.jl
 
 [![Join the chat at https://gitter.im/JuliaDiffEq/Lobby](https://badges.gitter.im/JuliaDiffEq/Lobby.svg)](https://gitter.im/JuliaDiffEq/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Travis](https://travis-ci.org/JuliaDiffEq/ParameterizedFunctions.jl.svg?branch=master)](https://travis-ci.org/JuliaDiffEq/ParameterizedFunctions.jl) [![AppVeyor](https://ci.appveyor.com/api/projects/status/k6b7d86ddbas1ajk?svg=true)](https://ci.appveyor.com/project/ChrisRackauckas/parameterizedfunctions-jl)
-[![codecov](https://codecov.io/gh/JuliaDiffEq/ParameterizedFunctions.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/JuliaDiffEq/ParameterizedFunctions.jl)
+[![Travis](https://travis-ci.org/SciML/ParameterizedFunctions.jl.svg?branch=master)](https://travis-ci.org/SciML/ParameterizedFunctions.jl)
+[![AppVeyor](https://ci.appveyor.com/api/projects/status/k6b7d86ddbas1ajk?svg=true)](https://ci.appveyor.com/project/ChrisRackauckas/parameterizedfunctions-jl)
+[![codecov](https://codecov.io/gh/SciML/ParameterizedFunctions.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/SciML/ParameterizedFunctions.jl)
+[![Coverage Status](https://coveralls.io/repos/github/SciML/ParameterizedFunctions.jl/badge.svg?branch=master)](https://coveralls.io/github/SciML/ParameterizedFunctions.jl?branch=master)
 
 ParameterizedFunctions.jl is a component of the SciML ecosystem which allows
 for easily defining parameterized ODE models in a simple syntax.
