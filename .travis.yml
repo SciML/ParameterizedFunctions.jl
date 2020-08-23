@@ -1,5 +1,8 @@
 # Documentation: http://docs.travis-ci.com/user/languages/julia/
 language: julia
+branches:
+  only:
+    - master
 os:
   - linux
 julia:
@@ -9,12 +12,6 @@ julia:
 #    - julia: nightly
 notifications:
   email: false
-# uncomment the following lines to override the default test script
-#script:
-#  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-#  - julia -e 'Pkg.clone(pwd()); Pkg.build("ParameterizedFunctions.jl"); Pkg.test("ParameterizedFunctions.jl"; coverage=true)'
 after_success:
-  # push coverage results to Coveralls
-  - julia -e 'cd(Pkg.dir("ParameterizedFunctions")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
-  # push coverage results to Codecov
-  - julia -e 'cd(Pkg.dir("ParameterizedFunctions")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
+  - julia -e 'using Pkg; Pkg.add("Coverage"); using Coverage; Codecov.submit(process_folder())'
+  - julia -e 'using Pkg; Pkg.add("Coverage"); using Coverage; Coveralls.submit(process_folder())'
