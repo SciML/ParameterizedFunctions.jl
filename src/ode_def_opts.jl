@@ -1,3 +1,9 @@
+findreplace(ex::Symbol, dict) = get(dict, ex, ex)
+function findreplace(ex::Expr, dict)
+    Expr(ex.head, map(x->findreplace(x, dict), ex.args)...)
+end
+findreplace(ex, dict) = ex
+
 function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},curmod,ex::Expr,params...;depvar=:t)
   # depvar is the dependent variable. Defaults to t
   # M is the mass matrix in RosW, must be a constant!
@@ -14,15 +20,20 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},curmod,ex::Expr,param
   ####
 
 
-  t = ModelingToolkit.Variable(:t)()
-  vars = [ModelingToolkit.Variable(x)(t) for x in syms]
-  params = [ModelingToolkit.Variable(x)() for x in Symbol[params...]]
+  t = Sym{Number}(:t)
+  vars = [Sym{FnType{Tuple, Number}}(x)(t) for x in syms]
+  params = [Sym{Number}(x) for x in Symbol[params...]]
+
+  vars_dict = Dict(x=>Symbol(v) for (x, v) in zip(syms, vars))
+
+  # replace x with x(t) if it's a var
+  ex = findreplace(ex, vars_dict)
 
   # Build the Expressions
 
   # Run find replace to make the function expression
   symex = copy(ex) # Different expression for symbolic computations
-  ode_findreplace(ex,symex,indvar_dict,params)
+  #ode_findreplace(ex,symex,indvar_dict,params)
   funcs = build_component_funcs(symex)
   mtk_ops = modelingtoolkitize_expr.(funcs,([t;vars;params],),(curmod,))
 
