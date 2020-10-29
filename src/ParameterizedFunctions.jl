@@ -5,6 +5,8 @@ module ParameterizedFunctions
   using DataStructures, DiffEqBase, Latexify
   using Reexport
   @reexport using ModelingToolkit
+  using ModelingToolkit: Sym, FnType, tosymbol
+
 
   import LinearAlgebra
 
