@@ -32,7 +32,8 @@ end
 
 function modelingtoolkitize_expr(ex::Symbol,vars,curmod)
     names = tosymbol.(vars)
-    op = ex ∈ names ? vars[findfirst(x->(ex == tosymbol(x)),vars)] : getproperty(curmod,ex) # HACK
+    idx = findfirst(x->ex == x, names)
+    op = idx !== nothing ? vars[idx] : getproperty(curmod,ex)
     op
 end
 
