@@ -11,13 +11,6 @@ f_t = @ode_def SymCheck begin # Checks for error due to symbol on 1
   dy = -c*y + d*x*y*t^2
 end a b c d
 
-@test latexify(f_t) ==
-raw"$\begin{align}
-\frac{dx(t)}{dt} =& \mathrm{x}\left( t \right) 1 \\
-\frac{dy(t)}{dt} =& \mathrm{y}\left( t \right) \left(  - c \right) + d \mathrm{x}\left( t \right) \mathrm{y}\left( t \right) t^{2}
-\end{align}
-$"
-
 @test DiffEqBase.__has_syms(f_t)
 
 f_t2 = @ode_def SymCheck2 begin # Checks for error due to symbol on 1
