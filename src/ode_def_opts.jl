@@ -37,7 +37,7 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},curmod,ex::Expr,param
   funcs = build_component_funcs(symex)
   mtk_ops = modelingtoolkitize_expr.(funcs,([t;vars;params],),(curmod,))
 
-  ModelingToolkit.@derivatives D'~t
+  D = ModelingToolkit.Differential(t)
 
   mtk_diffeqs = [D(vars[i]) ~ mtk_ops[i] for i in 1:length(vars)]
 
