@@ -62,10 +62,10 @@ f.jac(J,u,p,t)
              3.0 -1.0]
 @test f.jac(u, p, t) == [-1.5 -2.0; 3.0 -1.0]
 
-@code_llvm DiffEqBase.has_jac(f)
+@code_llvm SciMLBase.has_jac(f)
 
 println("Test booleans")
-@test DiffEqBase.has_jac(f) == true
+@test SciMLBase.has_jac(f) == true
 
 println("Test difficult differentiable")
 NJ = @ode_def DiffDiff begin
