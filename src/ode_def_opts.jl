@@ -140,6 +140,7 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},curmod,ex::Expr,param
       Wfact_t::TWt
       paramjac::Nothing
       syms::Vector{Symbol}
+      indepvar::Symbol
       colorvec::Nothing
       sys::S
     end
@@ -153,6 +154,6 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},curmod,ex::Expr,param
     $full_wex
 
     $name($fname,ParameterizedFunctions.LinearAlgebra.I,nothing,$tname,$jname,nothing,nothing,
-          nothing,nothing,$Wname,$W_tname,nothing,$syms,nothing,$sys)
+          nothing,nothing,$Wname,$W_tname,nothing,$syms,$(Meta.quot(depvar)),nothing,$sys)
   end |> esc
 end

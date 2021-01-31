@@ -1,4 +1,4 @@
-using ParameterizedFunctions, DiffEqBase
+using ParameterizedFunctions, DiffEqBase, SciMLBase
 using Test, InteractiveUtils, Latexify
 
 using SpecialFunctions
@@ -11,7 +11,7 @@ f_t = @ode_def SymCheck begin # Checks for error due to symbol on 1
   dy = -c*y + d*x*y*t^2
 end a b c d
 
-@test DiffEqBase.__has_syms(f_t)
+@test SciMLBase.__has_syms(f_t)
 
 f_t2 = @ode_def SymCheck2 begin # Checks for error due to symbol on 1
   dx = 1
@@ -62,10 +62,10 @@ f.jac(J,u,p,t)
              3.0 -1.0]
 @test f.jac(u, p, t) == [-1.5 -2.0; 3.0 -1.0]
 
-@code_llvm DiffEqBase.has_jac(f)
+@code_llvm SciMLBase.has_jac(f)
 
 println("Test booleans")
-@test DiffEqBase.has_jac(f) == true
+@test SciMLBase.has_jac(f) == true
 
 println("Test difficult differentiable")
 NJ = @ode_def DiffDiff begin
@@ -95,7 +95,7 @@ f_t_noname = @ode_def begin # Checks for error due to symbol on 1
   dy = -c*y + d*x*y*t^2
 end a b c d
 
-@test DiffEqBase.__has_syms(f_t_noname)
+@test SciMLBase.__has_syms(f_t_noname)
 
 f = @ode_def begin
   dx = a*x - b*x*y
