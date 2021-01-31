@@ -1,4 +1,4 @@
-using ParameterizedFunctions, DiffEqBase
+using ParameterizedFunctions, DiffEqBase, SciMLBase
 using Test, InteractiveUtils, Latexify
 
 using SpecialFunctions
@@ -11,7 +11,7 @@ f_t = @ode_def SymCheck begin # Checks for error due to symbol on 1
   dy = -c*y + d*x*y*t^2
 end a b c d
 
-@test DiffEqBase.__has_syms(f_t)
+@test SciMLBase.__has_syms(f_t)
 
 f_t2 = @ode_def SymCheck2 begin # Checks for error due to symbol on 1
   dx = 1
