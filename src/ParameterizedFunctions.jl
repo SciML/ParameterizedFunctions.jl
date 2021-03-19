@@ -1,7 +1,11 @@
 __precompile__()
 
+"""
+$(DocStringExtensions.README)
+"""
 module ParameterizedFunctions
 
+using DocStringExtensions
   using DataStructures, DiffEqBase, Latexify
   using Reexport
   @reexport using ModelingToolkit
