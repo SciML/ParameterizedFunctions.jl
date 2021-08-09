@@ -21,7 +21,7 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},curmod,ex::Expr,param
 
 
   t = (@variables t)[1]
-  vars = [@variables $x(t) for x in syms]
+  vars = [(@variables $x(t))[1] for x in syms]
   params = [@parameters $x for x in Symbol[params...]]
 
   vars_dict = Dict(x=>Symbol(v) for (x, v) in zip(syms, vars))
