@@ -41,7 +41,7 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},curmod,ex::Expr,param
 
   mtk_diffeqs = [D(vars[i]) ~ mtk_ops[i] for i in 1:length(vars)]
 
-  sys = ODESystem(mtk_diffeqs,t,vars,params)
+  sys = ODESystem(mtk_diffeqs,t,vars,params,name=gensym(:Parameterized))
 
   f_ex_oop,f_ex_iip = ModelingToolkit.generate_function(sys,vars,params)
 
