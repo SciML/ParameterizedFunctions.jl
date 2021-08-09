@@ -20,9 +20,9 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},curmod,ex::Expr,param
   ####
 
 
-  t = Sym{Number}(:t)
-  vars = [Sym{FnType{Tuple, Number}}(x)(t) for x in syms]
-  params = [Sym{Number}(x) for x in Symbol[params...]]
+  t = @variables t
+  vars = [@variables $x(t) for x in syms]
+  params = [@parameters $x for x in Symbol[params...]]
 
   vars_dict = Dict(x=>Symbol(v) for (x, v) in zip(syms, vars))
 
