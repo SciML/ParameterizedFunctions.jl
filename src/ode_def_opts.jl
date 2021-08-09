@@ -20,7 +20,7 @@ function ode_def_opts(name::Symbol,opts::Dict{Symbol,Bool},curmod,ex::Expr,param
   ####
 
 
-  t = @variables t
+  t = (@variables t)[1]
   vars = [@variables $x(t) for x in syms]
   params = [@parameters $x for x in Symbol[params...]]
 
