@@ -22,8 +22,7 @@ function modelingtoolkitize_expr(ex::Expr,vars,curmod)
     ex.head === :if && (ex = Expr(:call, ifelse, ex.args...))
     ex.head === :call || throw(ArgumentError("internal representation does not support non-call Expr"))
     op = ex.args[1] ∈ names ? vars[findfirst(x->ex.args[1] == tosymbol(x),vars)] : getproperty(curmod,ex.args[1]) # HACK
-    args = [modelingtoolkitize_expr(x,vars,curmod) for x in ex.args[2:end]]
-    return Term(op, args)
+    return op((modelingtoolkitize_expr(x,vars,curmod) for x in ex.args[2:end])...)
 end
 
 function modelingtoolkitize_expr(ex::Sym,vars,curmod)
