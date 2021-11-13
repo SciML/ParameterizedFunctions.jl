@@ -85,8 +85,7 @@ end a μ c d
 NJ(du,u,[1.5,1,3,4],t)
 @test du == [-3.0;-3*3.0 + erf(2.0*3.0/4)]
 @test du == NJ(u,[1.5,1,3,4],t)
-@test_throws MethodError NJ.jac(iJ,u,p,t)
-# NJ(Val{:jac},t,u,J) # Currently gives E not defined, will be fixed by the next SymEgine
+NJ.jac(iJ,u,p,t)
 
 println("Test anonymous definition")
 
