@@ -1,5 +1,5 @@
 [deps]
-RecursiveArrayTools = "731186ca-8d62-57ce-b412-fbd966d074cd"
+ParameterizedFunctions = "65888b18-ceab-5e60-b2b9-181511a3b968"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 
 [compat]
