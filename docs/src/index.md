@@ -12,6 +12,34 @@ using Pkg
 Pkg.add("ParameterizedFunctions")
 ```
 
+## Example
+
+```julia
+using DifferentialEquations, ParameterizedFunctions
+
+# Non-Stiff ODE
+
+lotka_volterra = @ode_def begin
+  d🐁  = α*🐁  - β*🐁*🐈
+  d🐈 = -γ*🐈 + δ*🐁*🐈
+end α β γ δ
+
+p = [1.5,1.0,3.0,1.0]; u0 = [1.0;1.0]
+prob = ODEProblem(lotka_volterra,u0,(0.0,10.0),p)
+sol = solve(prob,Tsit5(),reltol=1e-6,abstol=1e-6)
+
+# Stiff ODE
+
+rober = @ode_def begin
+  dy₁ = -k₁*y₁+k₃*y₂*y₃
+  dy₂ =  k₁*y₁-k₂*y₂^2-k₃*y₂*y₃
+  dy₃ =  k₂*y₂^2
+end k₁ k₂ k₃
+
+prob = ODEProblem(rober,[1.0,0.0,0.0],(0.0,1e5),[0.04,3e7,1e4])
+sol = solve(prob)
+```
+
 ## Contributing
 
 - Please refer to the

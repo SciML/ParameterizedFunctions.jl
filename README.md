@@ -20,7 +20,7 @@ the documentation, which contains the unreleased features.
 The following are valid ODE definitions.
 
 ```julia
-using DifferentialEquations
+using DifferentialEquations, ParameterizedFunctions
 
 # Non-Stiff ODE
 
