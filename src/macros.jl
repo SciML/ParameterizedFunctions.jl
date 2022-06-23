@@ -32,18 +32,17 @@ end a b c d
 extra definitions (Jacobian, parameter Jacobian, etc.) defined through the MTK
 symbolic tools.
 """
-macro ode_def(name,ex,params...)
-    opts = Dict{Symbol,Bool}(
-    :build_tgrad => true,
-    :build_jac => true,
-    :build_expjac => false,
-    :build_invjac => false,
-    :build_invW => false,
-    :build_hes => false,
-    :build_invhes => false,
-    :build_dpfuncs => true)
-    name isa Expr ? ode_def_opts(gensym(),opts,__module__,name,ex,params...) :
-        ode_def_opts(name,opts,__module__,ex,params...)
+macro ode_def(name, ex, params...)
+    opts = Dict{Symbol,Bool}(:build_tgrad => true,
+                             :build_jac => true,
+                             :build_expjac => false,
+                             :build_invjac => false,
+                             :build_invW => false,
+                             :build_hes => false,
+                             :build_invhes => false,
+                             :build_dpfuncs => true)
+    return name isa Expr ? ode_def_opts(gensym(), opts, __module__, name, ex, params...) :
+           ode_def_opts(name, opts, __module__, ex, params...)
 end
 
 """
@@ -56,18 +55,17 @@ end parameters :: ODEFunction
 Like `@ode_def` but the `opts` options are set so that no symbolic functions are generated.
 See the `@ode_def` docstring for more details.
 """
-macro ode_def_bare(name,ex,params...)
-    opts = Dict{Symbol,Bool}(
-    :build_tgrad => false,
-    :build_jac => false,
-    :build_expjac => false,
-    :build_invjac => false,
-    :build_invW => false,
-    :build_hes => false,
-    :build_invhes => false,
-    :build_dpfuncs => false)
-    name isa Expr ? ode_def_opts(gensym(),opts,__module__,name,ex,params...) :
-        ode_def_opts(name,opts,__module__,ex,params...)
+macro ode_def_bare(name, ex, params...)
+    opts = Dict{Symbol,Bool}(:build_tgrad => false,
+                             :build_jac => false,
+                             :build_expjac => false,
+                             :build_invjac => false,
+                             :build_invW => false,
+                             :build_hes => false,
+                             :build_invhes => false,
+                             :build_dpfuncs => false)
+    return name isa Expr ? ode_def_opts(gensym(), opts, __module__, name, ex, params...) :
+           ode_def_opts(name, opts, __module__, ex, params...)
 end
 
 """
@@ -80,16 +78,15 @@ end parameters :: ODEFunction
 Like `@ode_def` but the `opts` options are set so that all possible symbolic functions are generated.
 See the `@ode_def` docstring for more details.
 """
-macro ode_def_all(name,ex,params...)
-    opts = Dict{Symbol,Bool}(
-    :build_tgrad => true,
-    :build_jac => true,
-    :build_expjac => false,
-    :build_invjac => false,
-    :build_invW => true,
-    :build_hes => false,
-    :build_invhes => false,
-    :build_dpfuncs => true)
-    name isa Expr ? ode_def_opts(gensym(),opts,__module__,name,ex,params...) :
-        ode_def_opts(name,opts,__module__,ex,params...)
+macro ode_def_all(name, ex, params...)
+    opts = Dict{Symbol,Bool}(:build_tgrad => true,
+                             :build_jac => true,
+                             :build_expjac => false,
+                             :build_invjac => false,
+                             :build_invW => true,
+                             :build_hes => false,
+                             :build_invhes => false,
+                             :build_dpfuncs => true)
+    return name isa Expr ? ode_def_opts(gensym(), opts, __module__, name, ex, params...) :
+           ode_def_opts(name, opts, __module__, ex, params...)
 end

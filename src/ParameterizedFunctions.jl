@@ -6,28 +6,24 @@ $(DocStringExtensions.README)
 module ParameterizedFunctions
 
 using DocStringExtensions
-  using DataStructures, DiffEqBase, Latexify
-  using Reexport
-  @reexport using ModelingToolkit
-  using ModelingToolkit: Sym, FnType, tosymbol
+using DataStructures, DiffEqBase, Latexify
+using Reexport
+@reexport using ModelingToolkit
+using ModelingToolkit: Sym, FnType, tosymbol
 
+using LinearAlgebra: LinearAlgebra
 
-  import LinearAlgebra
+import Base: getindex
 
-  import Base: getindex
+include("ode_def_opts.jl")
+include("ode_findrep.jl")
+include("utils.jl")
+include("dict_build.jl")
+include("macros.jl")
+include("latexify.jl")
 
-  include("ode_def_opts.jl")
-  include("ode_findrep.jl")
-  include("utils.jl")
-  include("dict_build.jl")
-  include("macros.jl")
-  include("latexify.jl")
-
-  export @ode_def,ode_def_opts,@ode_def_bare, @ode_def_all
+export @ode_def, ode_def_opts, @ode_def_bare, @ode_def_all
 end # module
-
-
-
 
 ##### Extra
 
