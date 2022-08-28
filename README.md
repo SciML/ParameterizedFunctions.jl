@@ -1,9 +1,14 @@
 # ParameterizedFunctions.jl
 
-[![Join the chat at https://gitter.im/JuliaDiffEq/Lobby](https://badges.gitter.im/JuliaDiffEq/Lobby.svg)](https://gitter.im/JuliaDiffEq/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Build Status](https://github.com/SciML/ParameterizedFunctions.jl/workflows/CI/badge.svg)](https://github.com/SciML/ParameterizedFunctions.jl/actions?query=workflow%3ACI)
+[![Join the chat at https://julialang.zulipchat.com #sciml-bridged](https://img.shields.io/static/v1?label=Zulip&message=chat&color=9558b2&labelColor=389826)](https://julialang.zulipchat.com/#narrow/stream/279055-sciml-bridged)
+[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://parameterizedfunctions.sciml.ai/stable/)
+[![Global Docs](https://img.shields.io/badge/docs-SciML-blue.svg)](https://docs.sciml.ai/dev/modules/ParameterizedFunctions.jl/)
+
 [![codecov](https://codecov.io/gh/SciML/ParameterizedFunctions.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/SciML/ParameterizedFunctions.jl)
-[![Coverage Status](https://coveralls.io/repos/github/SciML/ParameterizedFunctions.jl/badge.svg?branch=master)](https://coveralls.io/github/SciML/ParameterizedFunctions.jl?branch=master)
+[![Build Status](https://github.com/SciML/ParameterizedFunctions.jl/workflows/CI/badge.svg)](https://github.com/SciML/ParameterizedFunctions.jl/actions?query=workflow%3ACI)
+
+[![ColPrac: Contributor's Guide on Collaborative Practices for Community Packages](https://img.shields.io/badge/ColPrac-Contributor's%20Guide-blueviolet)](https://github.com/SciML/ColPrac)
+[![SciML Code Style](https://img.shields.io/static/v1?label=code%20style&message=SciML&color=9558b2&labelColor=389826)](https://github.com/SciML/SciMLStyle)
 
 ParameterizedFunctions.jl is a component of the SciML ecosystem which allows
 for easily defining parameterized ODE models in a simple syntax.
