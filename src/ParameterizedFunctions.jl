@@ -16,7 +16,6 @@ import LinearAlgebra
 import Base: getindex
 
 include("ode_def_opts.jl")
-include("ode_findrep.jl")
 include("utils.jl")
 include("dict_build.jl")
 include("macros.jl")

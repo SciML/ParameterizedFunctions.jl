@@ -1,4 +1,17 @@
 ### Utility Functions
+function flip_mult!(ex)
+    for (i, arg) in enumerate(ex.args)
+        if isa(arg, Expr)
+            if arg.args[1] == :(*) && length(arg.args) >= 3 &&
+               (isa(arg.args[2], Number) ||
+                (isa(arg.args[2], Expr) && arg.args[2].args[1] == :-))
+                arg.args[3], arg.args[2] = arg.args[2], arg.args[3]
+            else
+                flip_mult!(arg)
+            end
+        end
+    end
+end
 
 function build_component_funcs(symex)
     funcs = Vector{Expr}(undef, 0) # Get all of the functions for symbolic computation
