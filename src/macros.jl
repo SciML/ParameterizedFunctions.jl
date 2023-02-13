@@ -14,8 +14,8 @@ you can use the following command:
 
 ```julia
 f = @ode_def LotkaVolterra begin
-    dx = a*x - b*x*y
-    dy = -c*y + d*x*y
+    dx = a * x - b * x * y
+    dy = -c * y + d * x * y
 end a b c d
 ```
 
@@ -23,8 +23,8 @@ or you can define it anonymously:
 
 ```julia
 f = @ode_def begin
-    dx = a*x - b*x*y
-    dy = -c*y + d*x*y
+    dx = a * x - b * x * y
+    dy = -c * y + d * x * y
 end a b c d
 ```
 
