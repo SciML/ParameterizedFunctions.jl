@@ -830,7 +830,7 @@ weakdeps = ["Requires", "TOML"]
 deps = ["DataStructures", "DiffEqBase", "DocStringExtensions", "Latexify", "LinearAlgebra", "ModelingToolkit", "Reexport", "SciMLBase"]
 path = "/home/runner/work/ParameterizedFunctions.jl/ParameterizedFunctions.jl"
 uuid = "65888b18-ceab-5e60-b2b9-181511a3b968"
-version = "5.17.0"
+version = "5.16.0"
 
 [[deps.Parameters]]
 deps = ["OrderedCollections", "UnPack"]
