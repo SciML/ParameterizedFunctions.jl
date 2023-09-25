@@ -10,4 +10,5 @@ ParameterizedFunctions.@ode_def_all
 
 ```@docs
 ParameterizedFunctions.ode_def_opts
+ParameterizedFunctions.ParameterizedFunctions
 ```
