@@ -18,7 +18,7 @@ function build_component_funcs(symex)
     for (i, arg) in enumerate(symex.args)
         if i % 2 == 0
             ex = arg.args[2]
-            if (typeof(ex) <: Symbol) || (typeof(ex) <: Number)
+            if (ex isa Symbol) || (ex isa Number)
                 push!(funcs, :($ex * 1))
             else # It's an expression, just push
                 fix_ex = copy(ex)
