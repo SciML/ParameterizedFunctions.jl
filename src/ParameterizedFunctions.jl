@@ -53,7 +53,7 @@ function build_fjac_func(symjac_L,symjac_U,indvar_dict,param_dict,inline_dict)
   for i in 1:size(symjac_L,1)
     for j in 1:i
       ex = parse(string(symjac_L[i,j]))
-      if typeof(ex) <: Expr
+      if ex isa Expr
         ode_findreplace(ex,ex,indvar_dict,param_dict,inline_dict)
       else
         ex = ode_symbol_findreplace(ex,indvar_dict,param_dict,inline_dict)
@@ -70,7 +70,7 @@ function build_fjac_func(symjac_L,symjac_U,indvar_dict,param_dict,inline_dict)
   for j in 1:size(symjac_U,2)
     for i in 1:j
       ex = parse(string(symjac_U[i,j]))
-      if typeof(ex) <: Expr
+      if ex isa Expr
         ode_findreplace(ex,ex,indvar_dict,param_dict,inline_dict)
       else
         ex = ode_symbol_findreplace(ex,indvar_dict,param_dict,inline_dict)

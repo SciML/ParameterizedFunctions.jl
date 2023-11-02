@@ -24,7 +24,7 @@ end
 function build_param_list(params)
     param_list = Vector{Symbol}()
     for i in 1:length(params)
-        if typeof(params[i]) <: Symbol
+        if params[i] isa Symbol
             push!(param_list, params[i])
         elseif params[i].head == :call || params[i].head == :(=)
             warn("p=>val and p=val are deprecated. Simply list the parameters. See the DifferentialEquations.jl documentation for more information on the syntax change.")
