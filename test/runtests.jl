@@ -3,6 +3,8 @@ using Test, InteractiveUtils, Latexify
 
 using SpecialFunctions
 
+include("./qa.jl")
+
 ### ODE Macros
 
 println("Build some examples")
