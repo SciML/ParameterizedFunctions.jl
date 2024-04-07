@@ -49,8 +49,8 @@ Latexify directly works on the generated expression. Example:
 using ParameterizedFunctions, Latexify
 
 lotka_volterra = @ode_def begin
-    dx = a*x -b*x*y
-    dy = -c*y + d*x*y
+    dx = a * x - b * x * y
+    dy = -c * y + d * x * y
 end a b c d
 
 latexify(lotka_volterra.sys)
@@ -58,7 +58,7 @@ latexify(lotka_volterra.sys)
 
 Generates:
 
-```julia
+```
 L"\begin{align}
 \frac{\mathrm{d} x\left( t \right)}{\mathrm{d}t} =& a x\left( t \right) - b x\left( t \right) y\left( t \right) \\
 \frac{\mathrm{d} y\left( t \right)}{\mathrm{d}t} =&  - c y\left( t \right) + d x\left( t \right) y\left( t \right)

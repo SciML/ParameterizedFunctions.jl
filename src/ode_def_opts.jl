@@ -7,7 +7,7 @@ findreplace(ex, dict) = ex
 """
 ```julia
 ode_def_opts(name::Symbol, opts::Dict{Symbol, Bool}, curmod, ex::Expr, params...;
-             depvar = :t)
+    depvar = :t)
 ```
 
 The core internal. Users should only interact with this through the `@ode_def_*` macros.
@@ -30,18 +30,18 @@ Example:
 
 ```julia
 opts = Dict{Symbol, Bool}(:build_tgrad => true,
-                          :build_jac => true,
-                          :build_expjac => false,
-                          :build_invjac => true,
-                          :build_invW => true,
-                          :build_invW_t => true,
-                          :build_hes => false,
-                          :build_invhes => false,
-                          :build_dpfuncs => true)
+    :build_jac => true,
+    :build_expjac => false,
+    :build_invjac => true,
+    :build_invW => true,
+    :build_invW_t => true,
+    :build_hes => false,
+    :build_invhes => false,
+    :build_dpfuncs => true)
 ```
 """
 function ode_def_opts(name::Symbol, opts::Dict{Symbol, Bool}, curmod, ex::Expr, params...;
-                      depvar = :t)
+        depvar = :t)
     # depvar is the dependent variable. Defaults to t
     # M is the mass matrix in RosW, must be a constant!
 
@@ -191,8 +191,8 @@ function ode_def_opts(name::Symbol, opts::Dict{Symbol, Bool}, curmod, ex::Expr, 
         $full_wex
 
         $name($fname, ParameterizedFunctions.LinearAlgebra.I, nothing, $tname, $jname,
-              nothing, nothing,
-              nothing, nothing, $Wname, $W_tname, nothing, $syms, $(Meta.quot(depvar)),
-              nothing, $sys)
+            nothing, nothing,
+            nothing, nothing, $Wname, $W_tname, nothing, $syms, $(Meta.quot(depvar)),
+            nothing, $sys)
     end |> esc
 end
