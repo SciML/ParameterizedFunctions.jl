@@ -180,6 +180,8 @@ function ode_def_opts(name::Symbol, opts::Dict{Symbol, Bool}, curmod, ex::Expr, 
             indepvar::Symbol
             colorvec::Nothing
             sys::S
+            initialization_data::Nothing
+            nlprob_data::Nothing
         end
 
         (f::$name)(args...) = f.f(args...)
@@ -193,6 +195,6 @@ function ode_def_opts(name::Symbol, opts::Dict{Symbol, Bool}, curmod, ex::Expr, 
         $name($fname, ParameterizedFunctions.LinearAlgebra.I, nothing, $tname, $jname,
             nothing, nothing,
             nothing, nothing, $Wname, $W_tname, nothing, $syms, $(Meta.quot(depvar)),
-            nothing, $sys)
+            nothing, $sys, nothing, nothing)
     end |> esc
 end
