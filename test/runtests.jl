@@ -110,3 +110,13 @@ sir_ode = @ode_def SIRModel begin
     dI = b * S * I - g * I
     dR = g * I
 end b g
+
+@testset "remake" begin
+    f = @ode_def begin
+        dx = a * x - b * x * y
+        dy = -c * y + d * x * y
+    end a b c d
+    # pass dummy values, `remake` should ignore everything
+    f2 = remake(f; f = nothing, initialization_data = 3)
+    @test f2 === f
+end

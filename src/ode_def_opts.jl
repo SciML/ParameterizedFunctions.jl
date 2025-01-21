@@ -186,6 +186,10 @@ function ode_def_opts(name::Symbol, opts::Dict{Symbol, Bool}, curmod, ex::Expr, 
 
         (f::$name)(args...) = f.f(args...)
 
+        function ParameterizedFunctions.SciMLBase.remake(func::$name; kwargs...)
+            return func
+        end
+
         $fname($(f_ex_oop.args[1].args...)) = $(f_ex_oop.args[2])
         $fname($(f_ex_iip.args[1].args...)) = $(f_ex_iip.args[2])
         $full_tex
