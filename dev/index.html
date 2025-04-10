@@ -35,7 +35,7 @@ latexify(lotka_volterra.sys)</code></pre><p>Generates:</p><pre><code class="nohi
 \frac{\mathrm{d} y\left( t \right)}{\mathrm{d}t} =&amp;  - c y\left( t \right) + d x\left( t \right) y\left( t \right)
 \end{align}
 &quot;`</code></pre><h2 id="Contributing"><a class="docs-heading-anchor" href="#Contributing">Contributing</a><a id="Contributing-1"></a><a class="docs-heading-anchor-permalink" href="#Contributing" title="Permalink"></a></h2><ul><li><p>Please refer to the <a href="https://github.com/SciML/ColPrac/blob/master/README.md">SciML ColPrac: Contributor&#39;s Guide on Collaborative Practices for Community Packages</a> for guidance on PRs, issues, and other matters relating to contributing to SciML.</p></li><li><p>See the <a href="https://github.com/SciML/SciMLStyle">SciML Style Guide</a> for common coding practices and other style decisions.</p></li><li><p>There are a few community forums:</p><ul><li>The #diffeq-bridged and #sciml-bridged channels in the <a href="https://julialang.org/slack/">Julia Slack</a></li><li>The #diffeq-bridged and #sciml-bridged channels in the <a href="https://julialang.zulipchat.com/#narrow/stream/279055-sciml-bridged">Julia Zulip</a></li><li>On the <a href="https://discourse.julialang.org">Julia Discourse forums</a></li><li>See also <a href="https://sciml.ai/community/">SciML Community page</a></li></ul></li></ul><h2 id="Reproducibility"><a class="docs-heading-anchor" href="#Reproducibility">Reproducibility</a><a id="Reproducibility-1"></a><a class="docs-heading-anchor-permalink" href="#Reproducibility" title="Permalink"></a></h2><details><summary>The documentation of this SciML package was built using these direct dependencies,</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Status `~/work/ParameterizedFunctions.jl/ParameterizedFunctions.jl/docs/Project.toml`
-  [e30172f5] Documenter v1.9.0
+  [e30172f5] Documenter v1.10.1
   [65888b18] ParameterizedFunctions v5.17.2 `~/work/ParameterizedFunctions.jl/ParameterizedFunctions.jl`</code></pre></details><details><summary>and using this machine and Julia version.</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Julia Version 1.11.4
 Commit 8561cc3d68d (2025-03-10 11:36 UTC)
 Build Info:
@@ -79,26 +79,26 @@ Threads: 1 default, 0 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [9a962f9c] DataAPI v1.16.0
   [864edb3b] DataStructures v0.18.22
   [e2d170a0] DataValueInterfaces v1.0.0
-  [2b5f629d] DiffEqBase v6.167.1
+  [2b5f629d] DiffEqBase v6.167.2
   [459566f4] DiffEqCallbacks v4.3.0
   [77a26b50] DiffEqNoiseProcess v5.24.1
   [163ba53b] DiffResults v1.1.0
   [b552c78f] DiffRules v1.15.1
-  [a0c0ee7d] DifferentiationInterface v0.6.48
+  [a0c0ee7d] DifferentiationInterface v0.6.50
   [8d63f2c5] DispatchDoctor v0.4.19
   [31c24e10] Distributions v0.25.118
-  [ffbed154] DocStringExtensions v0.9.3
-  [e30172f5] Documenter v1.9.0
+  [ffbed154] DocStringExtensions v0.9.4
+  [e30172f5] Documenter v1.10.1
   [5b8099bc] DomainSets v0.7.15
   [7c1d4256] DynamicPolynomials v0.6.1
-  [06fc5a27] DynamicQuantities v1.7.0
-  [4e289a0a] EnumX v1.0.4
+  [06fc5a27] DynamicQuantities v1.8.0
+  [4e289a0a] EnumX v1.0.5
   [f151be2c] EnzymeCore v0.8.8
   [e2ba6199] ExprTools v0.1.10
   [55351af7] ExproniconLite v0.10.14
   [7034ab61] FastBroadcast v0.3.5
   [9aa1b823] FastClosures v0.3.2
-  [a4df4552] FastPower v1.1.1
+  [a4df4552] FastPower v1.1.2
   [1a297f60] FillArrays v1.13.0
   [64ca27bc] FindFirstFunctions v1.4.1
   [6a86dc24] FiniteDiff v2.27.0
@@ -110,7 +110,7 @@ Threads: 1 default, 0 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [46192b85] GPUArraysCore v0.2.0
   [d7ba0133] Git v1.3.1
   [c27321d9] Glob v1.3.1
-  [86223c79] Graphs v1.12.0
+  [86223c79] Graphs v1.12.1
   [34004b35] HypergeometricFunctions v0.3.28
   [b5f81e59] IOCapture v0.2.5
   [615f187c] IfElse v0.1.1
@@ -133,7 +133,7 @@ Threads: 1 default, 0 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [5078a376] LazyArrays v2.6.1
   [87fe0de2] LineSearch v0.1.4
   [d3d80556] LineSearches v7.3.0
-  [7ed4a6bd] LinearSolve v3.7.0
+  [7ed4a6bd] LinearSolve v3.7.2
   [2ab3a3ac] LogExpFunctions v0.3.29
   [d8e11817] MLStyle v0.4.17
   [1914dd2f] MacroTools v0.5.15
@@ -141,22 +141,22 @@ Threads: 1 default, 0 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [d0879d2d] MarkdownAST v0.1.2
   [bb5d69b7] MaybeInplace v0.1.4
   [e1d29d7a] Missings v1.2.0
-  [961ee093] ModelingToolkit v9.69.0
+  [961ee093] ModelingToolkit v9.71.0
   [2e0e35c7] Moshi v0.3.5
   [46d2c3a1] MuladdMacro v0.2.4
   [102ac46a] MultivariatePolynomials v0.5.7
   [d8a4904e] MutableArithmetics v1.6.4
-  [d41bc354] NLSolversBase v7.9.0
-  [77ba4419] NaNMath v1.1.2
+  [d41bc354] NLSolversBase v7.9.1
+  [77ba4419] NaNMath v1.1.3
   [8913a72c] NonlinearSolve v4.5.0
   [be0214bd] NonlinearSolveBase v1.5.1
   [5959db7a] NonlinearSolveFirstOrder v1.3.0
   [9a2c21bd] NonlinearSolveQuasiNewton v1.2.0
   [26075421] NonlinearSolveSpectralMethods v1.1.0
   [6fe1bfb0] OffsetArrays v1.16.0
-  [429524aa] Optim v1.11.0
+  [429524aa] Optim v1.12.0
   [bac558e1] OrderedCollections v1.8.0
-  [90014a1f] PDMats v0.11.32
+  [90014a1f] PDMats v0.11.33
   [65888b18] ParameterizedFunctions v5.17.2 `~/work/ParameterizedFunctions.jl/ParameterizedFunctions.jl`
   [d96e819e] Parameters v0.12.3
   [69de0a69] Parsers v2.8.1
@@ -172,7 +172,7 @@ Threads: 1 default, 0 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [74087812] Random123 v1.7.0
   [e6cf234a] RandomNumbers v1.6.0
   [3cdcf5f2] RecipesBase v1.3.4
-  [731186ca] RecursiveArrayTools v3.31.1
+  [731186ca] RecursiveArrayTools v3.31.2
   [189a3867] Reexport v1.2.2
   [2792f1a3] RegistryInstances v0.1.0
   [ae029012] Requires v1.3.1
@@ -181,7 +181,7 @@ Threads: 1 default, 0 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [7e49a35a] RuntimeGeneratedFunctions v0.5.13
   [9dfe8606] SCCNonlinearSolve v1.0.0
   [94e857df] SIMDTypes v0.1.0
-  [0bca4576] SciMLBase v2.79.0
+  [0bca4576] SciMLBase v2.82.0
   [19f34311] SciMLJacobianOperators v0.1.1
   [c0aeaf25] SciMLOperators v0.3.13
   [53ae85a6] SciMLStructures v1.7.0
@@ -189,7 +189,7 @@ Threads: 1 default, 0 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [727e6d20] SimpleNonlinearSolve v2.2.0
   [699a6c99] SimpleTraits v0.9.4
   [a2af1166] SortingAlgorithms v1.2.1
-  [0a514795] SparseMatrixColorings v0.4.14
+  [0a514795] SparseMatrixColorings v0.4.15
   [276daf66] SpecialFunctions v2.5.0
   [aedffcd0] Static v1.2.0
   [0d7ed370] StaticArrayInterface v1.8.0
@@ -198,12 +198,12 @@ Threads: 1 default, 0 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [10745b16] Statistics v1.11.1
   [82ae8749] StatsAPI v1.7.0
   [2913bbd2] StatsBase v0.34.4
-  [4c63d2b9] StatsFuns v1.3.2
+  [4c63d2b9] StatsFuns v1.4.0
   [7792a7ef] StrideArraysCore v0.5.7
   [2efcf032] SymbolicIndexingInterface v0.3.38
   [19f23fe9] SymbolicLimits v0.2.2
-  [d1185830] SymbolicUtils v3.24.0
-  [0c5d862f] Symbolics v6.34.0
+  [d1185830] SymbolicUtils v3.25.1
+  [0c5d862f] Symbolics v6.37.0
   [3783bdb8] TableTraits v1.0.1
   [bd369af6] Tables v1.12.0
   [ed4db957] TaskLocalValues v0.1.2
@@ -215,7 +215,7 @@ Threads: 1 default, 0 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [3bb67fe8] TranscodingStreams v0.11.3
   [410a4b4d] Tricks v0.1.10
   [781d530d] TruncatedStacktraces v1.4.0
-  [5c2747f8] URIs v1.5.1
+  [5c2747f8] URIs v1.5.2
   [3a884ed6] UnPack v1.0.2
   [1986cc42] Unitful v1.22.0
   [a7c27f48] Unityper v0.1.6
@@ -277,4 +277,4 @@ Threads: 1 default, 0 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [8e850b90] libblastrampoline_jll v5.11.0+0
   [8e850ede] nghttp2_jll v1.59.0+0
   [3f19e933] p7zip_jll v17.4.0+2
-Info Packages marked with ⌅ have new versions available but compatibility constraints restrict them from upgrading. To see why use `status --outdated -m`</code></pre></details><p>You can also download the <a href="https://github.com/SciML/ParameterizedFunctions.jl/tree/gh-pages/v5.17.2/assets/Manifest.toml">manifest</a> file and the <a href="https://github.com/SciML/ParameterizedFunctions.jl/tree/gh-pages/v5.17.2/assets/Project.toml">project</a> file.</p></article><nav class="docs-footer"><a class="docs-footer-nextpage" href="ode_def/">The ode_def macro »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.9.0 on <span class="colophon-date" title="Thursday 3 April 2025 17:14">Thursday 3 April 2025</span>. Using Julia version 1.11.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+Info Packages marked with ⌅ have new versions available but compatibility constraints restrict them from upgrading. To see why use `status --outdated -m`</code></pre></details><p>You can also download the <a href="https://github.com/SciML/ParameterizedFunctions.jl/tree/gh-pages/v5.17.2/assets/Manifest.toml">manifest</a> file and the <a href="https://github.com/SciML/ParameterizedFunctions.jl/tree/gh-pages/v5.17.2/assets/Project.toml">project</a> file.</p></article><nav class="docs-footer"><a class="docs-footer-nextpage" href="ode_def/">The ode_def macro »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.1 on <span class="colophon-date" title="Thursday 10 April 2025 15:36">Thursday 10 April 2025</span>. Using Julia version 1.11.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
