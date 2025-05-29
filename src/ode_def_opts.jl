@@ -77,13 +77,13 @@ function ode_def_opts(name::Symbol, opts::Dict{Symbol, Bool}, curmod, ex::Expr, 
 
     mtk_diffeqs = [D(vars[i]) ~ mtk_ops[i] for i in 1:length(vars)]
 
-    sys = ODESystem(mtk_diffeqs, t, vars, params, name = gensym(:Parameterized))
+    sys = System(mtk_diffeqs, t, vars, params, name = gensym(:Parameterized))
 
-    f_ex_oop, f_ex_iip = ModelingToolkit.generate_function(sys, vars, params)
+    f_ex_oop, f_ex_iip = ModelingToolkit.generate_rhs(sys)
 
     if opts[:build_tgrad]
         try
-            tgrad_ex_oop, tgrad_ex_iip = ModelingToolkit.generate_tgrad(sys, vars, params)
+            tgrad_ex_oop, tgrad_ex_iip = ModelingToolkit.generate_tgrad(sys)
         catch
             @warn "tgrad construction failed"
             tgrad_ex_oop, tgrad_ex_iip = nothing, nothing
@@ -94,7 +94,7 @@ function ode_def_opts(name::Symbol, opts::Dict{Symbol, Bool}, curmod, ex::Expr, 
 
     if opts[:build_jac]
         try
-            J_ex_oop, J_ex_iip = ModelingToolkit.generate_jacobian(sys, vars, params)
+            J_ex_oop, J_ex_iip = ModelingToolkit.generate_jacobian(sys)
         catch
             @warn "Jacobian construction failed"
             J_ex_oop, J_ex_iip = nothing, nothing
