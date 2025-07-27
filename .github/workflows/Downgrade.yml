@@ -16,7 +16,7 @@ jobs:
     strategy:
       matrix:
         group:
-          - NNPDE1
+          - Core
         downgrade_mode: ['alldeps']
         julia-version: ['1.10']
     steps:
