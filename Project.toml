@@ -15,7 +15,7 @@ SciMLBase = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
 
 [compat]
 Aqua = "0.8"
-DataStructures = "0.18.13"
+DataStructures = "0.18.13, 0.19"
 DiffEqBase = "6.144"
 DocStringExtensions = "0.9"
 InteractiveUtils = "1.10"
