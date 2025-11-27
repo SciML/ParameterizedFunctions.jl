@@ -3,7 +3,7 @@ Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 ParameterizedFunctions = "65888b18-ceab-5e60-b2b9-181511a3b968"
 
 [sources]
-ParameterizedFunctions = {path = "/home/chrisrackauckas/github-runners/demeter4-6/_work/ParameterizedFunctions.jl/ParameterizedFunctions.jl"}
+ParameterizedFunctions = {path = "/home/runner/work/ParameterizedFunctions.jl/ParameterizedFunctions.jl"}
 
 [compat]
 Documenter = "1"

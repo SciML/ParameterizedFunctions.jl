@@ -5,9 +5,9 @@ manifest_format = "2.0"
 project_hash = "62aa7645c1d8262ef22ac558a6b320dd32ee46f1"
 
 [[deps.ADTypes]]
-git-tree-sha1 = "8be2ae325471fc20b11c27bb34b518541d07dd3a"
+git-tree-sha1 = "8b2b045b22740e4be20654175cc38291d48539db"
 uuid = "47edcb42-4c32-4615-8424-f2b9edc5f35b"
-version = "1.19.0"
+version = "1.20.0"
 weakdeps = ["ChainRulesCore", "ConstructionBase", "EnzymeCore"]
 
     [deps.ADTypes.extensions]
@@ -112,9 +112,9 @@ version = "7.22.0"
 
 [[deps.ArrayLayouts]]
 deps = ["FillArrays", "LinearAlgebra", "StaticArrays"]
-git-tree-sha1 = "122a06c8266e00035bfa572887ab52c344526eb4"
+git-tree-sha1 = "e0b47732a192dd59b9d079a06d04235e2f833963"
 uuid = "4c555306-a7a7-4459-81d9-ec55ddd5c99a"
-version = "1.12.1"
+version = "1.12.2"
 weakdeps = ["SparseArrays"]
 
     [deps.ArrayLayouts.extensions]
@@ -881,10 +881,10 @@ weakdeps = ["LineSearches"]
     LineSearchLineSearchesExt = "LineSearches"
 
 [[deps.LineSearches]]
-deps = ["LinearAlgebra", "NLSolversBase", "NaNMath", "Parameters", "Printf"]
-git-tree-sha1 = "a8b1215fb05581a1f9e403bec46a1333e7eb1ffb"
+deps = ["LinearAlgebra", "NLSolversBase", "NaNMath", "Printf"]
+git-tree-sha1 = "9ea3422d03222c6de679934d1c08f0a99405aa03"
 uuid = "d3d80556-e9d4-5f37-9878-2ab0fcc64255"
-version = "7.4.1"
+version = "7.5.1"
 
 [[deps.LinearAlgebra]]
 deps = ["Libdl", "OpenBLAS_jll", "libblastrampoline_jll"]
@@ -965,9 +965,9 @@ version = "1.11.0"
 
 [[deps.ModelingToolkit]]
 deps = ["ADTypes", "AbstractTrees", "ArrayInterface", "BlockArrays", "ChainRulesCore", "Combinatorics", "CommonSolve", "Compat", "ConstructionBase", "DataStructures", "DiffEqBase", "DiffEqCallbacks", "DiffEqNoiseProcess", "DiffRules", "DifferentiationInterface", "Distributed", "Distributions", "DocStringExtensions", "DomainSets", "DynamicQuantities", "EnumX", "ExprTools", "FillArrays", "FindFirstFunctions", "ForwardDiff", "FunctionWrappers", "FunctionWrappersWrappers", "Graphs", "ImplicitDiscreteSolve", "InteractiveUtils", "JuliaFormatter", "JumpProcesses", "Latexify", "Libdl", "LinearAlgebra", "MLStyle", "Moshi", "NaNMath", "OffsetArrays", "OrderedCollections", "OrdinaryDiffEqCore", "PreallocationTools", "PrecompileTools", "RecursiveArrayTools", "Reexport", "RuntimeGeneratedFunctions", "SCCNonlinearSolve", "SciMLBase", "SciMLPublic", "SciMLStructures", "Serialization", "Setfield", "SimpleNonlinearSolve", "SparseArrays", "SpecialFunctions", "StaticArrays", "SymbolicIndexingInterface", "SymbolicUtils", "Symbolics", "URIs", "UnPack", "Unitful"]
-git-tree-sha1 = "ea3a5c734abae9de7f892e1f63f1549e7d1a7179"
+git-tree-sha1 = "179338bcf2475961651552e00090014bb750c858"
 uuid = "961ee093-0014-501f-94e3-6117800e7a78"
-version = "10.29.0"
+version = "10.30.0"
 
     [deps.ModelingToolkit.extensions]
     MTKBifurcationKitExt = "BifurcationKit"
@@ -1036,9 +1036,9 @@ version = "1.3.0"
 
 [[deps.NonlinearSolveBase]]
 deps = ["ADTypes", "Adapt", "ArrayInterface", "CommonSolve", "Compat", "ConcreteStructs", "DifferentiationInterface", "EnzymeCore", "FastClosures", "LinearAlgebra", "Markdown", "MaybeInplace", "Preferences", "Printf", "RecursiveArrayTools", "SciMLBase", "SciMLJacobianOperators", "SciMLLogging", "SciMLOperators", "SciMLStructures", "Setfield", "StaticArraysCore", "SymbolicIndexingInterface", "TimerOutputs"]
-git-tree-sha1 = "a72dc6e5bba0fd9bb3bd9cc4abade8552d9fc982"
+git-tree-sha1 = "3f963293e13d5eff19214b068f0cc0a28da8ea27"
 uuid = "be0214bd-f91f-a760-ac4e-3421ce2b2da0"
-version = "2.4.0"
+version = "2.5.0"
 
     [deps.NonlinearSolveBase.extensions]
     NonlinearSolveBaseBandedMatricesExt = "BandedMatrices"
@@ -1104,9 +1104,9 @@ version = "0.5.6+0"
 
 [[deps.Optim]]
 deps = ["Compat", "EnumX", "FillArrays", "ForwardDiff", "LineSearches", "LinearAlgebra", "NLSolversBase", "NaNMath", "PositiveFactorizations", "Printf", "SparseArrays", "StatsBase"]
-git-tree-sha1 = "61942645c38dd2b5b78e2082c9b51ab315315d10"
+git-tree-sha1 = "48968edaf014f67e58fe4c8a4ce72d392aed3294"
 uuid = "429524aa-4258-5aef-a3af-852621145aeb"
-version = "1.13.2"
+version = "1.13.3"
 
     [deps.Optim.extensions]
     OptimMOIExt = "MathOptInterface"
@@ -1150,15 +1150,9 @@ weakdeps = ["StatsBase"]
 
 [[deps.ParameterizedFunctions]]
 deps = ["DataStructures", "DiffEqBase", "DocStringExtensions", "Latexify", "LinearAlgebra", "ModelingToolkit", "Reexport", "SciMLBase"]
-path = "/home/chrisrackauckas/github-runners/demeter4-6/_work/ParameterizedFunctions.jl/ParameterizedFunctions.jl"
+path = "/home/runner/work/ParameterizedFunctions.jl/ParameterizedFunctions.jl"
 uuid = "65888b18-ceab-5e60-b2b9-181511a3b968"
 version = "5.19.0"
-
-[[deps.Parameters]]
-deps = ["OrderedCollections", "UnPack"]
-git-tree-sha1 = "34c0e9ad262e5f7fc75b10a9952ca7692cfc5fbe"
-uuid = "d96e819e-fc66-5662-9728-84c9c7592b0a"
-version = "0.12.3"
 
 [[deps.Parsers]]
 deps = ["Dates", "PrecompileTools", "UUIDs"]
@@ -1424,9 +1418,9 @@ version = "0.1.11"
 
 [[deps.SciMLLogging]]
 deps = ["Logging", "LoggingExtras", "Preferences"]
-git-tree-sha1 = "70d5b2fc50fde8d868f906b54045eb12b490e867"
+git-tree-sha1 = "1713f77f37f6809cd5b051197ea9adf139101ae5"
 uuid = "a6db7da4-7206-11f0-1eab-35f2a5dbe1d1"
-version = "1.5.0"
+version = "1.6.0"
 
 [[deps.SciMLOperators]]
 deps = ["Accessors", "ArrayInterface", "DocStringExtensions", "LinearAlgebra", "MacroTools"]
@@ -1650,9 +1644,9 @@ version = "3.32.0"
 
 [[deps.Symbolics]]
 deps = ["ADTypes", "ArrayInterface", "Bijections", "CommonWorldInvalidations", "ConstructionBase", "DataStructures", "DiffRules", "Distributions", "DocStringExtensions", "DomainSets", "DynamicPolynomials", "LaTeXStrings", "Latexify", "Libdl", "LinearAlgebra", "LogExpFunctions", "MacroTools", "Markdown", "NaNMath", "OffsetArrays", "PrecompileTools", "Primes", "RecipesBase", "Reexport", "RuntimeGeneratedFunctions", "SciMLBase", "SciMLPublic", "Setfield", "SparseArrays", "SpecialFunctions", "StaticArraysCore", "SymbolicIndexingInterface", "SymbolicLimits", "SymbolicUtils", "TermInterface"]
-git-tree-sha1 = "8206e177903a41519145f577cb7f3793f3b7c960"
+git-tree-sha1 = "7e53ce26142025d12565217082830f2f8caa5275"
 uuid = "0c5d862f-8b57-4792-8d23-62f2024744c7"
-version = "6.57.0"
+version = "6.58.0"
 
     [deps.Symbolics.extensions]
     SymbolicsD3TreesExt = "D3Trees"
