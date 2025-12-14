@@ -40,7 +40,7 @@ function modelingtoolkitize_expr(ex::Expr, vars, curmod)
     return op((modelingtoolkitize_expr(x, vars, curmod) for x in ex.args[2:end])...)
 end
 
-function modelingtoolkitize_expr(ex::Sym, vars, curmod)
+function modelingtoolkitize_expr(ex::BasicSymbolic, vars, curmod)
     ex
 end
 

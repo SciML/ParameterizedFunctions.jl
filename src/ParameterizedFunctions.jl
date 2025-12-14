@@ -9,7 +9,7 @@ using DocStringExtensions
 using DataStructures, DiffEqBase, Latexify
 using Reexport
 @reexport using ModelingToolkit
-using ModelingToolkit: Sym, FnType, tosymbol
+using ModelingToolkit: BasicSymbolic, tosymbol
 
 import LinearAlgebra
 
