@@ -56,7 +56,7 @@ function ode_def_opts(name::Symbol, opts::Dict{Symbol, Bool}, curmod, ex::Expr, 
     indvar_dict, syms = build_indvar_dict(ex, depvar)
     ####
 
-    t = Symbolics.unwrap((@variables t)[1])
+    t = ModelingToolkit.t_nounits
     vars = Symbolics.unwrap.([(@variables $x(t))[1] for x in syms])
     params = Symbolics.unwrap.([(@parameters $x)[1] for x in Symbol[params...]])
 
