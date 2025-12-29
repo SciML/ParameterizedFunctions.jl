@@ -2,5 +2,5 @@
 
 pages = [
     "Home" => "index.md",
-    "ode_def.md"
+    "The ode_def Macro" => "ode_def.md"
 ]
