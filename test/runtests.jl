@@ -4,6 +4,7 @@ using Test, InteractiveUtils, Latexify
 using SpecialFunctions
 
 include("./qa.jl")
+include("./explicit_imports.jl")
 
 ### ODE Macros
 
