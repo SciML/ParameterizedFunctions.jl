@@ -63,7 +63,7 @@ L"\begin{align}
 \frac{\mathrm{d} x\left( t \right)}{\mathrm{d}t} =& a x\left( t \right) - b x\left( t \right) y\left( t \right) \\
 \frac{\mathrm{d} y\left( t \right)}{\mathrm{d}t} =&  - c y\left( t \right) + d x\left( t \right) y\left( t \right)
 \end{align}
-"`
+"
 ```
 
 ## Contributing
