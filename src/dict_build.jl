@@ -18,7 +18,7 @@ function build_indvar_dict(ex, depvar)
         end
     end
     syms = indvar_dict.keys
-    indvar_dict, syms
+    return indvar_dict, syms
 end
 
 function build_param_list(params)
@@ -30,5 +30,5 @@ function build_param_list(params)
             warn("p=>val and p=val are deprecated. Simply list the parameters. See the DifferentialEquations.jl documentation for more information on the syntax change.")
         end
     end
-    param_dict
+    return param_dict
 end

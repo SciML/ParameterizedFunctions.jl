@@ -1,6 +1,6 @@
 findreplace(ex::Symbol, dict) = get(dict, ex, ex)
 function findreplace(ex::Expr, dict)
-    Expr(ex.head, map(x -> findreplace(x, dict), ex.args)...)
+    return Expr(ex.head, map(x -> findreplace(x, dict), ex.args)...)
 end
 findreplace(ex, dict) = ex
 
@@ -40,8 +40,10 @@ opts = Dict{Symbol, Bool}(:build_tgrad => true,
     :build_dpfuncs => true)
 ```
 """
-function ode_def_opts(name::Symbol, opts::Dict{Symbol, Bool}, curmod, ex::Expr, params...;
-        depvar = :t)
+function ode_def_opts(
+        name::Symbol, opts::Dict{Symbol, Bool}, curmod, ex::Expr, params...;
+        depvar = :t
+    )
     # depvar is the dependent variable. Defaults to t
     # M is the mass matrix in RosW, must be a constant!
 
@@ -161,9 +163,9 @@ function ode_def_opts(name::Symbol, opts::Dict{Symbol, Bool}, curmod, ex::Expr, 
         end
     end
 
-    quote
+    return quote
         struct $name{F, TG, TJ, TW, TWt, S} <:
-               ParameterizedFunctions.DiffEqBase.AbstractParameterizedFunction{true}
+            ParameterizedFunctions.DiffEqBase.AbstractParameterizedFunction{true}
             f::F
             mass_matrix::ParameterizedFunctions.LinearAlgebra.UniformScaling{Bool}
             analytic::Nothing
@@ -196,9 +198,11 @@ function ode_def_opts(name::Symbol, opts::Dict{Symbol, Bool}, curmod, ex::Expr, 
         $full_jex
         $full_wex
 
-        $name($fname, ParameterizedFunctions.LinearAlgebra.I, nothing, $tname, $jname,
+        $name(
+            $fname, ParameterizedFunctions.LinearAlgebra.I, nothing, $tname, $jname,
             nothing, nothing,
             nothing, nothing, $Wname, $W_tname, nothing, $syms, $(Meta.quot(depvar)),
-            nothing, $sys, nothing, nothing)
+            nothing, $sys, nothing, nothing
+        )
     end |> esc
 end
