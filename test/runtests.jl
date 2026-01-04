@@ -61,8 +61,10 @@ f_t.tgrad(grad, u, p, t)
 
 println("Test Jacobians")
 f.jac(J, u, p, t)
-@test J == [-1.5 -2.0
-            3.0 -1.0]
+@test J == [
+    -1.5 -2.0
+    3.0 -1.0
+]
 @test f.jac(u, p, t) == [-1.5 -2.0; 3.0 -1.0]
 
 @code_llvm SciMLBase.has_jac(f)

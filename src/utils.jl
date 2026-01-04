@@ -3,14 +3,17 @@ function flip_mult!(ex)
     for (i, arg) in enumerate(ex.args)
         if isa(arg, Expr)
             if arg.args[1] == :(*) && length(arg.args) >= 3 &&
-               (isa(arg.args[2], Number) ||
-                (isa(arg.args[2], Expr) && arg.args[2].args[1] == :-))
+                    (
+                    isa(arg.args[2], Number) ||
+                        (isa(arg.args[2], Expr) && arg.args[2].args[1] == :-)
+                )
                 arg.args[3], arg.args[2] = arg.args[2], arg.args[3]
             else
                 flip_mult!(arg)
             end
         end
     end
+    return
 end
 
 function build_component_funcs(symex)
@@ -27,7 +30,7 @@ function build_component_funcs(symex)
             end
         end
     end
-    funcs
+    return funcs
 end
 
 function modelingtoolkitize_expr(ex::Expr, vars, curmod)
@@ -36,21 +39,21 @@ function modelingtoolkitize_expr(ex::Expr, vars, curmod)
     ex.head === :call ||
         throw(ArgumentError("internal representation does not support non-call Expr"))
     op = ex.args[1] ∈ names ? vars[findfirst(x -> ex.args[1] == tosymbol(x), vars)] :
-         getproperty(curmod, ex.args[1]) # HACK
+        getproperty(curmod, ex.args[1]) # HACK
     return op((modelingtoolkitize_expr(x, vars, curmod) for x in ex.args[2:end])...)
 end
 
 function modelingtoolkitize_expr(ex::BasicSymbolic, vars, curmod)
-    ex
+    return ex
 end
 
 function modelingtoolkitize_expr(ex::Symbol, vars, curmod)
     names = tosymbol.(vars)
     idx = findfirst(x -> ex == x, names)
     op = idx !== nothing ? vars[idx] : getproperty(curmod, ex)
-    op
+    return op
 end
 
 function modelingtoolkitize_expr(ex::Number, vars, curmod)
-    ex
+    return ex
 end
