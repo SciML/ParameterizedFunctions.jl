@@ -49,3 +49,4 @@ end k₁ k₂ k₃
 prob = ODEProblem(rober, [1.0, 0.0, 0.0], (0.0, 1e5), [0.04, 3e7, 1e4])
 sol = solve(prob)
 ```
+
