@@ -7,7 +7,7 @@ function build_indvar_dict(ex, depvar)
         if firstarg == :d
             nodarg = Symbol(join(Base.Iterators.drop(string(arg), 1)))
             if nodarg == depvar
-                warn("$depvar is fixed as the independent variable but is also used as a dependent variable. Results my be incorrect.")
+                @warn "$depvar is fixed as the independent variable but is also used as a dependent variable. Results may be incorrect."
             end
             if !haskey(indvar_dict, nodarg)
                 cur_sym += 1
@@ -27,8 +27,8 @@ function build_param_list(params)
         if params[i] isa Symbol
             push!(param_list, params[i])
         elseif params[i].head == :call || params[i].head == :(=)
-            warn("p=>val and p=val are deprecated. Simply list the parameters. See the DifferentialEquations.jl documentation for more information on the syntax change.")
+            @warn "p=>val and p=val are deprecated. Simply list the parameters. See the DifferentialEquations.jl documentation for more information on the syntax change."
         end
     end
-    return param_dict
+    return param_list
 end
