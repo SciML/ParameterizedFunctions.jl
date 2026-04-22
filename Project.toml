@@ -1,6 +1,6 @@
 name = "ParameterizedFunctions"
 uuid = "65888b18-ceab-5e60-b2b9-181511a3b968"
-version = "5.23.0"
+version = "5.24.0"
 authors = ["Chris Rackauckas <accounts@chrisrackauckas.com>"]
 
 [deps]
@@ -19,7 +19,7 @@ SymbolicUtils = "d1185830-fcd6-423d-90d6-eec64667417b"
 [compat]
 Aqua = "0.8"
 DataStructures = "0.18.13, 0.19"
-DiffEqBase = "6.144"
+DiffEqBase = "6.144, 7"
 DocStringExtensions = "0.9"
 ExplicitImports = "1.14.0"
 InteractiveUtils = "1.10"
