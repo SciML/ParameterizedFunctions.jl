@@ -42,12 +42,13 @@ Build Info:
   Official https://julialang.org release
 Platform Info:
   OS: Linux (x86_64-linux-gnu)
-  CPU: 4 × AMD EPYC 7763 64-Core Processor
+  CPU: 4 × AMD EPYC 9V74 80-Core Processor
   WORD_SIZE: 64
-  LLVM: libLLVM-18.1.7 (ORCJIT, znver3)
+  LLVM: libLLVM-18.1.7 (ORCJIT, znver4)
   GC: Built with stock GC
 Threads: 1 default, 1 interactive, 1 GC (on 4 virtual cores)</code></pre></details><details><summary>A more complete overview of all dependencies and their versions is also provided.</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Status `~/work/ParameterizedFunctions.jl/ParameterizedFunctions.jl/docs/Manifest.toml`
   [47edcb42] ADTypes v1.22.0
+  [14f7f29c] AMD v0.5.3
   [a4c015fc] ANSIColoredPrinters v0.0.1
   [6e696c72] AbstractPlutoDingetjes v1.4.0
   [1520ce14] AbstractTrees v0.4.5
@@ -92,7 +93,7 @@ Threads: 1 default, 1 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [64ca27bc] FindFirstFunctions v2.1.0
   [6a86dc24] FiniteDiff v2.31.0
   [1fa38f19] Format v1.3.7
-  [f6369f11] ForwardDiff v1.3.3
+  [f6369f11] ForwardDiff v1.4.0
   [a85aefff] FunctionMaps v0.1.2
   [069b7b12] FunctionWrappers v1.1.3
   [77dc65aa] FunctionWrappersWrappers v1.9.1
@@ -116,13 +117,13 @@ Threads: 1 default, 1 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [23fbe1c1] Latexify v0.16.10
   [0e77f7df] LazilyInitializedFields v1.3.0
   [87fe0de2] LineSearch v0.1.9
-  [7ed4a6bd] LinearSolve v3.82.0
-⌅ [2ab3a3ac] LogExpFunctions v0.3.29
+  [7ed4a6bd] LinearSolve v3.85.0
+  [2ab3a3ac] LogExpFunctions v1.0.1
   [e6f89c97] LoggingExtras v1.2.0
   [1914dd2f] MacroTools v0.5.16
   [d0879d2d] MarkdownAST v0.1.3
   [bb5d69b7] MaybeInplace v0.1.4
-  [961ee093] ModelingToolkit v11.26.7
+  [961ee093] ModelingToolkit v11.26.8
   [7771a370] ModelingToolkitBase v1.42.2
   [6bb917b9] ModelingToolkitTearing v1.14.1
   [2e0e35c7] Moshi v0.3.8
@@ -130,7 +131,7 @@ Threads: 1 default, 1 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [102ac46a] MultivariatePolynomials v0.5.19
   [d8a4904e] MutableArithmetics v1.8.0
   [77ba4419] NaNMath v1.1.3
-  [be0214bd] NonlinearSolveBase v2.30.2
+  [be0214bd] NonlinearSolveBase v2.30.3
   [5959db7a] NonlinearSolveFirstOrder v2.1.1
   [6fe1bfb0] OffsetArrays v1.17.0
 ⌅ [bac558e1] OrderedCollections v1.8.2
@@ -142,16 +143,17 @@ Threads: 1 default, 1 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [aea7be01] PrecompileTools v1.3.4
   [21216c6a] Preferences v1.5.2
   [27ebfcd6] Primes v0.5.7
+  [0c0d3e7f] PureKLU v1.0.0
   [988b38a3] ReadOnlyArrays v0.2.0
   [795d4caa] ReadOnlyDicts v1.0.1
   [3cdcf5f2] RecipesBase v1.3.4
-  [731186ca] RecursiveArrayTools v4.3.0
+  [731186ca] RecursiveArrayTools v4.3.1
   [189a3867] Reexport v1.2.2
   [2792f1a3] RegistryInstances v0.1.0
   [ae029012] Requires v1.3.1
   [7e49a35a] RuntimeGeneratedFunctions v0.5.19
   [9dfe8606] SCCNonlinearSolve v1.13.0
-  [0bca4576] SciMLBase v3.17.0
+  [0bca4576] SciMLBase v3.18.0
   [19f34311] SciMLJacobianOperators v0.1.13
   [a6db7da4] SciMLLogging v2.0.0
   [c0aeaf25] SciMLOperators v1.22.0
@@ -160,6 +162,7 @@ Threads: 1 default, 1 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [efcf1570] Setfield v1.1.2
   [727e6d20] SimpleNonlinearSolve v2.12.0
   [699a6c99] SimpleTraits v0.9.6
+  [a57abbd0] SparseColumnPivotedQR v2.1.1
   [276daf66] SpecialFunctions v2.8.0
   [0c0c59c1] StarAlgebras v0.3.0
   [64909d44] StateSelection v1.9.3
@@ -169,7 +172,7 @@ Threads: 1 default, 1 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [ec057cc2] StructUtils v2.8.2
   [2efcf032] SymbolicIndexingInterface v0.3.48
   [19f23fe9] SymbolicLimits v1.1.0
-  [d1185830] SymbolicUtils v4.34.2
+  [d1185830] SymbolicUtils v4.34.3
   [0c5d862f] Symbolics v7.26.0
   [ed4db957] TaskLocalValues v0.1.3
   [8ea1fca8] TermInterface v2.0.0
@@ -235,4 +238,4 @@ Threads: 1 default, 1 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [8e850b90] libblastrampoline_jll v5.15.0+0
   [8e850ede] nghttp2_jll v1.64.0+1
   [3f19e933] p7zip_jll v17.7.0+0
-Info Packages marked with ⌅ have new versions available but compatibility constraints restrict them from upgrading. To see why use `status --outdated -m`</code></pre></details><p>You can also download the <a href="https://github.com/SciML/ParameterizedFunctions.jl/tree/gh-pages/v5.24.0/assets/Manifest.toml">manifest</a> file and the <a href="https://github.com/SciML/ParameterizedFunctions.jl/tree/gh-pages/v5.24.0/assets/Project.toml">project</a> file.</p></article><nav class="docs-footer"><a class="docs-footer-nextpage" href="ode_def/">The ode_def Macro »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Thursday 4 June 2026 23:38">Thursday 4 June 2026</span>. Using Julia version 1.12.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+Info Packages marked with ⌅ have new versions available but compatibility constraints restrict them from upgrading. To see why use `status --outdated -m`</code></pre></details><p>You can also download the <a href="https://github.com/SciML/ParameterizedFunctions.jl/tree/gh-pages/v5.24.0/assets/Manifest.toml">manifest</a> file and the <a href="https://github.com/SciML/ParameterizedFunctions.jl/tree/gh-pages/v5.24.0/assets/Project.toml">project</a> file.</p></article><nav class="docs-footer"><a class="docs-footer-nextpage" href="ode_def/">The ode_def Macro »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Monday 8 June 2026 00:56">Monday 8 June 2026</span>. Using Julia version 1.12.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
