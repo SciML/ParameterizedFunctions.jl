@@ -1,3 +1,5 @@
+using SafeTestsets
+
 const GROUP = get(ENV, "GROUP", "All")
 
 if GROUP == "QA"
@@ -9,5 +11,7 @@ if GROUP == "QA"
 end
 
 if GROUP == "All" || GROUP == "Core"
-    include("./core.jl")
+    @safetestset "Core" begin
+        include("./core.jl")
+    end
 end

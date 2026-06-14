@@ -29,6 +29,7 @@ ModelingToolkit = "11.26.7"
 ModelingToolkitBase = "1.42.0"
 Pkg = "1"
 Reexport = "1.2.2"
+SafeTestsets = "0.1, 1"
 SciMLBase = "2.149.0, 3.0"
 SpecialFunctions = "2"
 Symbolics = "7.24.0"
@@ -41,8 +42,9 @@ Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
 ExplicitImports = "7d51a73a-1435-4ff3-83d9-f097790105c7"
 InteractiveUtils = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
 Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
+SafeTestsets = "1bc83da4-3b8d-516f-aca4-4fe02f6d838f"
 SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Aqua", "ExplicitImports", "InteractiveUtils", "SpecialFunctions", "Test", "Pkg"]
+test = ["Aqua", "ExplicitImports", "InteractiveUtils", "SafeTestsets", "SpecialFunctions", "Test", "Pkg"]

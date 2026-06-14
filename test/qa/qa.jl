@@ -1,11 +1,8 @@
-using ParameterizedFunctions, Aqua
-using ExplicitImports
-using Test
-using ModelingToolkit
-using ModelingToolkitBase
-using Symbolics
+using SafeTestsets
 
-@testset "Aqua" begin
+@safetestset "Aqua" begin
+    using ParameterizedFunctions, Aqua
+    using Test
     Aqua.find_persistent_tasks_deps(ParameterizedFunctions)
     Aqua.test_ambiguities(ParameterizedFunctions, recursive = false)
     Aqua.test_deps_compat(ParameterizedFunctions)
@@ -21,7 +18,13 @@ using Symbolics
     Aqua.test_undefined_exports(ParameterizedFunctions; broken = true)
 end
 
-@testset "ExplicitImports" begin
+@safetestset "ExplicitImports" begin
+    using ParameterizedFunctions
+    using ExplicitImports
+    using Test
+    using ModelingToolkit
+    using ModelingToolkitBase
+    using Symbolics
     # Skip modules that are re-exported (names from @reexport using ModelingToolkit
     # are intentionally brought in implicitly for re-export purposes), and Base/Core
     # which are always available implicitly
