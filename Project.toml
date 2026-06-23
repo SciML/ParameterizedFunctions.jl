@@ -1,6 +1,6 @@
 name = "ParameterizedFunctions"
 uuid = "65888b18-ceab-5e60-b2b9-181511a3b968"
-version = "5.24.0"
+version = "5.24.1"
 authors = ["Chris Rackauckas <accounts@chrisrackauckas.com>"]
 
 [deps]
