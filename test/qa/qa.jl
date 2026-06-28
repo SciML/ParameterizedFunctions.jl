@@ -18,11 +18,7 @@ run_qa(
         all_qualified_accesses_via_owners = (; ignore = (:AbstractParameterizedFunction,)),
         all_qualified_accesses_are_public = (;
             # AbstractParameterizedFunction: non-public in SciMLBase/DiffEqBase
-            # t_nounits: non-public in ModelingToolkitBase
-            # unwrap: non-public in SymbolicUtils
-            ignore = (:AbstractParameterizedFunction, :t_nounits, :unwrap),
+            ignore = (:AbstractParameterizedFunction,),
         ),
-        # BasicSymbolic: non-public dispatch type from SymbolicUtils
-        all_explicit_imports_are_public = (; ignore = (:BasicSymbolic,)),
     ),
 )
