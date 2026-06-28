@@ -165,7 +165,7 @@ function ode_def_opts(
 
     return quote
         struct $name{F, TG, TJ, TW, TWt, S} <:
-            ParameterizedFunctions.DiffEqBase.AbstractParameterizedFunction{true}
+            ParameterizedFunctions.SciMLBase.AbstractParameterizedFunction{true}
             f::F
             mass_matrix::ParameterizedFunctions.LinearAlgebra.UniformScaling{Bool}
             analytic::Nothing
