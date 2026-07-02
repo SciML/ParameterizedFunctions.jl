@@ -58,9 +58,9 @@ function ode_def_opts(
     indvar_dict, syms = build_indvar_dict(ex, depvar)
     ####
 
-    t = ModelingToolkit.t_nounits
-    vars = Symbolics.unwrap.([(@variables $x(t))[1] for x in syms])
-    params = Symbolics.unwrap.([(@parameters $x)[1] for x in Symbol[params...]])
+    t = ModelingToolkitBase.t_nounits
+    vars = SymbolicUtils.unwrap.([(@variables $x(t))[1] for x in syms])
+    params = SymbolicUtils.unwrap.([(@parameters $x)[1] for x in Symbol[params...]])
 
     vars_dict = Dict(x => Symbol(v) for (x, v) in zip(syms, vars))
 
@@ -165,7 +165,7 @@ function ode_def_opts(
 
     return quote
         struct $name{F, TG, TJ, TW, TWt, S} <:
-            ParameterizedFunctions.DiffEqBase.AbstractParameterizedFunction{true}
+            ParameterizedFunctions.SciMLBase.AbstractParameterizedFunction{true}
             f::F
             mass_matrix::ParameterizedFunctions.LinearAlgebra.UniformScaling{Bool}
             analytic::Nothing

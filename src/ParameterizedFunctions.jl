@@ -10,7 +10,7 @@ using Latexify: Latexify, @latexrecipe, latexify
 using Reexport: @reexport
 @reexport using ModelingToolkit
 using ModelingToolkit: ModelingToolkit, System, tosymbol
-using ModelingToolkitBase: @parameters
+using ModelingToolkitBase: ModelingToolkitBase, @parameters
 using Symbolics: Symbolics, @variables
 using SymbolicUtils: SymbolicUtils, BasicSymbolic
 
