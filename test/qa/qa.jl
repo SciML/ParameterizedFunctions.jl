@@ -1,8 +1,20 @@
 using SciMLTesting, ParameterizedFunctions, Test
 
+dependency_reexports(pkg) = Tuple(
+    name for name in public_api_names(pkg)
+        if isdefined(pkg, name) && parentmodule(getfield(pkg, name)) !== pkg
+)
+
+const DEPENDENCY_REEXPORTS = dependency_reexports(ParameterizedFunctions)
+
 run_qa(
     ParameterizedFunctions;
     explicit_imports = true,
+    api_docs_kwargs = (;
+        rendered = true,
+        ignore = DEPENDENCY_REEXPORTS,
+        rendered_ignore = DEPENDENCY_REEXPORTS,
+    ),
     aqua_kwargs = (;
         piracies = (;
             treat_as_own = [ParameterizedFunctions.SciMLBase.AbstractParameterizedFunction],
