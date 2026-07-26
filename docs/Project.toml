@@ -1,7 +1,9 @@
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+Latexify = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
 ParameterizedFunctions = "65888b18-ceab-5e60-b2b9-181511a3b968"
 
 [compat]
 Documenter = "1"
-ParameterizedFunctions = "5"
+Latexify = "0.16"
+ParameterizedFunctions = "6"

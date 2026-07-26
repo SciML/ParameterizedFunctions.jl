@@ -5,39 +5,46 @@ end
 findreplace(ex, dict) = ex
 
 """
+    ode_def_opts(name::Symbol, opts::Dict{Symbol, Bool}, curmod,
+        ex::Expr, params...; depvar = :t)
+
+Build the expression emitted by the `@ode_def` family of macros.
+
+This is a developer API for packages that implement an ODE-definition macro. Most
+users should call `@ode_def`, `@ode_def_bare`, or `@ode_def_all` instead. Callers
+must pass the assignment-based DSL expression accepted by those macros; this
+function returns an expression and does not evaluate the generated definition.
+
+# Arguments
+
+- `name`: name of the generated `AbstractParameterizedFunction` subtype.
+- `opts`: derivative-generation options. `:build_tgrad`, `:build_jac`, and
+  `:build_invW` control generated functions. The compatibility keys
+  `:build_expjac`, `:build_invjac`, `:build_invW_t`, `:build_hes`,
+  `:build_invhes`, and `:build_dpfuncs` must also be present and have `Bool`
+  values, but do not currently change the generated expression.
+- `curmod`: module in which functions named in `ex` are resolved.
+- `ex`: `begin` expression containing `dstate = expression` assignments.
+- `params...`: parameter symbols used in `ex`.
+
+# Keywords
+
+- `depvar = :t`: symbol used for the independent variable. It must not also name a
+  dependent state.
+
+# Returns
+
+An expression that defines a concrete `AbstractParameterizedFunction` subtype,
+generated callable methods, and a singleton instance.
+
+# Examples
+
 ```julia
-ode_def_opts(name::Symbol, opts::Dict{Symbol, Bool}, curmod, ex::Expr, params...;
-    depvar = :t)
-```
-
-The core internal. Users should only interact with this through the `@ode_def_*` macros.
-
-Options are self-explanatory by name mapping to `ODEFunction`:
-
-  - build_tgrad
-  - build_jac
-  - build_expjac
-  - build_invjac
-  - build_invW
-  - build_invW_t
-  - build_hes
-  - build_invhes
-  - build_dpfuncs
-
-`depvar` sets the symbol for the dependent variable.
-
-Example:
-
-```julia
-opts = Dict{Symbol, Bool}(:build_tgrad => true,
-    :build_jac => true,
-    :build_expjac => false,
-    :build_invjac => true,
-    :build_invW => true,
-    :build_invW_t => true,
-    :build_hes => false,
-    :build_invhes => false,
-    :build_dpfuncs => true)
+opts = Dict{Symbol, Bool}(
+    :build_tgrad => true, :build_jac => true, :build_expjac => false,
+    :build_invjac => false, :build_invW => false, :build_invW_t => false,
+    :build_hes => false, :build_invhes => false, :build_dpfuncs => true,
+)
 ```
 """
 function ode_def_opts(

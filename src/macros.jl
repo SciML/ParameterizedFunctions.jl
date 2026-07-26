@@ -1,36 +1,41 @@
 """
-```
-@ode_def name begin
-    differential equation
-end parameters :: ODEFunction
-```
+    @ode_def [name] begin
+        dstate = expression
+        # additional derivative assignments
+    end parameter_names...
 
-## Definition of the Domain-Specific Language (DSL)
+Define a parameterized ordinary differential equation and return an
+`SciMLBase.AbstractParameterizedFunction` suitable for an `ODEProblem`. The macro
+generates in-place and out-of-place right-hand sides, a time gradient, and a
+Jacobian through ModelingToolkit.
 
-A helper macro is provided to make it easier to define a `ParameterizedFunction`,
-and it will symbolically compute a bunch of extra functions to make the differential
-equation solvers run faster. For example, to define the previous `LotkaVolterra`,
-you can use the following command:
+# Arguments
+
+- `name`: optional name for the generated function type. Omit it to return an
+  anonymous parameterized function.
+- derivative assignments: a `begin` block whose statements have the form
+  `dstate = expression`. The identifier after `d` becomes a state variable. The
+  independent variable is `t`.
+- `parameter_names...`: symbols used as parameters in the derivative expressions.
+  Their numerical values are supplied by the problem's `p` argument.
+
+# Keywords
+
+This macro does not accept keyword arguments.
+
+# Returns
+
+An `AbstractParameterizedFunction` with generated `f`, `tgrad`, and `jac`
+methods. Pass it as the `f` argument of an `ODEProblem`.
+
+# Examples
 
 ```julia
-f = @ode_def LotkaVolterra begin
+lotka_volterra = @ode_def begin
     dx = a * x - b * x * y
     dy = -c * y + d * x * y
 end a b c d
 ```
-
-or you can define it anonymously:
-
-```julia
-f = @ode_def begin
-    dx = a * x - b * x * y
-    dy = -c * y + d * x * y
-end a b c d
-```
-
-`@ode_def` uses ModelingToolkit.jl internally and returns an `ODEFunction` with the
-extra definitions (Jacobian, parameter Jacobian, etc.) defined through the MTK
-symbolic tools.
 """
 macro ode_def(name, ex, params...)
     opts = Dict{Symbol, Bool}(
@@ -48,14 +53,37 @@ macro ode_def(name, ex, params...)
 end
 
 """
-```
-@ode_def_bare name begin
-    differential equation
-end parameters :: ODEFunction
-```
+    @ode_def_bare [name] begin
+        dstate = expression
+        # additional derivative assignments
+    end parameter_names...
 
-Like `@ode_def` but the `opts` options are set so that no symbolic functions are generated.
-See the `@ode_def` docstring for more details.
+Define a parameterized ODE without generating symbolic derivative functions.
+
+# Arguments
+
+- `name`: optional name for the generated function type.
+- derivative assignments: the same assignment-based ODE DSL accepted by
+  `@ode_def`.
+- `parameter_names...`: symbols used as parameters in the expressions.
+
+# Keywords
+
+This macro does not accept keyword arguments.
+
+# Returns
+
+An `AbstractParameterizedFunction` with a generated right-hand side and `nothing`
+for generated derivative-function fields. Use it when symbolic Jacobian and time
+gradient generation is unnecessary.
+
+# Examples
+
+```julia
+linear = @ode_def_bare begin
+    dx = a * x
+end a
+```
 """
 macro ode_def_bare(name, ex, params...)
     opts = Dict{Symbol, Bool}(
@@ -73,14 +101,37 @@ macro ode_def_bare(name, ex, params...)
 end
 
 """
-```
-@ode_def_all name begin
-    differential equation
-end parameters :: ODEFunction
-```
+    @ode_def_all [name] begin
+        dstate = expression
+        # additional derivative assignments
+    end parameter_names...
 
-Like `@ode_def` but the `opts` options are set so that all possible symbolic functions are generated.
-See the `@ode_def` docstring for more details.
+Define a parameterized ODE and request every derivative function supported by this
+DSL, including factorized `W` functions for small systems.
+
+# Arguments
+
+- `name`: optional name for the generated function type.
+- derivative assignments: the same assignment-based ODE DSL accepted by
+  `@ode_def`.
+- `parameter_names...`: symbols used as parameters in the expressions.
+
+# Keywords
+
+This macro does not accept keyword arguments.
+
+# Returns
+
+An `AbstractParameterizedFunction` with generated right-hand side, time-gradient,
+Jacobian, and supported factorized-`W` functions.
+
+# Examples
+
+```julia
+linear = @ode_def_all begin
+    dx = a * x
+end a
+```
 """
 macro ode_def_all(name, ex, params...)
     opts = Dict{Symbol, Bool}(
