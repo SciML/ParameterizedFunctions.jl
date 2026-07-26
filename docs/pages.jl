@@ -3,4 +3,5 @@
 pages = [
     "Home" => "index.md",
     "The ode_def Macro" => "ode_def.md",
+    "Developer API" => "developer_api.md",
 ]

@@ -3,6 +3,10 @@
 ParameterizedFunctions.jl is a component of the SciML ecosystem which allows
 for easily defining parameterized ODE models in a simple syntax.
 
+```@docs
+ParameterizedFunctions.ParameterizedFunctions
+```
+
 ## Installation
 
 To install ParameterizedFunctions.jl, use the Julia package manager:
@@ -69,7 +73,7 @@ L"\begin{align}
 ## Contributing
 
   - Please refer to the
-    [SciML ColPrac: Contributor's Guide on Collaborative Practices for Community Packages](https://github.com/SciML/ColPrac/blob/master/README.md)
+    [SciML ColPrac: Contributor's Guide on Collaborative Practices for Community Packages](https://github.com/SciML/ColPrac)
     for guidance on PRs, issues, and other matters relating to contributing to SciML.
 
   - See the [SciML Style Guide](https://github.com/SciML/SciMLStyle) for common coding practices and other style decisions.

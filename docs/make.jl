@@ -9,7 +9,7 @@ makedocs(
     sitename = "ParameterizedFunctions.jl",
     authors = "Chris Rackauckas",
     modules = [ParameterizedFunctions],
-    clean = true, doctest = false, linkcheck = true,
+    clean = true, doctest = true, checkdocs = :exports, linkcheck = true,
     format = Documenter.HTML(
         assets = ["assets/favicon.ico"],
         canonical = "https://docs.sciml.ai/ParameterizedFunctions/stable/"
