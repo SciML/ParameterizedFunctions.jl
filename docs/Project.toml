@@ -6,4 +6,4 @@ ParameterizedFunctions = "65888b18-ceab-5e60-b2b9-181511a3b968"
 [compat]
 Documenter = "1"
 Latexify = "0.16"
-ParameterizedFunctions = "6"
+ParameterizedFunctions = "5"
