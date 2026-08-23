@@ -4,6 +4,7 @@ version = "5.26.0"
 authors = ["Chris Rackauckas <accounts@chrisrackauckas.com>"]
 
 [deps]
+CommonSolve = "38540f10-b2f7-11e9-35d8-d573e4eb0ff2"
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
 DiffEqBase = "2b5f629d-d688-5b77-993f-72d75c75574e"
 DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
@@ -16,6 +17,7 @@ Symbolics = "0c5d862f-8b57-4792-8d23-62f2024744c7"
 SymbolicUtils = "d1185830-fcd6-423d-90d6-eec64667417b"
 
 [compat]
+CommonSolve = "0.2.4"
 DataStructures = "0.19"
 DiffEqBase = "7"
 DocStringExtensions = "0.9.5"
