@@ -1051,9 +1051,9 @@ weakdeps = ["SparseArrays"]
 
 [[deps.ModelingToolkit]]
 deps = ["ADTypes", "BipartiteGraphs", "BlockArrays", "Combinatorics", "CommonSolve", "ConstructionBase", "DataStructures", "DiffEqBase", "DifferentiationInterface", "DocStringExtensions", "FillArrays", "ForwardDiff", "Graphs", "InteractiveUtils", "Libdl", "LinearAlgebra", "ModelingToolkitBase", "ModelingToolkitTearing", "Moshi", "OffsetArrays", "OrderedCollections", "PreallocationTools", "PrecompileTools", "REPL", "Reexport", "RuntimeGeneratedFunctions", "SCCNonlinearSolve", "SciMLBase", "SciMLPublic", "SciMLStructures", "Serialization", "Setfield", "SimpleNonlinearSolve", "SparseArrays", "StateSelection", "StaticArrays", "SymbolicIndexingInterface", "SymbolicUtils", "Symbolics", "TermInterface", "UnPack"]
-git-tree-sha1 = "20608f9277d87a0e951bf60b010cc419abdc0b41"
+git-tree-sha1 = "7dcfd01335c4d4c42c2483b4dfc69ece6b14b775"
 uuid = "961ee093-0014-501f-94e3-6117800e7a78"
-version = "11.39.1"
+version = "11.40.0"
 
     [deps.ModelingToolkit.extensions]
     MTKFMIExt = "FMIImport"
@@ -1253,9 +1253,9 @@ version = "10.44.0+1"
 
 [[deps.ParameterizedFunctions]]
 deps = ["CommonSolve", "DataStructures", "DiffEqBase", "DocStringExtensions", "LinearAlgebra", "ModelingToolkit", "ModelingToolkitBase", "PrecompileTools", "SciMLBase", "SymbolicUtils", "Symbolics"]
-path = "/home/runner/work/ParameterizedFunctions.jl/ParameterizedFunctions.jl"
+path = "/home/runner/_work/ParameterizedFunctions.jl/ParameterizedFunctions.jl"
 uuid = "65888b18-ceab-5e60-b2b9-181511a3b968"
-version = "5.26.0"
+version = "5.27.0"
 
 [[deps.Parsers]]
 deps = ["Dates", "PrecompileTools", "UUIDs"]
@@ -1766,9 +1766,9 @@ version = "1.0.1"
 
 [[deps.Tables]]
 deps = ["DataAPI", "DataValueInterfaces", "IteratorInterfaceExtensions", "OrderedCollections", "TableTraits"]
-git-tree-sha1 = "0f38a06c83f0007bbab3cf911262841c9a0f07e0"
+git-tree-sha1 = "a94d9bdda1b7bed0046cea645639ab3f62196fac"
 uuid = "bd369af6-aec1-5ad0-b16a-f7cc5008161c"
-version = "1.13.0"
+version = "1.14.0"
 
 [[deps.Tar]]
 deps = ["ArgTools", "SHA"]
