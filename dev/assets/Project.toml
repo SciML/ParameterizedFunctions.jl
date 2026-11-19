@@ -4,7 +4,7 @@ Latexify = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
 ParameterizedFunctions = "65888b18-ceab-5e60-b2b9-181511a3b968"
 
 [sources]
-ParameterizedFunctions = {path = "/home/runner/work/ParameterizedFunctions.jl/ParameterizedFunctions.jl"}
+ParameterizedFunctions = {path = "/home/runner/_work/ParameterizedFunctions.jl/ParameterizedFunctions.jl"}
 
 [compat]
 Documenter = "1"
